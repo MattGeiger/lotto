@@ -12,3 +12,4 @@
 - Expanded the read-only board layout to occupy more viewport width.
 - Enlarged raffle number badges on the read-only board for better long-distance readability.
 - Further increased raffle number badge size and weight for maximum visibility.
+- Widened the top info cards and increased their number sizing to stay larger than the raffle badges.

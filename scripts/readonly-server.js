@@ -94,7 +94,7 @@ const htmlPage = `<!doctype html>
       }
       .grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
         gap: 10px;
         margin-top: 18px;
       }
@@ -113,7 +113,7 @@ const htmlPage = `<!doctype html>
       }
       .card p {
         margin: 0;
-        font-size: 22px;
+        font-size: 30px;
         font-weight: 700;
         color: #fff;
       }
