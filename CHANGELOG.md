@@ -14,3 +14,4 @@
 - Further increased raffle number badge size and weight for maximum visibility.
 - Widened the top info cards and increased their number sizing to stay larger than the raffle badges.
 - Changed the admin “Now Serving” control to step through draw positions with arrow buttons using Lucide icons and ordinal labels.
+- Added a distinct style for already-called tickets on the read-only board.

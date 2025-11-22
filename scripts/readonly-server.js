@@ -137,6 +137,12 @@ const htmlPage = `<!doctype html>
         border-color: #fbbf24;
         color: #0b0b0b;
       }
+      .badge.served {
+        background: #0b0b0b;
+        border-color: #0f172a;
+        color: #94a3b8;
+        opacity: 0.8;
+      }
       .muted {
         color: #e5e7eb;
         font-size: 14px;
@@ -240,17 +246,23 @@ const htmlPage = `<!doctype html>
           startNumber && endNumber ? endNumber - startNumber + 1 : "—";
 
         orderEl.innerHTML = "";
+        const currentIndex =
+          generatedOrder && currentlyServing !== null
+            ? generatedOrder.indexOf(currentlyServing)
+            : -1;
         if (!generatedOrder || generatedOrder.length === 0) {
           const badge = document.createElement("div");
           badge.className = "badge";
           badge.textContent = "No tickets generated yet";
           orderEl.appendChild(badge);
         } else {
-          generatedOrder.forEach((value) => {
+          generatedOrder.forEach((value, index) => {
             const badge = document.createElement("div");
             badge.className = "badge";
             if (value === currentlyServing) {
               badge.classList.add("serving");
+            } else if (currentIndex !== -1 && index < currentIndex) {
+              badge.classList.add("served");
             }
             badge.textContent = value;
             orderEl.appendChild(badge);
