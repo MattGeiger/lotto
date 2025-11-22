@@ -36,7 +36,7 @@ const htmlPage = `<!doctype html>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Raffle Read-only Board</title>
+    <title>Food Pantry Service</title>
     <style>
       :root {
         color-scheme: dark;
@@ -155,8 +155,8 @@ const htmlPage = `<!doctype html>
     <div class="shell">
       <header>
         <div>
-          <div class="eyebrow">Read-only</div>
-          <div class="title">Raffle Board</div>
+          <div class="eyebrow">Food Pantry Service For</div>
+          <div class="title" id="page-title">—</div>
         </div>
         <div class="stamp" id="timestamp">Updated: —</div>
       </header>
@@ -186,7 +186,6 @@ const htmlPage = `<!doctype html>
         <div class="muted" id="status" style="margin-top: 8px;">Polling for latest state…</div>
       </div>
 
-      <footer>Read-only page. No writes or controls are exposed from this server.</footer>
     </div>
 
     <script>
@@ -197,6 +196,22 @@ const htmlPage = `<!doctype html>
       const countEl = document.getElementById("count");
       const orderEl = document.getElementById("order");
       const timestampEl = document.getElementById("timestamp");
+      const pageTitleEl = document.getElementById("page-title");
+
+      const formatDate = () => {
+        const now = new Date();
+        const day = String(now.getDate()).padStart(2, "0");
+        const month = now.toLocaleString("en-US", { month: "long" });
+        const year = now.getFullYear();
+        return `${day}-${month}-${year}`;
+      };
+
+      const setTitle = () => {
+        const formatted = formatDate();
+        const text = "Food Pantry Service For " + formatted;
+        pageTitleEl.textContent = text;
+        document.title = text;
+      };
 
       const renderState = (state) => {
         const { startNumber, endNumber, mode, generatedOrder, currentlyServing, timestamp } = state;
@@ -247,6 +262,7 @@ const htmlPage = `<!doctype html>
         }
       };
 
+      setTitle();
       fetchState();
       setInterval(fetchState, ${pollIntervalMs});
     </script>
