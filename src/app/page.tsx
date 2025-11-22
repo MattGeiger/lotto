@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Eye, Lock, QrCode } from "lucide-react";
 
@@ -16,7 +17,14 @@ export default function Home() {
     <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-8 px-6 py-12">
       <div className="flex flex-col gap-6 rounded-3xl bg-white/80 p-10 shadow-xl backdrop-blur">
         <div className="flex flex-wrap items-center gap-3">
-          <Badge>William Temple House</Badge>
+          <Image
+            src="/wth-logo-horizontal.png"
+            alt="William Temple House"
+            width={360}
+            height={95}
+            className="h-12 w-auto"
+            priority
+          />
           <Badge variant="muted">Digital Raffle</Badge>
         </div>
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
