@@ -20,4 +20,5 @@
 - Added horizontal spacing for raffle badges and widened their padding for better legibility.
 - Protected raffle order when switching modes: mode toggles now only affect future tickets, keep existing order intact, and require confirmation.
 - Replaced the “William Temple House” pill on the landing page with the official horizontal logo asset for better branding.
+- Removed the “Digital Raffle” pill and expanded the homepage logo to span the card responsively.
 - Increased contrast on the “Open Staff Dashboard” CTA to prevent text blending into the button background.

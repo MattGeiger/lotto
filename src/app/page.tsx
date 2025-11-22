@@ -16,16 +16,15 @@ export default function Home() {
   return (
     <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-8 px-6 py-12">
       <div className="flex flex-col gap-6 rounded-3xl bg-white/80 p-10 shadow-xl backdrop-blur">
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="w-full">
           <Image
             src="/wth-logo-horizontal.png"
             alt="William Temple House"
-            width={360}
-            height={95}
-            className="h-12 w-auto"
+            width={900}
+            height={240}
+            className="h-auto w-full max-w-3xl"
             priority
           />
-          <Badge variant="muted">Digital Raffle</Badge>
         </div>
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div className="space-y-2">
