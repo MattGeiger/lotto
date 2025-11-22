@@ -31,7 +31,11 @@ export default function Home() {
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Button asChild size="lg">
+            <Button
+              asChild
+              size="lg"
+              className="bg-blue-700 text-white hover:bg-blue-800 focus-visible:ring-blue-500"
+            >
               <Link href="/admin">
                 Open Staff Dashboard <ArrowRight className="h-4 w-4" />
               </Link>

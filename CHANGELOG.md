@@ -19,3 +19,4 @@
 - Loosened spacing and line-height for read-only number badges and summary numbers to avoid cropped digits.
 - Added horizontal spacing for raffle badges and widened their padding for better legibility.
 - Protected raffle order when switching modes: mode toggles now only affect future tickets, keep existing order intact, and require confirmation.
+- Increased contrast on the “Open Staff Dashboard” CTA to prevent text blending into the button background.
