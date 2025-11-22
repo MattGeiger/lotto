@@ -39,10 +39,10 @@ const htmlPage = `<!doctype html>
     <title>Raffle Read-only Board</title>
     <style>
       :root {
-        color-scheme: light;
+        color-scheme: dark;
         font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        background: #0f172a;
-        color: #e2e8f0;
+        background: #000;
+        color: #f8fafc;
       }
       body {
         margin: 0;
@@ -51,15 +51,18 @@ const htmlPage = `<!doctype html>
         align-items: center;
         justify-content: center;
         padding: 32px;
+        background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.08), transparent 25%),
+          radial-gradient(circle at 80% 0%, rgba(255, 255, 255, 0.05), transparent 20%),
+          linear-gradient(145deg, #000, #0a0a0a 45%, #000);
       }
       .shell {
         width: min(1100px, 100%);
-        background: linear-gradient(135deg, rgba(15, 23, 42, 0.8), rgba(30, 41, 59, 0.7));
-        border: 1px solid rgba(148, 163, 184, 0.15);
+        background: rgba(0, 0, 0, 0.65);
+        border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 24px;
         padding: 28px;
-        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
-        backdrop-filter: blur(8px);
+        box-shadow: 0 28px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.04);
+        backdrop-filter: blur(6px);
       }
       header {
         display: flex;
@@ -70,31 +73,24 @@ const htmlPage = `<!doctype html>
         margin-bottom: 16px;
       }
       .title {
-        font-size: 24px;
-        font-weight: 700;
-        letter-spacing: -0.01em;
-        color: #f8fafc;
+        font-size: 28px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: #fff;
       }
-      .meta {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-        align-items: center;
-        font-size: 13px;
+      .eyebrow {
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
         color: #cbd5e1;
       }
-      .pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 6px 12px;
-        border-radius: 999px;
-        background: rgba(148, 163, 184, 0.12);
-        color: #e2e8f0;
-      }
-      .pill strong {
-        color: #fbbf24;
-        font-weight: 700;
+      .stamp {
+        padding: 8px 14px;
+        border-radius: 14px;
+        background: #111;
+        border: 1px solid #444;
+        color: #f8fafc;
+        font-size: 13px;
       }
       .grid {
         display: grid;
@@ -105,13 +101,13 @@ const htmlPage = `<!doctype html>
       .card {
         border-radius: 14px;
         padding: 14px;
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(148, 163, 184, 0.12);
+        background: #0b0b0b;
+        border: 1px solid #2d2d2d;
       }
       .card h3 {
         margin: 0 0 6px 0;
         font-size: 14px;
-        color: #cbd5e1;
+        color: #e5e7eb;
         text-transform: uppercase;
         letter-spacing: 0.04em;
       }
@@ -119,7 +115,7 @@ const htmlPage = `<!doctype html>
         margin: 0;
         font-size: 22px;
         font-weight: 700;
-        color: #e2e8f0;
+        color: #fff;
       }
       .order {
         display: flex;
@@ -130,26 +126,28 @@ const htmlPage = `<!doctype html>
       .badge {
         padding: 8px 10px;
         border-radius: 10px;
-        background: rgba(148, 163, 184, 0.14);
+        background: #0f172a;
+        border: 1px solid #1f2937;
         color: #f8fafc;
         font-weight: 600;
         font-size: 14px;
       }
       .badge.serving {
         background: linear-gradient(135deg, #f59e0b, #fbbf24);
-        color: #0f172a;
+        border-color: #fbbf24;
+        color: #0b0b0b;
       }
       .muted {
-        color: #cbd5e1;
+        color: #e5e7eb;
         font-size: 14px;
       }
       .error {
-        color: #fecdd3;
+        color: #fb7185;
       }
       footer {
         margin-top: 16px;
         font-size: 12px;
-        color: #94a3b8;
+        color: #e5e7eb;
       }
     </style>
   </head>
@@ -157,16 +155,10 @@ const htmlPage = `<!doctype html>
     <div class="shell">
       <header>
         <div>
-          <div class="title">Read-only Raffle Board</div>
-          <div class="meta">
-            <span class="pill">Isolated view • Port ${port}</span>
-            <span class="pill">Polls every ${pollIntervalMs / 1000}s</span>
-          </div>
+          <div class="eyebrow">Read-only</div>
+          <div class="title">Raffle Board</div>
         </div>
-        <div class="meta">
-          <span class="pill">Source: data/state.json</span>
-          <span class="pill" id="timestamp">Waiting for data…</span>
-        </div>
+        <div class="stamp" id="timestamp">Updated: —</div>
       </header>
 
       <div class="grid">
@@ -183,7 +175,7 @@ const htmlPage = `<!doctype html>
           <p id="mode">—</p>
         </div>
         <div class="card">
-          <h3>Total Tickets</h3>
+          <h3>Total Tickets Issued</h3>
           <p id="count">—</p>
         </div>
       </div>
@@ -211,7 +203,8 @@ const htmlPage = `<!doctype html>
         servingEl.textContent = currentlyServing ?? "Waiting";
         rangeEl.textContent =
           startNumber && endNumber ? startNumber + "–" + endNumber : "Not set";
-        modeEl.textContent = mode ?? "—";
+        modeEl.textContent =
+          mode === "random" ? "Raffle" : mode === "sequential" ? "Sequential" : "—";
         countEl.textContent =
           startNumber && endNumber ? endNumber - startNumber + 1 : "—";
 
