@@ -116,6 +116,7 @@ const htmlPage = `<!doctype html>
         font-size: 30px;
         font-weight: 700;
         color: #fff;
+        line-height: 1.2;
       }
       .order {
         display: flex;
@@ -124,13 +125,14 @@ const htmlPage = `<!doctype html>
         margin-top: 6px;
       }
       .badge {
-        padding: 14px 16px;
-        border-radius: 12px;
+        padding: 16px 18px;
+        border-radius: 14px;
         background: #0f172a;
         border: 1px solid #1f2937;
         color: #f8fafc;
         font-weight: 800;
         font-size: 26px;
+        line-height: 1.2;
         }
       .badge.serving {
         background: linear-gradient(135deg, #f59e0b, #fbbf24);

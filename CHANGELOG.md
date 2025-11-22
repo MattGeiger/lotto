@@ -16,3 +16,4 @@
 - Changed the admin “Now Serving” control to step through draw positions with arrow buttons using Lucide icons and ordinal labels.
 - Added a distinct style for already-called tickets on the read-only board.
 - Updated read-only board styling to make served tickets pop and mute upcoming tickets instead.
+- Loosened spacing and line-height for read-only number badges and summary numbers to avoid cropped digits.
