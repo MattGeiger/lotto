@@ -105,12 +105,22 @@ describe("state manager", () => {
     expectRelativeOrderPreserved(base.generatedOrder, updated.generatedOrder);
   });
 
-  it("switches modes and reshapes the generated order", async () => {
-    await manager.generateState({ startNumber: 5, endNumber: 7, mode: "random" });
+  it("switches modes without reshaping the existing order", async () => {
+    const initial = await manager.generateState({ startNumber: 5, endNumber: 7, mode: "random" });
     const sequential = await manager.setMode("sequential");
 
     expect(sequential.mode).toBe<Mode>("sequential");
-    expect(sequential.generatedOrder).toEqual([5, 6, 7]);
+    expect(sequential.generatedOrder).toEqual(initial.generatedOrder);
+  });
+
+  it("applies new mode only to appended tickets", async () => {
+    await manager.generateState({ startNumber: 1, endNumber: 3, mode: "random" });
+    const before = await manager.setMode("sequential");
+    const appended = await manager.appendTickets(5);
+
+    expect(before.mode).toBe<Mode>("sequential");
+    expect(appended.generatedOrder.slice(0, 3)).toEqual(before.generatedOrder);
+    expect(appended.generatedOrder.slice(-2)).toEqual([4, 5]);
   });
 
   it("re-randomizes the existing range", async () => {

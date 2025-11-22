@@ -14,6 +14,16 @@ import {
 } from "lucide-react";
 
 import { ConfirmAction } from "@/components/confirm-action";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -47,6 +57,9 @@ const AdminPage = () => {
   const [rangeForm, setRangeForm] = React.useState({ startNumber: "", endNumber: "" });
   const [mode, setMode] = React.useState<Mode>("random");
   const [appendEnd, setAppendEnd] = React.useState("");
+  const [modeConfirmOpen, setModeConfirmOpen] = React.useState(false);
+  const [pendingModeChoice, setPendingModeChoice] = React.useState<Mode | null>(null);
+  const [modeChanging, setModeChanging] = React.useState(false);
   const [resetPhrase, setResetPhrase] = React.useState("");
   const [displayUrl, setDisplayUrl] = React.useState("https://example.com/display");
   const [copied, setCopied] = React.useState(false);
@@ -137,8 +150,15 @@ const AdminPage = () => {
   };
 
   const handleModeChange = async (newMode: Mode) => {
-    setMode(newMode);
-    await sendAction({ action: "setMode", mode: newMode });
+    setModeChanging(true);
+    try {
+      await sendAction({ action: "setMode", mode: newMode });
+      setMode(newMode);
+    } finally {
+      setModeChanging(false);
+      setModeConfirmOpen(false);
+      setPendingModeChoice(null);
+    }
   };
 
   const handleReset = async () => {
@@ -153,6 +173,19 @@ const AdminPage = () => {
   const handleRerandomize = async () => {
     await sendAction({ action: "rerandomize" });
   };
+
+  const handleModeToggleRequest = (newMode: Mode) => {
+    if (newMode === mode) return;
+    setPendingModeChoice(newMode);
+    setModeConfirmOpen(true);
+  };
+
+  React.useEffect(() => {
+    if (!modeConfirmOpen) {
+      setPendingModeChoice(null);
+      setModeChanging(false);
+    }
+  }, [modeConfirmOpen]);
 
   const handleCopyLink = async () => {
     try {
@@ -302,19 +335,47 @@ const AdminPage = () => {
                 <div>
                   <p className="text-sm font-semibold text-slate-900">Order mode</p>
                   <p className="text-xs text-slate-600">
-                    Toggle between randomized drawing and sequential first-come-first-serve.
+                    Controls how new tickets are placed. Existing order stays untouched.
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-xs uppercase tracking-wide text-slate-600">Sequential</span>
                   <Switch
                     checked={mode === "random"}
-                    onCheckedChange={(checked) => handleModeChange(checked ? "random" : "sequential")}
+                    onCheckedChange={(checked) =>
+                      handleModeToggleRequest(checked ? "random" : "sequential")
+                    }
                     aria-label="Toggle random order"
+                    disabled={modeChanging || pendingAction !== null}
                   />
                   <span className="text-xs uppercase tracking-wide text-slate-600">Random</span>
                 </div>
               </div>
+
+              <AlertDialog open={modeConfirmOpen} onOpenChange={setModeConfirmOpen}>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Confirm mode change</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Switching modes affects how future tickets are slotted. The existing draw order
+                      will remain exactly as-is, but appended tickets will follow the new mode.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel disabled={modeChanging}>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={async () => {
+                        if (pendingModeChoice) {
+                          await handleModeChange(pendingModeChoice);
+                        }
+                      }}
+                      disabled={modeChanging}
+                    >
+                      {modeChanging ? "Working..." : "Switch to " + (pendingModeChoice ?? "")}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
 
               <div className="flex flex-wrap gap-3">
                 <ConfirmAction

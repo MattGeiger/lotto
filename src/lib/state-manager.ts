@@ -183,18 +183,30 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
 
   const setMode = async (mode: Mode) => {
     const current = await safeReadState();
-    ensureHasRange(current);
+    const hasRange = current.startNumber !== 0 || current.endNumber !== 0;
 
-    const generatedOrder = generateOrder(
-      current.startNumber,
-      current.endNumber,
-      mode,
-    );
+    if (!hasRange) {
+      return persist({ ...current, mode });
+    }
+
+    const hasOrder = current.generatedOrder.length > 0;
+
+    if (!hasOrder) {
+      const generatedOrder = generateOrder(
+        current.startNumber,
+        current.endNumber,
+        mode,
+      );
+      return persist({
+        ...current,
+        mode,
+        generatedOrder,
+      });
+    }
 
     return persist({
       ...current,
       mode,
-      generatedOrder,
     });
   };
 
