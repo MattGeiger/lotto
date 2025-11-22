@@ -121,11 +121,11 @@ const htmlPage = `<!doctype html>
       .order {
         display: flex;
         flex-wrap: wrap;
-        gap: 8px;
-        margin-top: 6px;
+        gap: 12px;
+        margin-top: 10px;
       }
       .badge {
-        padding: 16px 18px;
+        padding: 16px 22px;
         border-radius: 14px;
         background: #0f172a;
         border: 1px solid #1f2937;
