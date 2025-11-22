@@ -7,6 +7,8 @@ import {
   AlertTriangle,
   ArrowLeft,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   Loader2,
   Sparkles,
 } from "lucide-react";
@@ -45,7 +47,6 @@ const AdminPage = () => {
   const [rangeForm, setRangeForm] = React.useState({ startNumber: "", endNumber: "" });
   const [mode, setMode] = React.useState<Mode>("random");
   const [appendEnd, setAppendEnd] = React.useState("");
-  const [servingInput, setServingInput] = React.useState("");
   const [resetPhrase, setResetPhrase] = React.useState("");
   const [displayUrl, setDisplayUrl] = React.useState("https://example.com/display");
   const [copied, setCopied] = React.useState(false);
@@ -85,7 +86,6 @@ const AdminPage = () => {
       });
       setMode(state.mode);
       setAppendEnd(state.endNumber ? String(state.endNumber + 1) : "");
-      setServingInput(state.currentlyServing ? String(state.currentlyServing) : "");
     }
   }, [state]);
 
@@ -141,16 +141,6 @@ const AdminPage = () => {
     await sendAction({ action: "setMode", mode: newMode });
   };
 
-  const handleUpdateServing = async () => {
-    const trimmed = servingInput.trim();
-    const parsed = trimmed === "" ? null : Number(trimmed);
-    if (trimmed !== "" && !Number.isInteger(parsed)) {
-      setActionError("Enter a ticket number or leave blank to clear.");
-      throw new Error("Invalid input");
-    }
-    await sendAction({ action: "updateServing", currentlyServing: parsed });
-  };
-
   const handleReset = async () => {
     if (resetPhrase !== "RESET") {
       setActionError('Type "RESET" to confirm.');
@@ -188,6 +178,63 @@ const AdminPage = () => {
           : 5,
       )
     : [];
+
+  const currentIndex =
+    state?.generatedOrder && state.currentlyServing !== null
+      ? state.generatedOrder.indexOf(state.currentlyServing)
+      : -1;
+  const currentDrawNumber = currentIndex >= 0 ? currentIndex + 1 : null;
+  const totalTickets = state?.generatedOrder.length ?? 0;
+  const currentTicket =
+    currentIndex >= 0 && state?.generatedOrder ? state.generatedOrder[currentIndex] : null;
+
+  const formatOrdinal = (value: number) => {
+    const remainder = value % 100;
+    if (remainder >= 11 && remainder <= 13) return `${value}th`;
+    switch (value % 10) {
+      case 1:
+        return `${value}st`;
+      case 2:
+        return `${value}nd`;
+      case 3:
+        return `${value}rd`;
+      default:
+        return `${value}th`;
+    }
+  };
+
+  const setServingByIndex = async (index: number | null) => {
+    if (!state || totalTickets === 0) {
+      setActionError("Generate tickets first.");
+      return;
+    }
+    if (index === null) {
+      await sendAction({ action: "updateServing", currentlyServing: null });
+      return;
+    }
+    const clamped = Math.max(0, Math.min(index, totalTickets - 1));
+    const ticket = state.generatedOrder[clamped];
+    await sendAction({ action: "updateServing", currentlyServing: ticket });
+  };
+
+  const handlePrevServing = async () => {
+    if (!state || totalTickets === 0) return;
+    if (currentIndex <= 0) {
+      await setServingByIndex(0);
+      return;
+    }
+    await setServingByIndex(currentIndex - 1);
+  };
+
+  const handleNextServing = async () => {
+    if (!state || totalTickets === 0) return;
+    if (currentIndex === -1) {
+      await setServingByIndex(0);
+      return;
+    }
+    if (currentIndex >= totalTickets - 1) return;
+    await setServingByIndex(currentIndex + 1);
+  };
 
   return (
     <TooltipProvider>
@@ -340,28 +387,58 @@ const AdminPage = () => {
             <CardHeader>
               <CardTitle>Now Serving</CardTitle>
               <CardDescription>
-                Highlight the active ticket for the public board. Leave blank to clear.
+                Step through the draw order using arrows. Positions are first, second, third, etc.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="serving">Ticket number</Label>
-                <Input
-                  id="serving"
-                  type="number"
-                  value={servingInput}
-                  onChange={(e) => setServingInput(e.target.value)}
-                  placeholder="e.g., 642"
-                />
+              <div className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white/70 p-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="space-y-1">
+                  <p className="text-xs uppercase tracking-wide text-slate-500">Draw position</p>
+                  <p className="text-2xl font-semibold text-slate-900">
+                    {currentDrawNumber ? formatOrdinal(currentDrawNumber) : "Not started"}
+                  </p>
+                  <p className="text-sm text-slate-600">
+                    Ticket {currentTicket ? `#${currentTicket}` : "—"} of{" "}
+                    {totalTickets || "—"}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={handlePrevServing}
+                    disabled={loading || !state || totalTickets === 0}
+                    aria-label="Previous draw"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="icon"
+                    onClick={handleNextServing}
+                    disabled={
+                      loading ||
+                      !state ||
+                      totalTickets === 0 ||
+                      (currentIndex !== -1 && currentIndex >= totalTickets - 1)
+                    }
+                    aria-label="Next draw"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setServingByIndex(null)}
+                    disabled={loading || !state || currentIndex === -1}
+                  >
+                    Clear
+                  </Button>
+                </div>
               </div>
-              <ConfirmAction
-                triggerLabel="Update Now Serving"
-                actionLabel="Update board"
-                title="Update now serving"
-                description="Set the ticket number currently being served."
-                onConfirm={handleUpdateServing}
-                disabled={loading || !state}
-              />
 
               <Separator />
 
