@@ -124,13 +124,13 @@ const htmlPage = `<!doctype html>
         margin-top: 6px;
       }
       .badge {
-        padding: 8px 10px;
+        padding: 10px 12px;
         border-radius: 10px;
         background: #0f172a;
         border: 1px solid #1f2937;
         color: #f8fafc;
-        font-weight: 600;
-        font-size: 14px;
+        font-weight: 700;
+        font-size: 18px;
       }
       .badge.serving {
         background: linear-gradient(135deg, #f59e0b, #fbbf24);
