@@ -7,3 +7,4 @@
 - Restyled the read-only board with a high-contrast theme, clearer labels, and simplified header content.
 - Updated the read-only board header to show the service date and removed the footer disclaimer text.
 - Fixed date formatting in the read-only board script to avoid template literal parsing errors.
+- Reformatted the read-only board title to show full weekday and ordinal date (e.g., “Saturday, 22nd November, 2025”).

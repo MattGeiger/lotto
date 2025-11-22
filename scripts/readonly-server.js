@@ -200,10 +200,27 @@ const htmlPage = `<!doctype html>
 
       const formatDate = () => {
         const now = new Date();
-        const day = String(now.getDate()).padStart(2, "0");
+        const weekday = now.toLocaleString("en-US", { weekday: "long" });
+        const day = now.getDate();
         const month = now.toLocaleString("en-US", { month: "long" });
         const year = now.getFullYear();
-        return day + "-" + month + "-" + year;
+
+        const suffix = (() => {
+          const remainder = day % 100;
+          if (remainder >= 11 && remainder <= 13) return "th";
+          switch (day % 10) {
+            case 1:
+              return "st";
+            case 2:
+              return "nd";
+            case 3:
+              return "rd";
+            default:
+              return "th";
+          }
+        })();
+
+        return weekday + ", " + day + suffix + " " + month + ", " + year;
       };
 
       const setTitle = () => {
