@@ -203,7 +203,7 @@ const htmlPage = `<!doctype html>
         const day = String(now.getDate()).padStart(2, "0");
         const month = now.toLocaleString("en-US", { month: "long" });
         const year = now.getFullYear();
-        return `${day}-${month}-${year}`;
+        return day + "-" + month + "-" + year;
       };
 
       const setTitle = () => {
