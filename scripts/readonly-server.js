@@ -220,14 +220,13 @@ const htmlPage = `<!doctype html>
           }
         })();
 
-        return weekday + ", " + day + suffix + " " + month + ", " + year;
+        return weekday + ", " + month + " " + day + suffix + ", " + year;
       };
 
       const setTitle = () => {
         const formatted = formatDate();
-        const text = "Food Pantry Service For " + formatted;
-        pageTitleEl.textContent = text;
-        document.title = text;
+        pageTitleEl.textContent = formatted;
+        document.title = "Food Pantry Service For " + formatted;
       };
 
       const renderState = (state) => {

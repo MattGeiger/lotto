@@ -8,3 +8,4 @@
 - Updated the read-only board header to show the service date and removed the footer disclaimer text.
 - Fixed date formatting in the read-only board script to avoid template literal parsing errors.
 - Reformatted the read-only board title to show full weekday and ordinal date (e.g., “Saturday, 22nd November, 2025”).
+- Adjusted read-only title to show the date without duplicate prefix and to format as “Saturday, November 22nd, 2025”.
