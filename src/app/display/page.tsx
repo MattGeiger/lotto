@@ -39,8 +39,6 @@ const DisplayPage = () => {
 
   React.useEffect(() => {
     refresh();
-    const interval = setInterval(refresh, 4000);
-    return () => clearInterval(interval);
   }, [refresh]);
 
   const nowServing = state?.currentlyServing ?? null;
@@ -54,7 +52,7 @@ const DisplayPage = () => {
           </Badge>
           <h1 className="text-3xl font-semibold tracking-tight">Raffle Board</h1>
           <p className="text-sm text-slate-200">
-            Auto-refreshing client view. Numbers update as the team manages the raffle.
+            Client view. Refresh the page to see the latest numbers from the team.
           </p>
           <div className="flex flex-wrap gap-2 text-xs text-slate-100">
             <Badge variant="success" className="bg-emerald-500 text-white">
@@ -127,7 +125,7 @@ const DisplayPage = () => {
         <Card className="space-y-3">
           <CardHeader>
             <CardTitle>Quick facts</CardTitle>
-            <CardDescription>Auto-updates from the persisted JSON datastore.</CardDescription>
+            <CardDescription>Reads from the persisted JSON datastore.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="space-y-1 rounded-lg border border-slate-200 bg-white/70 p-3">

@@ -75,8 +75,6 @@ const AdminPage = () => {
 
   React.useEffect(() => {
     fetchState();
-    const interval = setInterval(fetchState, 5000);
-    return () => clearInterval(interval);
   }, [fetchState]);
 
   React.useEffect(() => {

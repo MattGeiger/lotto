@@ -45,7 +45,8 @@ The app must:
 - **Next.js (App Router)**  
 - **ShadCN UI components** for clean, accessible styling  
 - **Global CSS** for consistency  
-- **Real-time client view** (auto-refresh or polling every X seconds)
+- **Client view without background polling** to avoid clobbering in-progress form input on `/admin`
+- **Isolated read-only board** on a separate port that polls the JSON state for screens that need auto-refresh
 
 ### **3.2 Back-End**
 - Hosted inside Next.js API routes  
@@ -82,7 +83,7 @@ The app must:
 	•	Total tickets issued
 	•	Randomized (or sequential) ticket order
 	•	Highlighted “Now Serving” indicator
-	•	Auto-updating information
+	•	Auto-updating information available via the separate read-only board
 
 4.2 Back-End (Staff & Volunteers)
 
@@ -260,5 +261,4 @@ The result is a pragmatic, low-overhead system designed for real-world social-se
 	9.	Perform test runs simulating real WTH operations
 
 ⸻
-
 

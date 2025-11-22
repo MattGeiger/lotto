@@ -4,7 +4,8 @@ Next.js (App Router) app with ShadCN-inspired UI, JSON persistence, and atomic b
 
 ## Features
 - Staff dashboard (`/admin`) to set ranges, toggle random vs sequential, append tickets, re-randomize, update “now serving,” and reset with confirmations.
-- Public display (`/display`) with airport-style grid, live polling, and QR code sharing.
+- Public display (`/display`) with airport-style grid and QR code sharing (no auto-polling to avoid interrupting form entry).
+- Isolated read-only board server (`npm run readonly`) on its own port that polls the JSON state and exposes zero write paths.
 - File-based datastore with atomic writes, timestamped backups, and append logic that preserves prior random order.
 - Tests written with Vitest + Testing Library for the state manager and grid highlighting.
 
@@ -12,8 +13,22 @@ Next.js (App Router) app with ShadCN-inspired UI, JSON persistence, and atomic b
 - `npm run dev` — start the Next.js dev server.
 - `npm run build` — production build.
 - `npm start` — run the built app.
+- `npm run readonly` — start the standalone read-only board on port 4000 (configurable via `READONLY_PORT`).
 - `npm test` — run Vitest suite.
 - `npm run lint` — run ESLint.
+
+## Read-only board server
+- Runs on a separate port (default `4000`) and serves a static view that polls `data/state.json` every 4s.
+- No controls or writes are exposed—purely a viewer for wall displays or embeds.
+- Configure via env vars:
+  - `READONLY_PORT` — port to listen on (default `4000`).
+  - `READONLY_POLL_MS` — poll interval in milliseconds (default `4000`).
+  - `READONLY_DATA_DIR` — directory containing `state.json` (default `./data`).
+- Start it alongside the main app:
+  ```bash
+  npm run readonly
+  # open http://localhost:4000
+  ```
 
 ## Persistence
 - State stored under `data/state.json` with timestamped backup files (`state-YYYYMMDDHHMMSSmmm-XXXXXX.json`).
