@@ -56,7 +56,7 @@ const htmlPage = `<!doctype html>
           linear-gradient(145deg, #000, #0a0a0a 45%, #000);
       }
       .shell {
-        width: min(1100px, 100%);
+        width: min(1400px, calc(100vw - 48px));
         background: rgba(0, 0, 0, 0.65);
         border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 24px;
