@@ -138,10 +138,15 @@ const htmlPage = `<!doctype html>
         color: #0b0b0b;
       }
       .badge.served {
+        background: linear-gradient(135deg, #10b981, #22d3ee);
+        border-color: #22d3ee;
+        color: #022c22;
+      }
+      .badge.upcoming {
         background: #0b0b0b;
         border-color: #0f172a;
         color: #94a3b8;
-        opacity: 0.8;
+        opacity: 0.7;
       }
       .muted {
         color: #e5e7eb;
@@ -263,6 +268,8 @@ const htmlPage = `<!doctype html>
               badge.classList.add("serving");
             } else if (currentIndex !== -1 && index < currentIndex) {
               badge.classList.add("served");
+            } else if (currentIndex !== -1 && index > currentIndex) {
+              badge.classList.add("upcoming");
             }
             badge.textContent = value;
             orderEl.appendChild(badge);
