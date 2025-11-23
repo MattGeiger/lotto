@@ -148,6 +148,12 @@ const AdminPage = () => {
     }
     await sendAction({ action: "append", endNumber: newEnd });
   };
+  const handleAppendStep = (delta: number) => {
+    if (!state) return;
+    const min = (state.endNumber ?? 0) + 1;
+    const nextValue = Math.max(min, resolvedAppendValue + delta);
+    setAppendEnd(String(nextValue));
+  };
 
   const handleModeChange = async (newMode: Mode) => {
     setModeChanging(true);
@@ -222,6 +228,11 @@ const AdminPage = () => {
     currentIndex >= 0 && state?.generatedOrder ? state.generatedOrder[currentIndex] : null;
   const prevArrowVariant: ButtonProps["variant"] =
     currentIndex === -1 ? "secondary" : "outline";
+  const parsedAppendValue = Number(appendEnd);
+  const resolvedAppendValue =
+    Number.isFinite(parsedAppendValue) && appendEnd.trim() !== ""
+      ? parsedAppendValue
+      : (state?.endNumber ?? 0) + 1;
 
   const formatOrdinal = (value: number) => {
     const remainder = value % 100;
@@ -398,37 +409,56 @@ const AdminPage = () => {
 
               <Separator />
 
-              <div className="rounded-lg border border-slate-200 bg-white/70 p-4">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="space-y-1">
-                    <p className="text-xs uppercase tracking-wide text-slate-500">
-                      Append additional tickets
-                    </p>
-                    <p className="text-sm text-slate-600">
-                      Extend the range and slot new tickets into the existing order.
-                    </p>
-                    <div className="space-y-1">
-                      <Label htmlFor="append">New ending number</Label>
-                      <Input
-                        id="append"
-                        type="number"
-                        min={state?.endNumber ?? 0}
-                        value={appendEnd}
-                        onChange={(e) => setAppendEnd(e.target.value)}
-                        placeholder="e.g., {state?.endNumber ? state.endNumber + 5 : 0}"
-                        className="max-w-xs"
-                      />
-                    </div>
+              <div className="grid gap-3 sm:grid-cols-3 sm:items-end">
+                <div className="space-y-2 sm:col-span-2">
+                  <Label
+                    htmlFor="append"
+                    className="text-lg font-semibold text-slate-900"
+                  >
+                    Append additional tickets
+                  </Label>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Input
+                      id="append"
+                      type="number"
+                      min={state?.endNumber ?? 0}
+                      value={appendEnd}
+                      onChange={(e) => setAppendEnd(e.target.value)}
+                      placeholder="New ending number"
+                      className="appearance-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleAppendStep(-1)}
+                      disabled={!state}
+                      aria-label="Decrease append end"
+                      className="text-[var(--color-muted-foreground)]"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleAppendStep(1)}
+                      disabled={!state}
+                      aria-label="Increase append end"
+                      className="text-[var(--color-muted-foreground)]"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                    <ConfirmAction
+                      triggerLabel="Append"
+                      actionLabel="Add tickets"
+                      title="Append tickets"
+                      description="Extend the upper range and insert new tickets into the order."
+                      onConfirm={handleAppend}
+                      disabled={!appendEnd || loading || !state}
+                      variant="default"
+                    />
                   </div>
-                  <ConfirmAction
-                    triggerLabel="Append"
-                    actionLabel="Add tickets"
-                    title="Append tickets"
-                    description="Extend the upper range and insert new tickets into the order."
-                    onConfirm={handleAppend}
-                    disabled={!appendEnd || loading || !state}
-                    variant="secondary"
-                  />
                 </div>
               </div>
 
