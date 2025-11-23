@@ -35,3 +35,4 @@
 - Fixed admin draw-position button typing by importing `ButtonProps`.
 - Reduced and left-aligned the read-only board logo.
 - Shrunk read-only number cards and badges for a more compact layout.
+- Restyled the append-tickets section to match the draw position card treatment.

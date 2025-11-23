@@ -398,27 +398,38 @@ const AdminPage = () => {
 
               <Separator />
 
-              <div className="grid gap-3 sm:grid-cols-3 sm:items-end">
-                <div className="space-y-2 sm:col-span-2">
-                  <Label htmlFor="append">Append additional tickets</Label>
-                  <Input
-                    id="append"
-                    type="number"
-                    min={state?.endNumber ?? 0}
-                    value={appendEnd}
-                    onChange={(e) => setAppendEnd(e.target.value)}
-                    placeholder="New ending number"
+              <div className="rounded-lg border border-slate-200 bg-white/70 p-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="space-y-1">
+                    <p className="text-xs uppercase tracking-wide text-slate-500">
+                      Append additional tickets
+                    </p>
+                    <p className="text-sm text-slate-600">
+                      Extend the range and slot new tickets into the existing order.
+                    </p>
+                    <div className="space-y-1">
+                      <Label htmlFor="append">New ending number</Label>
+                      <Input
+                        id="append"
+                        type="number"
+                        min={state?.endNumber ?? 0}
+                        value={appendEnd}
+                        onChange={(e) => setAppendEnd(e.target.value)}
+                        placeholder="e.g., {state?.endNumber ? state.endNumber + 5 : 0}"
+                        className="max-w-xs"
+                      />
+                    </div>
+                  </div>
+                  <ConfirmAction
+                    triggerLabel="Append"
+                    actionLabel="Add tickets"
+                    title="Append tickets"
+                    description="Extend the upper range and insert new tickets into the order."
+                    onConfirm={handleAppend}
+                    disabled={!appendEnd || loading || !state}
+                    variant="secondary"
                   />
                 </div>
-                <ConfirmAction
-                  triggerLabel="Append"
-                  actionLabel="Add tickets"
-                  title="Append tickets"
-                  description="Extend the upper range and insert new tickets into the order."
-                  onConfirm={handleAppend}
-                  disabled={!appendEnd || loading || !state}
-                  variant="secondary"
-                />
               </div>
 
               <div className="space-y-2 rounded-lg border border-slate-200 bg-white/60 p-3">
