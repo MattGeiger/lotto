@@ -25,3 +25,4 @@
 - Increased contrast for primary buttons via the shared `Button` component rather than page-level overrides.
 - Fixed anchor inheritance inside buttons so CTA text uses the button’s foreground color instead of the global link color.
 - Increased contrast on the “Open Staff Dashboard” CTA to prevent text blending into the button background.
+- Ensured all cards use the solid surface background to match the landing page styling.
