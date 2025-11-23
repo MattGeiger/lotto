@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { stateManager, type Mode } from "@/lib/state-manager";
 import { authOptions } from "@/lib/auth";
-import { getServerSession } from "next-auth";
+import { stateManager, type Mode } from "@/lib/state-manager";
+import { getServerSession } from "next-auth/next";
 
 const actionSchema = z.discriminatedUnion("action", [
   z.object({
