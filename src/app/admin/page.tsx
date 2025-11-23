@@ -368,7 +368,7 @@ const AdminPage = () => {
           )}
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
           <Card>
             <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
@@ -524,26 +524,6 @@ const AdminPage = () => {
                   />
                 </div>
               </div>
-
-              <div className="space-y-2 rounded-lg border border-slate-200 bg-white/60 p-3">
-                <p className="text-sm font-semibold text-slate-900">Upcoming preview</p>
-                <p className="text-xs text-slate-600">
-                  First sixteen tickets in the current order.
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {upcomingPreview.map((ticket) => (
-                    <span
-                      key={ticket}
-                      className="rounded-md bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-800"
-                    >
-                      #{ticket}
-                    </span>
-                  ))}
-                  {upcomingPreview.length === 0 && (
-                    <span className="text-xs text-slate-500">No tickets generated yet.</span>
-                  )}
-                </div>
-              </div>
             </CardContent>
           </Card>
 
@@ -610,7 +590,7 @@ const AdminPage = () => {
           </Card>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
           <Card>
             <CardHeader className="flex items-center justify-between">
               <div>
@@ -732,7 +712,7 @@ const AdminPage = () => {
           </Card>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
           <Card className="space-y-3">
             <CardHeader>
               <CardTitle>System reset</CardTitle>
