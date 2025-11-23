@@ -55,3 +55,4 @@
 - Doubled the “Now Serving” text size for maximum prominence.
 - Doubled the “Now Serving” size again for extreme visibility.
 - Refined header grid so the logo sits left with a spacer and the “Now Serving” card remains centered.
+- Added mobile tweaks so the logo stacks above the “Now Serving” card on narrow viewports.

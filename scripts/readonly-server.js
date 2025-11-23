@@ -118,7 +118,7 @@ const htmlPage = `<!doctype html>
         line-height: 1.2;
       }
       .now-serving-card p {
-        font-size: 144px;
+        font-size: 96px;
         line-height: 1.05;
         font-weight: 900;
       }
@@ -183,6 +183,20 @@ const htmlPage = `<!doctype html>
       .spacer {
         width: min(320px, 45vw);
         height: 1px;
+      }
+      @media (max-width: 640px) {
+        .top-row {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+        }
+        .logo {
+          justify-content: center;
+        }
+        .spacer {
+          display: none;
+        }
       }
       .muted {
         color: #e5e7eb;
