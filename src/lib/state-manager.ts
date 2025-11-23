@@ -69,6 +69,7 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
   const statePath = path.join(baseDir, "state.json");
   const backupPattern =
     /^state-(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})(\d{3})-[^.]+\.json$/;
+  let lastRedoSnapshot: Snapshot | null = null;
 
   type Snapshot = {
     id: string;
@@ -303,16 +304,11 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
 
   const undo = async () => {
     const snapshots = await listSnapshots();
-    if (snapshots.length === 0) {
+    if (snapshots.length < 2) {
       throw new Error("No history available.");
     }
-    const current = await safeReadState();
-    const currentTs = current.timestamp ?? 0;
-    const idx = snapshots.findIndex((snap) => snap.timestamp === currentTs);
-    const previous =
-      idx >= 0
-        ? snapshots[Math.min(idx + 1, snapshots.length - 1)]
-        : snapshots.find((snap) => snap.timestamp < currentTs);
+    lastRedoSnapshot = snapshots[0];
+    const previous = snapshots[1];
     if (!previous) {
       throw new Error("No earlier snapshot to undo to.");
     }
@@ -320,21 +316,12 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
   };
 
   const redo = async () => {
-    const snapshots = await listSnapshots();
-    if (snapshots.length === 0) {
-      throw new Error("No history available.");
-    }
-    const current = await safeReadState();
-    const currentTs = current.timestamp ?? 0;
-    const idx = snapshots.findIndex((snap) => snap.timestamp === currentTs);
-    if (idx > 0) {
-      return restoreSnapshot(snapshots[idx - 1].id);
-    }
-    const future = snapshots.find((snap) => snap.timestamp > currentTs);
-    if (!future) {
+    const target = lastRedoSnapshot;
+    lastRedoSnapshot = null;
+    if (!target) {
       throw new Error("No later snapshot to redo to.");
     }
-    return restoreSnapshot(future.id);
+    return restoreSnapshot(target.id);
   };
 
   return {

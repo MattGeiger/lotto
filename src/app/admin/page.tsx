@@ -550,6 +550,121 @@ const AdminPage = () => {
             </CardContent>
           </Card>
 
+          <Card className="space-y-4">
+            <CardHeader>
+              <CardTitle>Now Serving</CardTitle>
+              <CardDescription>
+                Step through the draw order using arrows. Positions are first, second, third, etc.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white/70 p-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="space-y-1">
+                  <p className="text-xs uppercase tracking-wide text-slate-500">Draw position</p>
+                  <p className="text-2xl font-semibold text-slate-900">
+                    {currentDrawNumber ? formatOrdinal(currentDrawNumber) : "Not started"}
+                  </p>
+                  <p className="text-sm text-slate-600">
+                    Ticket {currentTicket ? `#${currentTicket}` : "—"} of{" "}
+                    {totalTickets || "—"}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant={prevArrowVariant}
+                    size="icon"
+                    onClick={handlePrevServing}
+                    disabled={loading || !state || totalTickets === 0}
+                    aria-label="Previous draw"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={handleNextServing}
+                    disabled={
+                      loading ||
+                      !state ||
+                      totalTickets === 0 ||
+                      (currentIndex !== -1 && currentIndex >= totalTickets - 1)
+                    }
+                    aria-label="Next draw"
+                    className="text-[var(--color-muted-foreground)]"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setServingByIndex(null)}
+                    disabled={loading || !state || currentIndex === -1}
+                  >
+                    Clear
+                  </Button>
+                </div>
+              </div>
+
+              <Separator />
+            </CardContent>
+          </Card>
+
+          <Card className="lg:col-span-3">
+            <CardHeader className="flex items-center justify-between">
+              <div>
+                <CardTitle>Live State</CardTitle>
+                <CardDescription>Everything stored in the JSON datastore.</CardDescription>
+              </div>
+              {state?.timestamp && (
+                <Badge variant="muted">
+                  Updated {new Date(state.timestamp).toLocaleTimeString()}
+                </Badge>
+              )}
+            </CardHeader>
+            <CardContent className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1 rounded-lg border border-slate-200 bg-white/70 p-3">
+                <p className="text-xs uppercase tracking-wide text-slate-500">Range</p>
+                <p className="text-lg font-semibold text-slate-900">
+                  {state?.startNumber || "—"} – {state?.endNumber || "—"}
+                </p>
+              </div>
+              <div className="space-y-1 rounded-lg border border-slate-200 bg-white/70 p-3">
+                <p className="text-xs uppercase tracking-wide text-slate-500">Tickets issued</p>
+                <p className="text-lg font-semibold text-slate-900">
+                  {state ? state.endNumber - state.startNumber + 1 : "—"}
+                </p>
+              </div>
+              <div className="space-y-1 rounded-lg border border-slate-200 bg-white/70 p-3">
+                <p className="text-xs uppercase tracking-wide text-slate-500">Current mode</p>
+                <p className="text-lg font-semibold text-slate-900 capitalize">{state?.mode}</p>
+              </div>
+              <div className="space-y-1 rounded-lg border border-slate-200 bg-white/70 p-3">
+                <p className="text-xs uppercase tracking-wide text-slate-500">Now serving</p>
+                <p className="text-lg font-semibold text-slate-900">
+                  {state?.currentlyServing ?? "—"}
+                </p>
+              </div>
+              <div className="space-y-1 rounded-lg border border-slate-200 bg-white/70 p-3 sm:col-span-2">
+                <p className="text-xs uppercase tracking-wide text-slate-500">Next up</p>
+                <div className="flex flex-wrap gap-2">
+                  {nextFive?.length
+                    ? nextFive.map((ticket) => (
+                        <span
+                          key={ticket}
+                          className="rounded-md bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-800"
+                        >
+                          #{ticket}
+                        </span>
+                      ))
+                    : "—"}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           <Card className="space-y-3">
             <CardHeader className="pb-2">
               <CardTitle>History</CardTitle>
@@ -617,68 +732,6 @@ const AdminPage = () => {
             </CardContent>
           </Card>
 
-          <Card className="space-y-4">
-            <CardHeader>
-              <CardTitle>Now Serving</CardTitle>
-              <CardDescription>
-                Step through the draw order using arrows. Positions are first, second, third, etc.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white/70 p-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="space-y-1">
-                  <p className="text-xs uppercase tracking-wide text-slate-500">Draw position</p>
-                  <p className="text-2xl font-semibold text-slate-900">
-                    {currentDrawNumber ? formatOrdinal(currentDrawNumber) : "Not started"}
-                  </p>
-                  <p className="text-sm text-slate-600">
-                    Ticket {currentTicket ? `#${currentTicket}` : "—"} of{" "}
-                    {totalTickets || "—"}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    type="button"
-                    variant={prevArrowVariant}
-                    size="icon"
-                    onClick={handlePrevServing}
-                    disabled={loading || !state || totalTickets === 0}
-                    aria-label="Previous draw"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={handleNextServing}
-                    disabled={
-                      loading ||
-                      !state ||
-                      totalTickets === 0 ||
-                      (currentIndex !== -1 && currentIndex >= totalTickets - 1)
-                    }
-                    aria-label="Next draw"
-                    className="text-[var(--color-muted-foreground)]"
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setServingByIndex(null)}
-                    disabled={loading || !state || currentIndex === -1}
-                  >
-                    Clear
-                  </Button>
-                </div>
-              </div>
-
-              <Separator />
-            </CardContent>
-          </Card>
-
           <Card className="space-y-3">
             <CardHeader>
               <CardTitle>System reset</CardTitle>
@@ -706,59 +759,6 @@ const AdminPage = () => {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
-          <Card className="lg:col-span-2">
-            <CardHeader className="flex items-center justify-between">
-              <div>
-                <CardTitle>Live State</CardTitle>
-                <CardDescription>Everything stored in the JSON datastore.</CardDescription>
-              </div>
-              {state?.timestamp && (
-                <Badge variant="muted">
-                  Updated {new Date(state.timestamp).toLocaleTimeString()}
-                </Badge>
-              )}
-            </CardHeader>
-            <CardContent className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-1 rounded-lg border border-slate-200 bg-white/70 p-3">
-                <p className="text-xs uppercase tracking-wide text-slate-500">Range</p>
-                <p className="text-lg font-semibold text-slate-900">
-                  {state?.startNumber || "—"} – {state?.endNumber || "—"}
-                </p>
-              </div>
-              <div className="space-y-1 rounded-lg border border-slate-200 bg-white/70 p-3">
-                <p className="text-xs uppercase tracking-wide text-slate-500">Tickets issued</p>
-                <p className="text-lg font-semibold text-slate-900">
-                  {state ? state.endNumber - state.startNumber + 1 : "—"}
-                </p>
-              </div>
-              <div className="space-y-1 rounded-lg border border-slate-200 bg-white/70 p-3">
-                <p className="text-xs uppercase tracking-wide text-slate-500">Current mode</p>
-                <p className="text-lg font-semibold text-slate-900 capitalize">{state?.mode}</p>
-              </div>
-              <div className="space-y-1 rounded-lg border border-slate-200 bg-white/70 p-3">
-                <p className="text-xs uppercase tracking-wide text-slate-500">Now serving</p>
-                <p className="text-lg font-semibold text-slate-900">
-                  {state?.currentlyServing ?? "—"}
-                </p>
-              </div>
-              <div className="space-y-1 rounded-lg border border-slate-200 bg-white/70 p-3 sm:col-span-2">
-                <p className="text-xs uppercase tracking-wide text-slate-500">Next up</p>
-                <div className="flex flex-wrap gap-2">
-                  {nextFive?.length
-                    ? nextFive.map((ticket) => (
-                        <span
-                          key={ticket}
-                          className="rounded-md bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-800"
-                        >
-                          #{ticket}
-                        </span>
-                      ))
-                    : "—"}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
           <Card className="space-y-4">
             <CardHeader>
               <CardTitle>Share the live board</CardTitle>
