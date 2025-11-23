@@ -9,7 +9,11 @@ const allowedDomain = process.env.ADMIN_EMAIL_DOMAIN?.toLowerCase();
 const fromAddress = process.env.EMAIL_FROM ?? "noreply@example.com";
 const resendApiKey = process.env.RESEND_API_KEY;
 const databaseUrl =
-  process.env.POSTGRES_PRISMA_URL || process.env.POSTGRES_URL || process.env.DATABASE_URL;
+  process.env.POSTGRES_PRISMA_URL ||
+  process.env.POSTGRES_URL ||
+  process.env.POSTGRES_URL_NON_POOLING ||
+  process.env.POSTGRES_URL_NON_POOLING_NO_TLS ||
+  process.env.DATABASE_URL;
 const useDatabase = process.env.USE_DATABASE !== "false";
 
 const resend = resendApiKey ? new Resend(resendApiKey) : null;
