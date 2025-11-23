@@ -311,7 +311,7 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
     const idx = snapshots.findIndex((snap) => snap.timestamp === currentTs);
     const previous =
       idx >= 0
-        ? snapshots[idx + 1]
+        ? snapshots[Math.min(idx + 1, snapshots.length - 1)]
         : snapshots.find((snap) => snap.timestamp < currentTs);
     if (!previous) {
       throw new Error("No earlier snapshot to undo to.");
@@ -327,14 +327,14 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
     const current = await safeReadState();
     const currentTs = current.timestamp ?? 0;
     const idx = snapshots.findIndex((snap) => snap.timestamp === currentTs);
-    const next =
-      idx > 0
-        ? snapshots[idx - 1]
-        : snapshots.find((snap) => snap.timestamp > currentTs);
-    if (!next) {
+    if (idx > 0) {
+      return restoreSnapshot(snapshots[idx - 1].id);
+    }
+    const future = snapshots.find((snap) => snap.timestamp > currentTs);
+    if (!future) {
       throw new Error("No later snapshot to redo to.");
     }
-    return restoreSnapshot(next.id);
+    return restoreSnapshot(future.id);
   };
 
   return {

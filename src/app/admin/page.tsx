@@ -471,76 +471,9 @@ const AdminPage = () => {
                 disabled={mode !== "random" || loading || !state}
                 variant="secondary"
               />
-            </div>
+              </div>
 
-            <Separator />
-
-            <Card className="space-y-3">
-              <CardHeader className="pb-2">
-                <CardTitle>History</CardTitle>
-                <CardDescription>Undo/redo or restore from snapshots.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    onClick={handleUndo}
-                    disabled={loading || pendingAction !== null}
-                  >
-                    Undo
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleRedo}
-                    disabled={loading || pendingAction !== null}
-                  >
-                    Redo
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={refreshSnapshots}
-                    disabled={loading}
-                  >
-                    Refresh snapshots
-                  </Button>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <label className="text-sm text-slate-700" htmlFor="snapshot-select">
-                    Restore snapshot
-                  </label>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <select
-                      id="snapshot-select"
-                      className="h-10 min-w-[220px] rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
-                      value={selectedSnapshot}
-                      onChange={(e) => setSelectedSnapshot(e.target.value)}
-                    >
-                      {snapshots.length === 0 && <option value="">No snapshots yet</option>}
-                      {snapshots.map((snap) => (
-                        <option key={snap.id} value={snap.id}>
-                          {new Date(snap.timestamp).toLocaleString()}
-                        </option>
-                      ))}
-                    </select>
-                    <Button
-                      type="button"
-                      variant="default"
-                      size="sm"
-                      onClick={handleRestoreSnapshot}
-                      disabled={!selectedSnapshot || loading || pendingAction !== null}
-                    >
-                      Restore
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+              <Separator />
 
             <div className="grid gap-3 sm:grid-cols-3 sm:items-end">
               <div className="space-y-2 sm:col-span-2">
@@ -617,6 +550,73 @@ const AdminPage = () => {
             </CardContent>
           </Card>
 
+          <Card className="space-y-3">
+            <CardHeader className="pb-2">
+              <CardTitle>History</CardTitle>
+              <CardDescription>Undo/redo or restore from snapshots.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleUndo}
+                  disabled={loading || pendingAction !== null}
+                >
+                  Undo
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRedo}
+                  disabled={loading || pendingAction !== null}
+                >
+                  Redo
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={refreshSnapshots}
+                  disabled={loading}
+                >
+                  Refresh snapshots
+                </Button>
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-sm text-slate-700" htmlFor="snapshot-select">
+                  Restore snapshot
+                </label>
+                <div className="flex flex-wrap items-center gap-2">
+                  <select
+                    id="snapshot-select"
+                    className="h-10 min-w-[220px] rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+                    value={selectedSnapshot}
+                    onChange={(e) => setSelectedSnapshot(e.target.value)}
+                  >
+                    {snapshots.length === 0 && <option value="">No snapshots yet</option>}
+                    {snapshots.map((snap) => (
+                      <option key={snap.id} value={snap.id}>
+                        {new Date(snap.timestamp).toLocaleString()}
+                      </option>
+                    ))}
+                  </select>
+                  <Button
+                    type="button"
+                    variant="default"
+                    size="sm"
+                    onClick={handleRestoreSnapshot}
+                    disabled={!selectedSnapshot || loading || pendingAction !== null}
+                  >
+                    Restore
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           <Card className="space-y-4">
             <CardHeader>
               <CardTitle>Now Serving</CardTitle>
@@ -676,27 +676,31 @@ const AdminPage = () => {
               </div>
 
               <Separator />
+            </CardContent>
+          </Card>
 
-              <div className="space-y-2">
-                <p className="text-lg font-semibold text-slate-900">System reset</p>
-                <p className="text-xs text-slate-600">
-                  Clears the range, order, and now serving. State is backed up before reset.
-                </p>
-                <Input
-                  value={resetPhrase}
-                  onChange={(e) => setResetPhrase(e.target.value)}
-                  placeholder='Type "RESET" to enable'
-                />
-                <ConfirmAction
-                  triggerLabel="Reset everything"
-                  actionLabel="Reset"
-                  title="Reset the raffle"
-                  description="All generated data will be cleared after backing up the current state."
-                  onConfirm={handleReset}
-                  disabled={resetPhrase !== "RESET" || loading}
-                  variant="destructive"
-                />
-              </div>
+          <Card className="space-y-3">
+            <CardHeader>
+              <CardTitle>System reset</CardTitle>
+              <CardDescription>
+                Clears the range, order, and now serving. State is backed up before reset.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <Input
+                value={resetPhrase}
+                onChange={(e) => setResetPhrase(e.target.value)}
+                placeholder='Type "RESET" to enable'
+              />
+              <ConfirmAction
+                triggerLabel="Reset everything"
+                actionLabel="Reset"
+                title="Reset the raffle"
+                description="All generated data will be cleared after backing up the current state."
+                onConfirm={handleReset}
+                disabled={resetPhrase !== "RESET" || loading}
+                variant="destructive"
+              />
             </CardContent>
           </Card>
         </div>
