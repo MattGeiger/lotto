@@ -36,3 +36,5 @@
 - Reduced and left-aligned the read-only board logo.
 - Shrunk read-only number cards and badges for a more compact layout.
 - Styled the “Append additional tickets” heading to match primary card titles.
+- Kept append arrows inline with the input and placed the Append button beneath for consistent layout.
+- Corrected append section markup after layout changes.

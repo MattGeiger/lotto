@@ -449,16 +449,16 @@ const AdminPage = () => {
                     >
                       <ChevronRight className="h-4 w-4" />
                     </Button>
-                    <ConfirmAction
-                      triggerLabel="Append"
-                      actionLabel="Add tickets"
-                      title="Append tickets"
-                      description="Extend the upper range and insert new tickets into the order."
-                      onConfirm={handleAppend}
-                      disabled={!appendEnd || loading || !state}
-                      variant="default"
-                    />
                   </div>
+                  <ConfirmAction
+                    triggerLabel="Append"
+                    actionLabel="Add tickets"
+                    title="Append tickets"
+                    description="Extend the upper range and insert new tickets into the order."
+                    onConfirm={handleAppend}
+                    disabled={!appendEnd || loading || !state}
+                    variant="default"
+                  />
                 </div>
               </div>
 
