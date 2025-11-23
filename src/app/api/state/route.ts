@@ -28,6 +28,19 @@ const actionSchema = z.discriminatedUnion("action", [
   z.object({
     action: z.literal("rerandomize"),
   }),
+  z.object({
+    action: z.literal("listSnapshots"),
+  }),
+  z.object({
+    action: z.literal("restoreSnapshot"),
+    id: z.string(),
+  }),
+  z.object({
+    action: z.literal("undo"),
+  }),
+  z.object({
+    action: z.literal("redo"),
+  }),
 ]);
 
 export async function GET() {
@@ -74,6 +87,14 @@ export async function POST(request: Request) {
         return NextResponse.json(await stateManager.resetState());
       case "rerandomize":
         return NextResponse.json(await stateManager.rerandomize());
+      case "listSnapshots":
+        return NextResponse.json(await stateManager.listSnapshots());
+      case "restoreSnapshot":
+        return NextResponse.json(await stateManager.restoreSnapshot(payload.id));
+      case "undo":
+        return NextResponse.json(await stateManager.undo());
+      case "redo":
+        return NextResponse.json(await stateManager.redo());
       default:
         return NextResponse.json({ error: "Unsupported action" }, { status: 400 });
     }

@@ -163,4 +163,23 @@ describe("state manager", () => {
       .filter((file) => file.startsWith("state-") && file.endsWith(".json"));
     expect(backupFiles.length).toBeGreaterThanOrEqual(2);
   });
+
+  it("lists snapshots", async () => {
+    await manager.generateState({ startNumber: 1, endNumber: 3, mode: "random" });
+    const snapshots = await manager.listSnapshots();
+
+    expect(snapshots.length).toBeGreaterThan(0);
+  });
+
+  it("undoes and redoes using snapshots", async () => {
+    const generated = await manager.generateState({ startNumber: 5, endNumber: 7, mode: "random" });
+    await manager.updateCurrentlyServing(6);
+
+    const undone = await manager.undo();
+    expect(undone.currentlyServing).toBeNull();
+    expect(undone.generatedOrder).toEqual(generated.generatedOrder);
+
+    const redone = await manager.redo();
+    expect(redone.currentlyServing).toBe(6);
+  });
 });

@@ -46,7 +46,15 @@ type ActionPayload =
   | { action: "setMode"; mode: Mode }
   | { action: "updateServing"; currentlyServing: number | null }
   | { action: "reset" }
-  | { action: "rerandomize" };
+  | { action: "rerandomize" }
+  | { action: "undo" }
+  | { action: "redo" }
+  | { action: "restoreSnapshot"; id: string };
+
+type Snapshot = {
+  id: string;
+  timestamp: number;
+};
 
 const AdminPage = () => {
   const [state, setState] = React.useState<RaffleState | null>(null);
@@ -63,6 +71,8 @@ const AdminPage = () => {
   const [resetPhrase, setResetPhrase] = React.useState("");
   const [displayUrl, setDisplayUrl] = React.useState("https://example.com/display");
   const [copied, setCopied] = React.useState(false);
+  const [snapshots, setSnapshots] = React.useState<Snapshot[]>([]);
+  const [selectedSnapshot, setSelectedSnapshot] = React.useState<string>("");
 
   React.useEffect(() => {
     if (typeof window !== "undefined") {
@@ -73,13 +83,24 @@ const AdminPage = () => {
   const fetchState = React.useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch("/api/state", { cache: "no-store" });
-      if (!response.ok) {
+      const [stateResp, snapshotsResp] = await Promise.all([
+        fetch("/api/state", { cache: "no-store" }),
+        fetch("/api/state", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "listSnapshots" }),
+        }),
+      ]);
+      if (!stateResp.ok) {
         throw new Error("Unable to load state.");
       }
-      const data = (await response.json()) as RaffleState;
+      const data = (await stateResp.json()) as RaffleState;
       setState(data);
       setError(null);
+      if (snapshotsResp.ok) {
+        const snaps = (await snapshotsResp.json()) as Snapshot[];
+        setSnapshots(snaps);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unexpected error while loading state.");
     } finally {
@@ -118,6 +139,7 @@ const AdminPage = () => {
         }
         const data = (await response.json()) as RaffleState;
         setState(data);
+        await refreshSnapshots();
         return data;
       } catch (err) {
         const message = err instanceof Error ? err.message : "Unexpected error while saving.";
@@ -127,7 +149,7 @@ const AdminPage = () => {
         setPendingAction(null);
       }
     },
-    [],
+    [refreshSnapshots],
   );
 
   const handleGenerate = async () => {
@@ -285,6 +307,47 @@ const AdminPage = () => {
     await setServingByIndex(currentIndex + 1);
   };
 
+  const refreshSnapshots = React.useCallback(async () => {
+    try {
+      const response = await fetch("/api/state", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "listSnapshots" }),
+      });
+      if (response.ok) {
+        const snaps = (await response.json()) as Snapshot[];
+        setSnapshots(snaps);
+        if (snaps.length && !selectedSnapshot) {
+          setSelectedSnapshot(snaps[0].id);
+        }
+      }
+    } catch {
+      // ignore snapshot refresh errors in UI
+    }
+  }, [selectedSnapshot]);
+
+  React.useEffect(() => {
+    if (snapshots.length && !selectedSnapshot) {
+      setSelectedSnapshot(snapshots[0].id);
+    }
+  }, [snapshots, selectedSnapshot]);
+
+  const handleUndo = async () => {
+    await sendAction({ action: "undo" });
+    await refreshSnapshots();
+  };
+
+  const handleRedo = async () => {
+    await sendAction({ action: "redo" });
+    await refreshSnapshots();
+  };
+
+  const handleRestoreSnapshot = async () => {
+    if (!selectedSnapshot) return;
+    await sendAction({ action: "restoreSnapshot", id: selectedSnapshot });
+    await refreshSnapshots();
+  };
+
   return (
     <TooltipProvider>
       <main className="mx-auto flex min-h-screen max-w-6xl flex-col gap-6 px-6 py-10">
@@ -399,23 +462,90 @@ const AdminPage = () => {
                   onConfirm={handleGenerate}
                   disabled={loading || pendingAction !== null}
                 />
-                <ConfirmAction
-                  triggerLabel="Re-randomize"
-                  actionLabel="Shuffle"
-                  title="Re-randomize this range"
-                  description="Shuffle the existing range again to ensure fairness."
-                  onConfirm={handleRerandomize}
-                  disabled={mode !== "random" || loading || !state}
-                  variant="secondary"
-                />
-              </div>
+              <ConfirmAction
+                triggerLabel="Re-randomize"
+                actionLabel="Shuffle"
+                title="Re-randomize this range"
+                description="Shuffle the existing range again to ensure fairness."
+                onConfirm={handleRerandomize}
+                disabled={mode !== "random" || loading || !state}
+                variant="secondary"
+              />
+            </div>
 
-              <Separator />
+            <Separator />
 
-              <div className="grid gap-3 sm:grid-cols-3 sm:items-end">
-                <div className="space-y-2 sm:col-span-2">
-                  <Label
-                    htmlFor="append"
+            <Card className="space-y-3">
+              <CardHeader className="pb-2">
+                <CardTitle>History</CardTitle>
+                <CardDescription>Undo/redo or restore from snapshots.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={handleUndo}
+                    disabled={loading || pendingAction !== null}
+                  >
+                    Undo
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleRedo}
+                    disabled={loading || pendingAction !== null}
+                  >
+                    Redo
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={refreshSnapshots}
+                    disabled={loading}
+                  >
+                    Refresh snapshots
+                  </Button>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm text-slate-700" htmlFor="snapshot-select">
+                    Restore snapshot
+                  </label>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <select
+                      id="snapshot-select"
+                      className="h-10 min-w-[220px] rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+                      value={selectedSnapshot}
+                      onChange={(e) => setSelectedSnapshot(e.target.value)}
+                    >
+                      {snapshots.length === 0 && <option value="">No snapshots yet</option>}
+                      {snapshots.map((snap) => (
+                        <option key={snap.id} value={snap.id}>
+                          {new Date(snap.timestamp).toLocaleString()}
+                        </option>
+                      ))}
+                    </select>
+                    <Button
+                      type="button"
+                      variant="default"
+                      size="sm"
+                      onClick={handleRestoreSnapshot}
+                      disabled={!selectedSnapshot || loading || pendingAction !== null}
+                    >
+                      Restore
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="grid gap-3 sm:grid-cols-3 sm:items-end">
+              <div className="space-y-2 sm:col-span-2">
+                <Label
+                  htmlFor="append"
                     className="text-lg font-semibold text-slate-900"
                   >
                     Append additional tickets

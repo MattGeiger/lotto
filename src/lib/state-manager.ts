@@ -67,10 +67,22 @@ const insertAtRandomPositions = (base: number[], additions: number[]) => {
 
 export const createStateManager = (baseDir = path.join(process.cwd(), "data")) => {
   const statePath = path.join(baseDir, "state.json");
+  const backupPattern =
+    /^state-(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})(\d{3})-[^.]+\.json$/;
 
-  const persist = async (state: RaffleState): Promise<RaffleState> => {
+  type Snapshot = {
+    id: string;
+    timestamp: number;
+    path: string;
+  };
+
+  const persist = async (
+    state: RaffleState,
+    options?: { preserveTimestamp?: boolean; skipBackup?: boolean },
+  ): Promise<RaffleState> => {
     await ensureDir(baseDir);
-    const timestamped = withTimestamp(state);
+    const timestamped =
+      options?.preserveTimestamp && state.timestamp !== null ? state : withTimestamp(state);
     const uniqueSuffix = Math.random().toString(36).slice(2, 8);
     const tempPath = path.join(
       baseDir,
@@ -79,8 +91,10 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
     const payload = JSON.stringify(timestamped, null, 2);
 
     await fs.writeFile(tempPath, payload, "utf-8");
-    const backupName = `state-${formatTimestamp(timestamped.timestamp)}-${uniqueSuffix}.json`;
-    await fs.copyFile(tempPath, path.join(baseDir, backupName));
+    if (!options?.skipBackup) {
+      const backupName = `state-${formatTimestamp(timestamped.timestamp)}-${uniqueSuffix}.json`;
+      await fs.copyFile(tempPath, path.join(baseDir, backupName));
+    }
     await fs.rename(tempPath, statePath);
     return timestamped;
   };
@@ -246,6 +260,76 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
 
   const resetState = async () => persist(defaultState);
 
+  const parseSnapshot = async (file: string): Promise<Snapshot | null> => {
+    const fullPath = path.join(baseDir, file);
+    const stats = await fs.stat(fullPath);
+    try {
+      const contents = await fs.readFile(fullPath, "utf-8");
+      const parsed = JSON.parse(contents) as Partial<RaffleState>;
+      const ts = typeof parsed.timestamp === "number" ? parsed.timestamp : stats.mtimeMs;
+      return { id: file, timestamp: ts, path: fullPath };
+    } catch {
+      return { id: file, timestamp: stats.mtimeMs, path: fullPath };
+    }
+  };
+
+  const listSnapshots = async () => {
+    await ensureDir(baseDir);
+    const files = await fs.readdir(baseDir);
+    const snapshots = (
+      await Promise.all(
+        files
+          .filter(
+            (file) => file !== "state.json" && file.startsWith("state-") && file.endsWith(".json"),
+          )
+          .map((file) => parseSnapshot(file)),
+      )
+    ).filter((item): item is Snapshot => Boolean(item));
+
+    return snapshots.sort((a, b) => b.timestamp - a.timestamp);
+  };
+
+  const restoreSnapshot = async (id: string) => {
+    const snapshots = await listSnapshots();
+    const snapshot = snapshots.find((snap) => snap.id === id);
+    if (!snapshot) {
+      throw new Error("Snapshot not found.");
+    }
+    const contents = await fs.readFile(snapshot.path, "utf-8");
+    const parsed = JSON.parse(contents) as RaffleState;
+    return persist(parsed, { preserveTimestamp: true });
+  };
+
+  const undo = async () => {
+    const snapshots = await listSnapshots();
+    if (snapshots.length === 0) {
+      throw new Error("No history available.");
+    }
+    const current = await safeReadState();
+    const currentTs = current.timestamp ?? 0;
+    const idx = snapshots.findIndex((snap) => snap.timestamp <= currentTs);
+    const previous = idx >= 0 ? snapshots[idx + 1] : snapshots[1];
+    if (!previous) {
+      throw new Error("No earlier snapshot to undo to.");
+    }
+    return restoreSnapshot(previous.id);
+  };
+
+  const redo = async () => {
+    const snapshots = await listSnapshots();
+    if (snapshots.length === 0) {
+      throw new Error("No history available.");
+    }
+    const current = await safeReadState();
+    const currentTs = current.timestamp ?? 0;
+    const idx = snapshots.findIndex((snap) => snap.timestamp <= currentTs);
+    const next = idx > 0 ? snapshots[idx - 1] : snapshots[0];
+    if (!next || next.timestamp === currentTs) {
+      throw new Error("No later snapshot to redo to.");
+    }
+    return restoreSnapshot(next.id);
+  };
+
   return {
     loadState,
     generateState,
@@ -254,6 +338,10 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
     updateCurrentlyServing,
     resetState,
     rerandomize,
+    listSnapshots,
+    restoreSnapshot,
+    undo,
+    redo,
   };
 };
 
