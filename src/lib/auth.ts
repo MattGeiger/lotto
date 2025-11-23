@@ -74,7 +74,7 @@ export const authOptions: NextAuthConfig = {
   trustHost:
     process.env.AUTH_TRUST_HOST === "true" ||
     process.env.NODE_ENV !== "production" ||
-    (process.env.NEXTAUTH_URL ?? "").includes("localhost"),
+    (process.env.AUTH_URL ?? process.env.NEXTAUTH_URL ?? "").includes("localhost"),
 };
 
 export const { handlers: authHandlers, auth } = NextAuth(authOptions);

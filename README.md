@@ -109,6 +109,7 @@ Next.js (App Router) app with ShadCN-inspired UI, JSON persistence, and atomic b
 ## Local development (no external deps)
 - Default behavior: file-based datastore under `./data` and no auth guard when `AUTH_BYPASS=true`. Keep `DATABASE_URL` unset and `USE_DATABASE=false` (or unset) to avoid Neon/Vercel dependencies while on localhost.
 - To exercise Postgres locally, set `DATABASE_URL` to a Neon/local instance and unset `AUTH_BYPASS`.
+- Docker: `docker-compose.yml` loads `.env.local` via `env_file`. Populate `.env.local` with `NEXTAUTH_URL`/`AUTH_URL`, `AUTH_SECRET`, `RESEND_API_KEY`, `EMAIL_FROM`, `ADMIN_EMAIL_DOMAIN`, etc., before running `docker compose up --build`.
 
 ## Run in Docker
 - Build and start locally (includes a bind mount for persistent `data/`):
