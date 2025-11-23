@@ -9,7 +9,7 @@ const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-white/70",
+      "rounded-xl border border-[var(--color-border)] bg-[color-mix(in srgb,var(--color-surface) 90%, transparent)] p-4 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-[color-mix(in srgb,var(--color-surface) 80%, transparent)]",
       className,
     )}
     {...props}
@@ -28,14 +28,14 @@ const CardTitle = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLHeadingElement>) => (
-  <h3 className={cn("text-lg font-semibold text-slate-900", className)} {...props} />
+  <h3 className={cn("text-lg font-semibold text-[var(--color-foreground)]", className)} {...props} />
 );
 
 const CardDescription = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLParagraphElement>) => (
-  <p className={cn("text-sm text-slate-600", className)} {...props} />
+  <p className={cn("text-sm text-[var(--color-muted)]", className)} {...props} />
 );
 
 const CardContent = ({

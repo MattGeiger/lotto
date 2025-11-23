@@ -47,3 +47,7 @@ Next.js (App Router) app with ShadCN-inspired UI, JSON persistence, and atomic b
 - Next.js 16 (App Router) + Tailwind CSS.
 - ShadCN-style UI components (Radix + cva).
 - Vitest + Testing Library.
+
+## Theme / design tokens
+- Global palette and design tokens live in `src/app/globals.css` (`--color-primary`, surfaces, borders, focus, status colors).
+- UI components (buttons, badges, cards, inputs, switches, tooltips) consume those tokens rather than hard-coded colors. Update tokens to change app-wide styling.

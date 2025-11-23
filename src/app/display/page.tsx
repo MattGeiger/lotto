@@ -69,7 +69,7 @@ const DisplayPage = () => {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <Button asChild variant="secondary" size="sm" className="bg-white text-slate-900">
+          <Button asChild variant="secondary" size="sm">
             <Link href="/admin">
               <Eye className="mr-2 h-4 w-4" />
               Staff controls

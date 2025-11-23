@@ -21,4 +21,6 @@
 - Protected raffle order when switching modes: mode toggles now only affect future tickets, keep existing order intact, and require confirmation.
 - Replaced the “William Temple House” pill on the landing page with the official horizontal logo asset for better branding.
 - Removed the “Digital Raffle” pill and expanded the homepage logo to span the card responsively.
+- Centralized UI styling around global design tokens in `globals.css` and refactored button, badge, card, input, switch, tooltip, and separator components to consume them.
+- Increased contrast for primary buttons via the shared `Button` component rather than page-level overrides.
 - Increased contrast on the “Open Staff Dashboard” CTA to prevent text blending into the button background.
