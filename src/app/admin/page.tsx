@@ -678,7 +678,7 @@ const AdminPage = () => {
               <Separator />
 
               <div className="space-y-2">
-                <p className="text-sm font-semibold text-slate-900">System reset</p>
+                <p className="text-lg font-semibold text-slate-900">System reset</p>
                 <p className="text-xs text-slate-600">
                   Clears the range, order, and now serving. State is backed up before reset.
                 </p>

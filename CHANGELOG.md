@@ -60,3 +60,4 @@
 - Removed the border on the “Now Serving” card for a cleaner header look.
 - Deepened the read-only background with stronger blue radial gradients.
 - Added snapshot history support (list, restore, undo/redo) with admin UI controls.
+- Matched the “System reset” heading style to other admin card titles.
