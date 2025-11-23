@@ -83,16 +83,17 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
     await ensureDir(baseDir);
     const timestamped =
       options?.preserveTimestamp && state.timestamp !== null ? state : withTimestamp(state);
+    const ts = timestamped.timestamp ?? Date.now();
     const uniqueSuffix = Math.random().toString(36).slice(2, 8);
     const tempPath = path.join(
       baseDir,
-      `state-${timestamped.timestamp}-${uniqueSuffix}.tmp`,
+      `state-${ts}-${uniqueSuffix}.tmp`,
     );
     const payload = JSON.stringify(timestamped, null, 2);
 
     await fs.writeFile(tempPath, payload, "utf-8");
     if (!options?.skipBackup) {
-      const backupName = `state-${formatTimestamp(timestamped.timestamp)}-${uniqueSuffix}.json`;
+      const backupName = `state-${formatTimestamp(ts)}-${uniqueSuffix}.json`;
       await fs.copyFile(tempPath, path.join(baseDir, backupName));
     }
     await fs.rename(tempPath, statePath);
@@ -307,8 +308,11 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
     }
     const current = await safeReadState();
     const currentTs = current.timestamp ?? 0;
-    const idx = snapshots.findIndex((snap) => snap.timestamp <= currentTs);
-    const previous = idx >= 0 ? snapshots[idx + 1] : snapshots[1];
+    const idx = snapshots.findIndex((snap) => snap.timestamp === currentTs);
+    const previous =
+      idx >= 0
+        ? snapshots[idx + 1]
+        : snapshots.find((snap) => snap.timestamp < currentTs);
     if (!previous) {
       throw new Error("No earlier snapshot to undo to.");
     }
@@ -322,9 +326,12 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
     }
     const current = await safeReadState();
     const currentTs = current.timestamp ?? 0;
-    const idx = snapshots.findIndex((snap) => snap.timestamp <= currentTs);
-    const next = idx > 0 ? snapshots[idx - 1] : snapshots[0];
-    if (!next || next.timestamp === currentTs) {
+    const idx = snapshots.findIndex((snap) => snap.timestamp === currentTs);
+    const next =
+      idx > 0
+        ? snapshots[idx - 1]
+        : snapshots.find((snap) => snap.timestamp > currentTs);
+    if (!next) {
       throw new Error("No later snapshot to redo to.");
     }
     return restoreSnapshot(next.id);
