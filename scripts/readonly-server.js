@@ -155,7 +155,7 @@ const htmlPage = `<!doctype html>
       }
       .logo {
         display: flex;
-        justify-content: center;
+        justify-content: flex-start;
         margin-bottom: 8px;
       }
       .logo img {
@@ -166,7 +166,7 @@ const htmlPage = `<!doctype html>
         display: flex;
         flex-wrap: wrap;
         align-items: center;
-        justify-content: center;
+        justify-content: space-between;
         gap: 12px;
         margin-bottom: 12px;
         text-align: center;
@@ -207,7 +207,7 @@ const htmlPage = `<!doctype html>
         <div class="logo">
           <img src="/wth-logo-horizontal-reverse.png" alt="William Temple House" />
         </div>
-        <div class="card">
+        <div class="card" style="margin: 0 auto;">
           <h3>Now Serving</h3>
           <p id="serving">—</p>
         </div>
