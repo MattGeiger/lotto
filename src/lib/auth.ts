@@ -30,7 +30,17 @@ export const { handlers: authHandlers, auth } = NextAuth(() => {
     databaseUrl && useDatabase ? PostgresAdapter(new Pool({ connectionString: databaseUrl })) : undefined;
 
   if (!adapter) {
-    console.warn("[Auth] No database adapter configured. Email auth requires DATABASE_URL/USE_DATABASE.");
+    console.warn(
+      "[Auth] No database adapter configured. Email auth requires DATABASE_URL/USE_DATABASE.",
+      {
+        hasPostgresPrismaUrl: Boolean(process.env.POSTGRES_PRISMA_URL),
+        hasPostgresUrl: Boolean(process.env.POSTGRES_URL),
+        hasPostgresUrlNonPooling: Boolean(process.env.POSTGRES_URL_NON_POOLING),
+        hasPostgresUrlNonPoolingNoTls: Boolean(process.env.POSTGRES_URL_NON_POOLING_NO_TLS),
+        hasDatabaseUrl: Boolean(process.env.DATABASE_URL),
+        useDatabase,
+      },
+    );
   }
 
   const config: NextAuthConfig = {
