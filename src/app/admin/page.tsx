@@ -474,7 +474,7 @@ const AdminPage = () => {
                   </Button>
                   <Button
                     type="button"
-                    variant="secondary"
+                    variant="outline"
                     size="icon"
                     onClick={handleNextServing}
                     disabled={
@@ -484,6 +484,7 @@ const AdminPage = () => {
                       (currentIndex !== -1 && currentIndex >= totalTickets - 1)
                     }
                     aria-label="Next draw"
+                    className="text-[var(--color-muted-foreground)]"
                   >
                     <ChevronRight className="h-4 w-4" />
                   </Button>
