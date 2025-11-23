@@ -20,12 +20,18 @@ const emailServer =
 
 export const { handlers: authHandlers, auth } = NextAuth(() => {
   const useDatabase = process.env.USE_DATABASE !== "false";
-  const databaseUrl =
-    process.env.POSTGRES_PRISMA_URL ||
-    process.env.POSTGRES_URL ||
-    process.env.POSTGRES_URL_NON_POOLING ||
-    process.env.POSTGRES_URL_NON_POOLING_NO_TLS ||
-    process.env.DATABASE_URL;
+  const dbSources = [
+    ["POSTGRES_PRISMA_URL", process.env.POSTGRES_PRISMA_URL],
+    ["POSTGRES_URL", process.env.POSTGRES_URL],
+    ["POSTGRES_URL_NON_POOLING", process.env.POSTGRES_URL_NON_POOLING],
+    ["POSTGRES_URL_NON_POOLING_NO_TLS", process.env.POSTGRES_URL_NON_POOLING_NO_TLS],
+    ["POSTGRES_URL_NO_SSL", process.env.POSTGRES_URL_NO_SSL],
+    ["POSTGRES_DATABASE_URL_UNPOOLED", process.env.POSTGRES_DATABASE_URL_UNPOOLED],
+    ["POSTGRES_DATABASE_URL", process.env.POSTGRES_DATABASE_URL],
+    ["DATABASE_URL", process.env.DATABASE_URL],
+  ] as const;
+  const picked = dbSources.find(([, value]) => Boolean(value));
+  const databaseUrl = picked?.[1];
 
   const adapter =
     databaseUrl && useDatabase ? PostgresAdapter(new Pool({ connectionString: databaseUrl })) : undefined;
@@ -33,14 +39,7 @@ export const { handlers: authHandlers, auth } = NextAuth(() => {
   if (!adapter) {
     console.warn(
       "[Auth] No database adapter configured. Email auth requires DATABASE_URL/USE_DATABASE.",
-      {
-        hasPostgresPrismaUrl: Boolean(process.env.POSTGRES_PRISMA_URL),
-        hasPostgresUrl: Boolean(process.env.POSTGRES_URL),
-        hasPostgresUrlNonPooling: Boolean(process.env.POSTGRES_URL_NON_POOLING),
-        hasPostgresUrlNonPoolingNoTls: Boolean(process.env.POSTGRES_URL_NON_POOLING_NO_TLS),
-        hasDatabaseUrl: Boolean(process.env.DATABASE_URL),
-        useDatabase,
-      },
+      { useDatabase, pickedSource: picked?.[0] ?? null },
     );
   }
 
