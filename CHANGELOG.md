@@ -31,5 +31,4 @@
 - Added the William Temple House horizontal logo to the top of the read-only board.
 - Served static assets (e.g., the read-only board logo) from `public/` so they render correctly.
 - Tweaked the draw position arrows so the previous arrow stays muted/outlined and the next arrow remains emphasized.
-- Muted both draw position arrows for a consistent subdued style.
-- Adjusted the outline button variant to use muted text so arrow controls render subdued as intended.
+- Swapped draw-position button styles: previous now uses the filled secondary style, next uses the outlined muted style.

@@ -18,7 +18,7 @@ const buttonVariants = cva(
         destructive:
           "bg-[var(--color-destructive)] !text-white hover:bg-[color-mix(in srgb,var(--color-destructive) 85%, black)] focus-visible:ring-[color-mix(in srgb,var(--color-destructive) 70%, transparent)]",
         outline:
-          "border border-[var(--color-border)] text-[var(--color-muted-foreground)] hover:bg-[var(--color-surface-muted)] shadow-sm",
+          "border border-[var(--color-border)] !text-[var(--color-foreground)] hover:bg-[var(--color-surface-muted)] shadow-sm",
       },
       size: {
         default: "h-10 px-4 py-2",
