@@ -52,4 +52,5 @@
 - Realigned the read-only header row: logo left, “Now Serving” centered.
 - Enlarged the “Now Serving” value on the read-only page to exceed the date line size.
 - Further amplified the “Now Serving” value for top-of-page visual hierarchy.
+- Doubled the “Now Serving” text size for maximum prominence.
 - Refined header grid so the logo sits left with a spacer and the “Now Serving” card remains centered.
