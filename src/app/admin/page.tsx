@@ -612,7 +612,7 @@ const AdminPage = () => {
             </CardContent>
           </Card>
 
-          <Card className="lg:col-span-3">
+          <Card className="lg:col-span-2">
             <CardHeader className="flex items-center justify-between">
               <div>
                 <CardTitle>Live State</CardTitle>
@@ -665,7 +665,7 @@ const AdminPage = () => {
             </CardContent>
           </Card>
 
-          <Card className="space-y-3">
+          <Card className="space-y-3 lg:col-span-1">
             <CardHeader className="pb-2">
               <CardTitle>History</CardTitle>
               <CardDescription>Undo/redo or restore from snapshots.</CardDescription>
