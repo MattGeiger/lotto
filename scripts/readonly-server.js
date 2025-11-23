@@ -114,7 +114,7 @@ const htmlPage = `<!doctype html>
       }
       .card p {
         margin: 0;
-        font-size: 30px;
+        font-size: 26px;
         font-weight: 700;
         color: #fff;
         line-height: 1.2;
@@ -126,13 +126,13 @@ const htmlPage = `<!doctype html>
         margin-top: 10px;
       }
       .badge {
-        padding: 16px 22px;
-        border-radius: 14px;
+        padding: 14px 18px;
+        border-radius: 12px;
         background: #0f172a;
         border: 1px solid #1f2937;
         color: #f8fafc;
         font-weight: 800;
-        font-size: 26px;
+        font-size: 22px;
         line-height: 1.2;
         }
       .badge.serving {

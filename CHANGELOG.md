@@ -34,3 +34,4 @@
 - Swapped draw-position button styles: previous now uses the filled secondary style, next uses the outlined muted style.
 - Fixed admin draw-position button typing by importing `ButtonProps`.
 - Reduced and left-aligned the read-only board logo.
+- Shrunk read-only number cards and badges for a more compact layout.
