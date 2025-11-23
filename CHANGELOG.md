@@ -65,3 +65,4 @@
 - Ensured “Share the live board” sits alongside “System reset” on wide viewports.
 - Reordered the admin dashboard rows: Ticket Range/Now Serving, Live State/History, then System reset/Share.
 - Removed the “Upcoming preview” sub-card from Ticket Range & Order to streamline the admin card.
+- Removed the unused divider at the bottom of the “Now Serving” admin card.

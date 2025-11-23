@@ -585,7 +585,6 @@ const AdminPage = () => {
                 </div>
               </div>
 
-              <Separator />
             </CardContent>
           </Card>
         </div>
