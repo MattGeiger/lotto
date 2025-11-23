@@ -28,3 +28,4 @@
 - Ensured all cards use the solid surface background to match the landing page styling.
 - Aligned the read-only board shell to the top of the viewport.
 - Removed the mode pill from public and admin headers to simplify the UI and avoid low-contrast badges.
+- Added the William Temple House horizontal logo to the top of the read-only board.

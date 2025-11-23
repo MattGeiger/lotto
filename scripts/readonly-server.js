@@ -150,6 +150,15 @@ const htmlPage = `<!doctype html>
         color: #94a3b8;
         opacity: 0.7;
       }
+      .logo {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 8px;
+      }
+      .logo img {
+        max-width: min(640px, 90vw);
+        height: auto;
+      }
       .muted {
         color: #e5e7eb;
         font-size: 14px;
@@ -166,6 +175,9 @@ const htmlPage = `<!doctype html>
   </head>
   <body>
     <div class="shell">
+      <div class="logo">
+        <img src="/wth-logo-horizontal-reverse.png" alt="William Temple House" />
+      </div>
       <header>
         <div>
           <div class="eyebrow">Food Pantry Service For</div>

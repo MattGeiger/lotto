@@ -21,6 +21,7 @@ Next.js (App Router) app with ShadCN-inspired UI, JSON persistence, and atomic b
 - Runs on a separate port (default `4000`) and serves a static view that polls `data/state.json` every 4s.
 - Defaults to a high-contrast, read-only display suitable for wall screens.
 - No controls or writes are exposed—purely a viewer for wall displays or embeds.
+- Displays the WTH horizontal logo at the top of the read-only board.
 - Configure via env vars:
   - `READONLY_PORT` — port to listen on (default `4000`).
   - `READONLY_POLL_MS` — poll interval in milliseconds (default `4000`).
