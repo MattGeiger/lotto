@@ -120,8 +120,8 @@ const htmlPage = `<!doctype html>
         line-height: 1.2;
       }
       .order {
-        display: flex;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
         gap: 12px;
         margin-top: 10px;
       }
