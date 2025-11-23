@@ -52,8 +52,8 @@ const htmlPage = `<!doctype html>
         align-items: flex-start;
         justify-content: center;
         padding: 32px;
-        background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.08), transparent 25%),
-          radial-gradient(circle at 80% 0%, rgba(255, 255, 255, 0.05), transparent 20%),
+        background: radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.18), transparent 32%),
+          radial-gradient(circle at 80% 0%, rgba(59, 130, 246, 0.12), transparent 28%),
           linear-gradient(145deg, #000, #0a0a0a 45%, #000);
       }
       .shell {

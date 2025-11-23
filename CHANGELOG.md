@@ -58,3 +58,4 @@
 - Added mobile tweaks so the logo stacks above the “Now Serving” card on narrow viewports.
 - Applied the gold gradient fill to the “Now Serving” value on the read-only page.
 - Removed the border on the “Now Serving” card for a cleaner header look.
+- Deepened the read-only background with stronger blue radial gradients.
