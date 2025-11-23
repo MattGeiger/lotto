@@ -29,3 +29,4 @@
 - Aligned the read-only board shell to the top of the viewport.
 - Removed the mode pill from public and admin headers to simplify the UI and avoid low-contrast badges.
 - Added the William Temple House horizontal logo to the top of the read-only board.
+- Served static assets (e.g., the read-only board logo) from `public/` so they render correctly.

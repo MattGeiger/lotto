@@ -11,6 +11,7 @@ const dataDir = process.env.READONLY_DATA_DIR
   ? path.resolve(process.env.READONLY_DATA_DIR)
   : path.join(process.cwd(), "data");
 const statePath = path.join(dataDir, "state.json");
+const publicDir = path.join(process.cwd(), "public");
 
 const defaultState = {
   startNumber: 0,
@@ -334,6 +335,27 @@ const sendHtml = (res) => {
   res.end(htmlPage);
 };
 
+const tryServeStatic = async (pathname, res) => {
+  const safePath = path.normalize(pathname).replace(/^(\.\.[/\\])+/, "");
+  const filePath = path.join(publicDir, safePath);
+  if (!filePath.startsWith(publicDir)) return false;
+  try {
+    const data = await fs.readFile(filePath);
+    const ext = path.extname(filePath).toLowerCase();
+    const mime =
+      ext === ".png"
+        ? "image/png"
+        : ext === ".jpg" || ext === ".jpeg"
+          ? "image/jpeg"
+          : "application/octet-stream";
+    res.writeHead(200, { "Content-Type": mime, "Cache-Control": "public, max-age=3600" });
+    res.end(data);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
 
@@ -345,6 +367,10 @@ const server = http.createServer(async (req, res) => {
 
   if (url.pathname === "/healthz") {
     sendJson(res, { status: "ok" });
+    return;
+  }
+
+  if (await tryServeStatic(url.pathname, res)) {
     return;
   }
 
