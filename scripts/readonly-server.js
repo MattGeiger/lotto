@@ -119,7 +119,7 @@ const htmlPage = `<!doctype html>
       }
       .now-serving-card p {
         font-size: 96px;
-        line-height: 1.05;
+        line-height: 1.12;
         font-weight: 900;
         color: #fbbf24;
         background: linear-gradient(135deg, #f59e0b, #fbbf24);

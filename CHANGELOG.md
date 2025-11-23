@@ -68,3 +68,4 @@
 - Removed the unused divider at the bottom of the “Now Serving” admin card.
 - Added the horizontal William Temple House logo to the admin header to match the landing page branding.
 - Removed the Staff Dashboard and Auto-save badges from the admin header for a cleaner top bar.
+- Relaxed the Now Serving line-height on the read-only board to avoid clipping descenders (e.g., the “g” in “Waiting”).
