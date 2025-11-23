@@ -26,3 +26,4 @@
 - Fixed anchor inheritance inside buttons so CTA text uses the button’s foreground color instead of the global link color.
 - Increased contrast on the “Open Staff Dashboard” CTA to prevent text blending into the button background.
 - Ensured all cards use the solid surface background to match the landing page styling.
+- Aligned the read-only board shell to the top of the viewport.

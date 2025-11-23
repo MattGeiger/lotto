@@ -48,7 +48,7 @@ const htmlPage = `<!doctype html>
         margin: 0;
         min-height: 100vh;
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         justify-content: center;
         padding: 32px;
         background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.08), transparent 25%),
