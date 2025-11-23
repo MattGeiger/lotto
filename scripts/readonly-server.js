@@ -58,12 +58,8 @@ const htmlPage = `<!doctype html>
       }
       .shell {
         width: min(1400px, calc(100vw - 48px));
-        background: rgba(0, 0, 0, 0.65);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 24px;
-        padding: 28px;
-        box-shadow: 0 28px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.04);
-        backdrop-filter: blur(6px);
+        margin: 0 auto;
+        padding: 0;
       }
       header {
         display: flex;
