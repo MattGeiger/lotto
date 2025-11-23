@@ -67,3 +67,4 @@
 - Removed the “Upcoming preview” sub-card from Ticket Range & Order to streamline the admin card.
 - Removed the unused divider at the bottom of the “Now Serving” admin card.
 - Added the horizontal William Temple House logo to the admin header to match the landing page branding.
+- Removed the Staff Dashboard and Auto-save badges from the admin header for a cleaner top bar.

@@ -369,8 +369,6 @@ const AdminPage = () => {
               Back
             </Link>
           </Button>
-          <Badge>Staff Dashboard</Badge>
-          <Badge variant="muted">Auto-save with backups</Badge>
           {pendingAction && (
             <Badge variant="success" className="flex items-center gap-2">
               <Loader2 className="h-3 w-3 animate-spin" />
