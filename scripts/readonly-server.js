@@ -104,6 +104,7 @@ const htmlPage = `<!doctype html>
         padding: 14px;
         background: #0b0b0b;
         border: 1px solid #2d2d2d;
+        text-align: center;
       }
       .card h3 {
         margin: 0 0 6px 0;
@@ -111,6 +112,7 @@ const htmlPage = `<!doctype html>
         color: #e5e7eb;
         text-transform: uppercase;
         letter-spacing: 0.04em;
+        text-align: center;
       }
       .card p {
         margin: 0;
@@ -134,6 +136,10 @@ const htmlPage = `<!doctype html>
         font-weight: 800;
         font-size: 22px;
         line-height: 1.2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
         }
       .badge.serving {
         background: linear-gradient(135deg, #f59e0b, #fbbf24);

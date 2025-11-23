@@ -41,3 +41,4 @@
 - Prevented append arrows from wrapping under the input by constraining widths and disabling wrap on larger screens.
 - Made the append left arrow start as secondary and switch to outline once the value advances beyond the starting end.
 - Applied a responsive grid layout to the read-only drawing order badges.
+- Centered the read-only stat cards and badge content for improved alignment.
