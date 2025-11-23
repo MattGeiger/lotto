@@ -106,6 +106,10 @@ Next.js (App Router) app with ShadCN-inspired UI, JSON persistence, and atomic b
   - `/admin` → staff dashboard (unchanged), linked from the staff landing page after login.
 - Update Vercel project settings to point the production domain at this app; keep localhost paths for development (`http://localhost:3000` app, `http://localhost:4000` standalone read-only server).
 
+## Local development (no external deps)
+- Default behavior: file-based datastore under `./data` and no auth guard when `AUTH_BYPASS=true`. Keep `DATABASE_URL` unset and `USE_DATABASE=false` (or unset) to avoid Neon/Vercel dependencies while on localhost.
+- To exercise Postgres locally, set `DATABASE_URL` to a Neon/local instance and unset `AUTH_BYPASS`.
+
 ## Run in Docker
 - Build and start locally (includes a bind mount for persistent `data/`):
   ```bash

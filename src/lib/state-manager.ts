@@ -260,7 +260,12 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
       )
     ).filter((item): item is Snapshot => Boolean(item));
 
-    return snapshots.sort((a, b) => b.timestamp - a.timestamp);
+    return snapshots.sort((a, b) => {
+      if (b.timestamp === a.timestamp) {
+        return b.id.localeCompare(a.id);
+      }
+      return b.timestamp - a.timestamp;
+    });
   };
 
   const restoreSnapshot = async (id: string) => {

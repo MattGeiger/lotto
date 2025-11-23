@@ -217,7 +217,7 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
 
   const listSnapshots = async () => {
     const rows = await sql<{ id: string; created_at: string; payload: RaffleState }>`
-      select id, created_at, payload from raffle_snapshots order by created_at desc;
+      select id, created_at, payload from raffle_snapshots order by created_at desc, id desc;
     `;
     return rows.map((row) => ({
       id: row.id,
