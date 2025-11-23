@@ -417,7 +417,7 @@ const AdminPage = () => {
                   >
                     Append additional tickets
                   </Label>
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
                     <Input
                       id="append"
                       type="number"
@@ -425,7 +425,7 @@ const AdminPage = () => {
                       value={appendEnd}
                       onChange={(e) => setAppendEnd(e.target.value)}
                       placeholder="New ending number"
-                      className="appearance-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                      className="w-28 flex-none appearance-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none sm:w-40"
                     />
                     <Button
                       type="button"
@@ -434,7 +434,7 @@ const AdminPage = () => {
                       onClick={() => handleAppendStep(-1)}
                       disabled={!state}
                       aria-label="Decrease append end"
-                      className="text-[var(--color-muted-foreground)]"
+                      className="flex-none text-[var(--color-muted-foreground)]"
                     >
                       <ChevronLeft className="h-4 w-4" />
                     </Button>
@@ -445,7 +445,7 @@ const AdminPage = () => {
                       onClick={() => handleAppendStep(1)}
                       disabled={!state}
                       aria-label="Increase append end"
-                      className="text-[var(--color-muted-foreground)]"
+                      className="flex-none text-[var(--color-muted-foreground)]"
                     >
                       <ChevronRight className="h-4 w-4" />
                     </Button>

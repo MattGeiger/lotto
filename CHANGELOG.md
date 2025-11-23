@@ -38,3 +38,4 @@
 - Styled the “Append additional tickets” heading to match primary card titles.
 - Kept append arrows inline with the input and placed the Append button beneath for consistent layout.
 - Corrected append section markup after layout changes.
+- Prevented append arrows from wrapping under the input by constraining widths and disabling wrap on larger screens.
