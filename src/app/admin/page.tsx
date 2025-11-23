@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import QRCode from "react-qr-code";
 import {
   AlertTriangle,
@@ -351,6 +352,16 @@ const AdminPage = () => {
   return (
     <TooltipProvider>
       <main className="mx-auto flex min-h-screen max-w-6xl flex-col gap-6 px-6 py-10">
+        <div className="w-full">
+          <Image
+            src="/wth-logo-horizontal.png"
+            alt="William Temple House"
+            width={900}
+            height={240}
+            className="h-auto w-full max-w-3xl"
+            priority
+          />
+        </div>
         <div className="flex items-center gap-3">
           <Button asChild variant="secondary" size="sm">
             <Link href="/">
