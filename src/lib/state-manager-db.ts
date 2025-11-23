@@ -35,6 +35,7 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
 
   const sql = neon(databaseUrl);
   let lastRedoSnapshot: { id: string; timestamp: number } | null = null;
+  let lastPersistTs = 0;
 
   const validateRange = (start: number, end: number) => {
     if (!Number.isInteger(start) || !Number.isInteger(end)) {
@@ -80,7 +81,12 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
   ): Promise<RaffleState> => {
     const timestamped =
       options?.preserveTimestamp && state.timestamp !== null ? state : withTimestamp(state);
-    const ts = timestamped.timestamp ?? Date.now();
+    let ts = timestamped.timestamp ?? Date.now();
+    if (ts <= lastPersistTs) {
+      ts = lastPersistTs + 1;
+      timestamped.timestamp = ts;
+    }
+    lastPersistTs = ts;
     const uniqueSuffix = Math.random().toString(36).slice(2, 8);
     const snapshotId = `state-${formatTimestamp(ts)}-${uniqueSuffix}.json`;
 

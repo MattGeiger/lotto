@@ -42,6 +42,7 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
   const backupPattern =
     /^state-(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})(\d{3})-[^.]+\.json$/;
   let lastRedoSnapshot: Snapshot | null = null;
+  let lastPersistTs = 0;
 
   type Snapshot = {
     id: string;
@@ -56,7 +57,12 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
     await ensureDir(baseDir);
     const timestamped =
       options?.preserveTimestamp && state.timestamp !== null ? state : withTimestamp(state);
-    const ts = timestamped.timestamp ?? Date.now();
+    let ts = timestamped.timestamp ?? Date.now();
+    if (ts <= lastPersistTs) {
+      ts = lastPersistTs + 1;
+      timestamped.timestamp = ts;
+    }
+    lastPersistTs = ts;
     const uniqueSuffix = Math.random().toString(36).slice(2, 8);
     const tempPath = path.join(
       baseDir,

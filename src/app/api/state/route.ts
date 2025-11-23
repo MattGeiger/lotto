@@ -4,7 +4,6 @@ import { z } from "zod";
 import { stateManager, type Mode } from "@/lib/state-manager";
 import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth";
-import { getServerSession } from "next-auth";
 
 const actionSchema = z.discriminatedUnion("action", [
   z.object({
