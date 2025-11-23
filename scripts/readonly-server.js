@@ -160,16 +160,24 @@ const htmlPage = `<!doctype html>
       }
       .logo img {
         max-width: min(320px, 45vw);
+        width: min(320px, 45vw);
         height: auto;
       }
       .top-row {
-        display: flex;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
         align-items: center;
-        justify-content: space-between;
         gap: 12px;
         margin-bottom: 12px;
         text-align: center;
+      }
+      .now-serving-card {
+        justify-self: center;
+        min-width: 200px;
+      }
+      .spacer {
+        width: min(320px, 45vw);
+        height: 1px;
       }
       .muted {
         color: #e5e7eb;
@@ -207,10 +215,11 @@ const htmlPage = `<!doctype html>
         <div class="logo">
           <img src="/wth-logo-horizontal-reverse.png" alt="William Temple House" />
         </div>
-        <div class="card" style="margin: 0 auto;">
+        <div class="card now-serving-card" style="margin: 0 auto;">
           <h3>Now Serving</h3>
           <p id="serving">—</p>
         </div>
+        <div class="spacer" aria-hidden="true"></div>
       </div>
       <header>
         <div>
