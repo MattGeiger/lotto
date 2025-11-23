@@ -153,11 +153,11 @@ const htmlPage = `<!doctype html>
       }
       .logo {
         display: flex;
-        justify-content: center;
+        justify-content: flex-start;
         margin-bottom: 8px;
       }
       .logo img {
-        max-width: min(640px, 90vw);
+        max-width: min(320px, 45vw);
         height: auto;
       }
       .muted {
