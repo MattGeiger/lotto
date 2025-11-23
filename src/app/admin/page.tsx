@@ -463,11 +463,12 @@ const AdminPage = () => {
                 <div className="flex items-center gap-2">
                   <Button
                     type="button"
-                    variant="ghost"
+                    variant="outline"
                     size="icon"
                     onClick={handlePrevServing}
                     disabled={loading || !state || totalTickets === 0}
                     aria-label="Previous draw"
+                    className="text-[var(--color-muted-foreground)]"
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </Button>

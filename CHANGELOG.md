@@ -30,4 +30,4 @@
 - Removed the mode pill from public and admin headers to simplify the UI and avoid low-contrast badges.
 - Added the William Temple House horizontal logo to the top of the read-only board.
 - Served static assets (e.g., the read-only board logo) from `public/` so they render correctly.
-- Swapped initial styling so the previous-arrow in the draw position card is muted and the next-arrow is emphasized.
+- Tweaked the draw position arrows so the previous arrow stays muted/outlined and the next arrow remains emphasized.
