@@ -111,6 +111,41 @@ Next.js (App Router) app with ShadCN-inspired UI, JSON persistence, and atomic b
 - To exercise Postgres locally, set `DATABASE_URL` to a Neon/local instance and unset `AUTH_BYPASS`.
 - Docker: `docker-compose.yml` loads `.env.local` via `env_file`. Populate `.env.local` with `NEXTAUTH_URL`/`AUTH_URL`, `AUTH_SECRET`, `RESEND_API_KEY`, `EMAIL_FROM`, `ADMIN_EMAIL_DOMAIN`, etc., before running `docker compose up --build`.
 
+## Environment Setup
+
+### Local Development
+
+1. Copy the example environment file:
+   ```bash
+   cp .env.example .env.local
+   ```
+2. Generate an auth secret:
+   ```bash
+   openssl rand -base64 32
+   ```
+3. Fill `.env.local` with required values:
+   - `AUTH_SECRET` and `NEXTAUTH_SECRET` (same value)
+   - `DATABASE_URL` (Neon Postgres connection string)
+   - `RESEND_API_KEY` (https://resend.com/api-keys)
+   - `EMAIL_FROM` (verified sender, e.g., login@williamtemple.app)
+   - `ADMIN_EMAIL_DOMAIN` (e.g., williamtemple.org)
+4. Required services:
+   - Neon Postgres (free tier): https://neon.tech
+   - Resend (free tier): https://resend.com
+
+### Environment Variables Reference
+
+See `.env.example` for the full list. Critical vars:
+- `AUTH_SECRET` — required for JWT encryption (generate with openssl)
+- `DATABASE_URL` — required for magic-link storage
+- `RESEND_API_KEY` — required to send magic-link emails
+- `EMAIL_FROM` — must be verified in Resend
+- `ADMIN_EMAIL_DOMAIN` — restricts login to your domain
+
+Local options:
+- Set `USE_DATABASE=false` and `AUTH_BYPASS=true` to skip auth.
+- Set `USE_DATABASE=true` with Neon to test the full auth flow.
+
 ## Run in Docker
 - Build and start locally (includes a bind mount for persistent `data/`):
   ```bash
