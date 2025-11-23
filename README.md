@@ -36,6 +36,76 @@ Next.js (App Router) app with ShadCN-inspired UI, JSON persistence, and atomic b
 - State stored under `data/state.json` with timestamped backup files (`state-YYYYMMDDHHMMSSmmm-XXXXXX.json`).
 - Data dir is ignored by Git except for `data/.gitkeep` to preserve the folder.
 
+## Deployment intent (Vercel hobby/free)
+- Target hosting is Vercel’s hobby/free tier, which uses Neon-backed Postgres for managed storage.
+- Vercel filesystem is ephemeral (`/tmp` only), so production persistence must move off local files to a durable store (e.g., Neon Postgres via Vercel Postgres/Neon SDK).
+- Stay within hobby limits (approx. 190 compute hours, ~512 MB DB storage, up to 10 DBs); avoid features that require paid plans.
+- Plan to map current `state.json` + snapshot history to a Postgres schema (or equivalent durable store) so undo/redo and backups remain available across deployments.
+
+## Deploy runbook (Vercel + Neon + magic links)
+1) Provision storage (Neon via Vercel Marketplace Postgres integration)
+- Install the Neon integration from the Vercel Marketplace and attach it to this project; note `POSTGRES_URL`/`DATABASE_URL` from the Storage tab.
+- Initialize tables (run once via Neon console/psql):
+  ```sql
+  create table if not exists raffle_state (
+    id text primary key default 'singleton',
+    payload jsonb not null,
+    updated_at timestamptz not null default now()
+  );
+  create table if not exists raffle_snapshots (
+    id text primary key,
+    payload jsonb not null,
+    created_at timestamptz not null default now()
+  );
+  create index if not exists raffle_snapshots_created_at_idx on raffle_snapshots (created_at desc);
+  ```
+- Plan a retention policy (e.g., trim to last N snapshots or last N days) to stay within ~512 MB free storage.
+  - SDK: prefer `@neondatabase/serverless` (actively maintained). If upgrading from legacy `@vercel/postgres`, use `@neondatabase/vercel-postgres-compat` as a drop-in during transition.
+  - Env toggles: `DATABASE_URL` enables Postgres; set `USE_DATABASE=false` locally to force the file-based manager when you want to test the legacy path.
+
+2) Configure auth (magic links, domain-locked)
+- Use NextAuth Email provider with Resend free tier for mail delivery.
+- Enforce `@williamtemple.org` allowlist in the sign-in callback and/or before sending links.
+- Required env vars (set in Vercel project):
+  - `DATABASE_URL` (Neon connection string)
+  - `NEXTAUTH_URL` (e.g., `https://your-app.vercel.app`)
+  - `NEXTAUTH_SECRET` (strong random string)
+  - `EMAIL_FROM` (verified sender in Resend)
+  - `RESEND_API_KEY`
+  - `ADMIN_EMAIL_DOMAIN=williamtemple.org`
+
+3) Wire persistence to Postgres
+- Replace the file-based state manager with Postgres-backed reads/writes using `@neondatabase/serverless` (or `@neondatabase/vercel-postgres-compat` as a drop-in).
+- On persist: upsert `raffle_state` and insert into `raffle_snapshots` unless backups are skipped.
+- On load: read `raffle_state`, seeding a default row if missing.
+- Undo/redo/list/restore operations should query `raffle_snapshots` ordered by `created_at desc`.
+- Keep `/tmp` caching optional only for short-lived warm instances; treat the DB as source of truth.
+
+4) Snapshot retention
+- Add a daily cron job (Vercel Cron: max 2 jobs on Hobby) to call a small API route that trims old snapshots (e.g., keep last 500 or last 30 days).
+- Avoid per-request rate limiting in KV for public reads; if desired, rate-limit only admin/write routes (tiny traffic) using Upstash Redis free or simple in-process guards.
+
+5) Migration from local files (one-time)
+- Write a script to read `data/state.json` and `data/state-*.json` and insert into `raffle_state`/`raffle_snapshots`.
+- Run the script locally with `DATABASE_URL` pointing to Neon; verify counts and sample undo/redo in the admin UI.
+
+6) Deploy
+- Set all env vars in Vercel.
+- Deploy the Next.js app; verify `/display`, `/admin` (auth required), and `/api/state` reads/writes against Neon.
+- Confirm magic-link delivery works for an `@williamtemple.org` address.
+
+7) Observability
+- Vercel free logs are short-lived; optionally add Sentry free or a lightweight `errors` table in Neon for aggregation (avoid PII).
+- Add a simple health/readiness route; ensure errors return 4xx/5xx without stack traces in production.
+
+## Routing and domains (deployment)
+- Production domain: `williamtemple.app` (custom domain in Vercel).
+- Planned routes:
+  - `/` → public read-only board (currently at `http://localhost:4000` via the standalone server). For deployment, serve the read-only page at the root.
+  - `/login` → magic-link entry; after sign-in, redirect to the staff landing page (current homepage content).
+  - `/admin` → staff dashboard (unchanged), linked from the staff landing page after login.
+- Update Vercel project settings to point the production domain at this app; keep localhost paths for development (`http://localhost:3000` app, `http://localhost:4000` standalone read-only server).
+
 ## Run in Docker
 - Build and start locally (includes a bind mount for persistent `data/`):
   ```bash

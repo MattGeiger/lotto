@@ -1,11 +1,6 @@
-import fs from "node:fs/promises";
-import path from "node:path";
+import { neon } from "@neondatabase/serverless";
 
 import { defaultState, formatTimestamp, type Mode, type RaffleState } from "./state-types";
-import { createDbStateManager } from "./state-manager-db";
-
-export { defaultState } from "./state-types";
-export type { Mode, RaffleState } from "./state-types";
 
 const buildRange = (start: number, end: number) =>
   Array.from({ length: end - start + 1 }, (_, index) => start + index);
@@ -17,10 +12,6 @@ const shuffle = (values: number[]) => {
     [copy[i], copy[j]] = [copy[j], copy[i]];
   }
   return copy;
-};
-
-const ensureDir = async (dir: string) => {
-  await fs.mkdir(dir, { recursive: true });
 };
 
 const withTimestamp = (state: RaffleState) => ({
@@ -37,55 +28,13 @@ const insertAtRandomPositions = (base: number[], additions: number[]) => {
   return result;
 };
 
-export const createStateManager = (baseDir = path.join(process.cwd(), "data")) => {
-  const statePath = path.join(baseDir, "state.json");
-  const backupPattern =
-    /^state-(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})(\d{3})-[^.]+\.json$/;
-  let lastRedoSnapshot: Snapshot | null = null;
+export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => {
+  if (!databaseUrl) {
+    throw new Error("DATABASE_URL is required to use the Postgres state manager.");
+  }
 
-  type Snapshot = {
-    id: string;
-    timestamp: number;
-    path: string;
-  };
-
-  const persist = async (
-    state: RaffleState,
-    options?: { preserveTimestamp?: boolean; skipBackup?: boolean },
-  ): Promise<RaffleState> => {
-    await ensureDir(baseDir);
-    const timestamped =
-      options?.preserveTimestamp && state.timestamp !== null ? state : withTimestamp(state);
-    const ts = timestamped.timestamp ?? Date.now();
-    const uniqueSuffix = Math.random().toString(36).slice(2, 8);
-    const tempPath = path.join(
-      baseDir,
-      `state-${ts}-${uniqueSuffix}.tmp`,
-    );
-    const payload = JSON.stringify(timestamped, null, 2);
-
-    await fs.writeFile(tempPath, payload, "utf-8");
-    if (!options?.skipBackup) {
-      const backupName = `state-${formatTimestamp(ts)}-${uniqueSuffix}.json`;
-      await fs.copyFile(tempPath, path.join(baseDir, backupName));
-    }
-    await fs.rename(tempPath, statePath);
-    return timestamped;
-  };
-
-  const safeReadState = async (): Promise<RaffleState> => {
-    try {
-      const contents = await fs.readFile(statePath, "utf-8");
-      const parsed = JSON.parse(contents) as Partial<RaffleState>;
-      return {
-        ...defaultState,
-        ...parsed,
-        timestamp: parsed.timestamp ?? Date.now(),
-      };
-    } catch {
-      return persist(defaultState);
-    }
-  };
+  const sql = neon(databaseUrl);
+  let lastRedoSnapshot: { id: string; timestamp: number } | null = null;
 
   const validateRange = (start: number, end: number) => {
     if (!Number.isInteger(start) || !Number.isInteger(end)) {
@@ -125,6 +74,49 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
     return generateOrder(startNumber, endNumber, "random");
   };
 
+  const persist = async (
+    state: RaffleState,
+    options?: { preserveTimestamp?: boolean; skipBackup?: boolean },
+  ): Promise<RaffleState> => {
+    const timestamped =
+      options?.preserveTimestamp && state.timestamp !== null ? state : withTimestamp(state);
+    const ts = timestamped.timestamp ?? Date.now();
+    const uniqueSuffix = Math.random().toString(36).slice(2, 8);
+    const snapshotId = `state-${formatTimestamp(ts)}-${uniqueSuffix}.json`;
+
+    await sql.begin(async (tx) => {
+      if (!options?.skipBackup) {
+        await tx`
+          insert into raffle_snapshots (id, payload)
+          values (${snapshotId}, ${tx.json(timestamped)})
+          on conflict (id) do nothing;
+        `;
+      }
+      await tx`
+        insert into raffle_state (id, payload, updated_at)
+        values ('singleton', ${tx.json(timestamped)}, now())
+        on conflict (id) do update set payload = excluded.payload, updated_at = excluded.updated_at;
+      `;
+    });
+
+    return timestamped;
+  };
+
+  const safeReadState = async (): Promise<RaffleState> => {
+    const rows = await sql<{ payload: RaffleState }>`
+      select payload from raffle_state where id = 'singleton' limit 1;
+    `;
+    if (rows.length === 0) {
+      return persist(defaultState);
+    }
+    const payload = rows[0]?.payload ?? defaultState;
+    return {
+      ...defaultState,
+      ...payload,
+      timestamp: payload.timestamp ?? Date.now(),
+    };
+  };
+
   const loadState = async () => safeReadState();
 
   const generateState = async (input: {
@@ -133,11 +125,7 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
     mode: Mode;
   }) => {
     validateRange(input.startNumber, input.endNumber);
-    const generatedOrder = generateOrder(
-      input.startNumber,
-      input.endNumber,
-      input.mode,
-    );
+    const generatedOrder = generateOrder(input.startNumber, input.endNumber, input.mode);
     return persist({
       startNumber: input.startNumber,
       endNumber: input.endNumber,
@@ -180,11 +168,7 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
     const hasOrder = current.generatedOrder.length > 0;
 
     if (!hasOrder) {
-      const generatedOrder = generateOrder(
-        current.startNumber,
-        current.endNumber,
-        mode,
-      );
+      const generatedOrder = generateOrder(current.startNumber, current.endNumber, mode);
       return persist({
         ...current,
         mode,
@@ -219,10 +203,7 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
     const current = await safeReadState();
     ensureHasRange(current);
 
-    if (
-      value !== null &&
-      (value < current.startNumber || value > current.endNumber)
-    ) {
+    if (value !== null && (value < current.startNumber || value > current.endNumber)) {
       throw new Error("Currently serving must be within the active range.");
     }
 
@@ -234,44 +215,26 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
 
   const resetState = async () => persist(defaultState);
 
-  const parseSnapshot = async (file: string): Promise<Snapshot | null> => {
-    const fullPath = path.join(baseDir, file);
-    const stats = await fs.stat(fullPath);
-    try {
-      const contents = await fs.readFile(fullPath, "utf-8");
-      const parsed = JSON.parse(contents) as Partial<RaffleState>;
-      const ts = typeof parsed.timestamp === "number" ? parsed.timestamp : stats.mtimeMs;
-      return { id: file, timestamp: ts, path: fullPath };
-    } catch {
-      return { id: file, timestamp: stats.mtimeMs, path: fullPath };
-    }
-  };
-
   const listSnapshots = async () => {
-    await ensureDir(baseDir);
-    const files = await fs.readdir(baseDir);
-    const snapshots = (
-      await Promise.all(
-        files
-          .filter(
-            (file) => file !== "state.json" && file.startsWith("state-") && file.endsWith(".json"),
-          )
-          .map((file) => parseSnapshot(file)),
-      )
-    ).filter((item): item is Snapshot => Boolean(item));
-
-    return snapshots.sort((a, b) => b.timestamp - a.timestamp);
+    const rows = await sql<{ id: string; created_at: string; payload: RaffleState }>`
+      select id, created_at, payload from raffle_snapshots order by created_at desc;
+    `;
+    return rows.map((row) => ({
+      id: row.id,
+      timestamp: row.created_at ? new Date(row.created_at).getTime() : Date.now(),
+      path: row.id,
+    }));
   };
 
   const restoreSnapshot = async (id: string) => {
-    const snapshots = await listSnapshots();
-    const snapshot = snapshots.find((snap) => snap.id === id);
+    const rows = await sql<{ payload: RaffleState }>`
+      select payload from raffle_snapshots where id = ${id} limit 1;
+    `;
+    const snapshot = rows[0];
     if (!snapshot) {
       throw new Error("Snapshot not found.");
     }
-    const contents = await fs.readFile(snapshot.path, "utf-8");
-    const parsed = JSON.parse(contents) as RaffleState;
-    return persist(parsed, { preserveTimestamp: true });
+    return persist(snapshot.payload, { preserveTimestamp: true });
   };
 
   const undo = async () => {
@@ -310,12 +273,3 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
     redo,
   };
 };
-
-const shouldUseDatabase =
-  Boolean(process.env.DATABASE_URL) && process.env.USE_DATABASE !== "false";
-
-export const stateManager = shouldUseDatabase
-  ? createDbStateManager()
-  : createStateManager();
-
-export const storageMode = shouldUseDatabase ? "database" : "file";

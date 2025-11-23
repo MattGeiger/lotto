@@ -69,3 +69,7 @@
 - Added the horizontal William Temple House logo to the admin header to match the landing page branding.
 - Removed the Staff Dashboard and Auto-save badges from the admin header for a cleaner top bar.
 - Relaxed the Now Serving line-height on the read-only board to avoid clipping descenders (e.g., the “g” in “Waiting”).
+- Documented Vercel hobby/free deployment intent and the need to move persistence off local files to Neon-backed storage.
+- Added a concrete Vercel/Neon deploy runbook covering Postgres schema, magic-link auth setup, env vars, snapshot retention, and migration notes.
+- Documented routing plan for production domain `williamtemple.app` (root = read-only board, `/login` for magic links, `/admin` for staff).
+- Added a Neon/Postgres-backed state manager option gated by `DATABASE_URL` (file storage remains for local dev/tests); noted `USE_DATABASE` override in docs.
