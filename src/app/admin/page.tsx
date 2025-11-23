@@ -369,7 +369,7 @@ const AdminPage = () => {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          <Card className="lg:col-span-2">
+          <Card>
             <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <CardTitle>Ticket Range & Order</CardTitle>
@@ -462,25 +462,22 @@ const AdminPage = () => {
                   onConfirm={handleGenerate}
                   disabled={loading || pendingAction !== null}
                 />
-              <ConfirmAction
-                triggerLabel="Re-randomize"
-                actionLabel="Shuffle"
-                title="Re-randomize this range"
-                description="Shuffle the existing range again to ensure fairness."
-                onConfirm={handleRerandomize}
-                disabled={mode !== "random" || loading || !state}
-                variant="secondary"
-              />
+                <ConfirmAction
+                  triggerLabel="Re-randomize"
+                  actionLabel="Shuffle"
+                  title="Re-randomize this range"
+                  description="Shuffle the existing range again to ensure fairness."
+                  onConfirm={handleRerandomize}
+                  disabled={mode !== "random" || loading || !state}
+                  variant="secondary"
+                />
               </div>
 
               <Separator />
 
-            <div className="grid gap-3 sm:grid-cols-3 sm:items-end">
-              <div className="space-y-2 sm:col-span-2">
-                <Label
-                  htmlFor="append"
-                    className="text-lg font-semibold text-slate-900"
-                  >
+              <div className="grid gap-3 sm:grid-cols-3 sm:items-end">
+                <div className="space-y-2 sm:col-span-2">
+                  <Label htmlFor="append" className="text-lg font-semibold text-slate-900">
                     Append additional tickets
                   </Label>
                   <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
@@ -611,8 +608,10 @@ const AdminPage = () => {
               <Separator />
             </CardContent>
           </Card>
+        </div>
 
-          <Card className="lg:col-span-2">
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Card>
             <CardHeader className="flex items-center justify-between">
               <div>
                 <CardTitle>Live State</CardTitle>
@@ -665,7 +664,7 @@ const AdminPage = () => {
             </CardContent>
           </Card>
 
-          <Card className="space-y-3 lg:col-span-1">
+          <Card className="space-y-3">
             <CardHeader className="pb-2">
               <CardTitle>History</CardTitle>
               <CardDescription>Undo/redo or restore from snapshots.</CardDescription>
@@ -731,7 +730,9 @@ const AdminPage = () => {
               </div>
             </CardContent>
           </Card>
+        </div>
 
+        <div className="grid gap-6 lg:grid-cols-2">
           <Card className="space-y-3">
             <CardHeader>
               <CardTitle>System reset</CardTitle>
@@ -756,9 +757,7 @@ const AdminPage = () => {
               />
             </CardContent>
           </Card>
-        </div>
 
-        <div className="grid gap-6 lg:grid-cols-3">
           <Card className="space-y-4">
             <CardHeader>
               <CardTitle>Share the live board</CardTitle>

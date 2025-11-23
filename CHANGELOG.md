@@ -63,3 +63,4 @@
 - Matched the “System reset” heading style to other admin card titles.
 - Placed Live State beside History (instead of above) for balanced admin layout.
 - Ensured “Share the live board” sits alongside “System reset” on wide viewports.
+- Reordered the admin dashboard rows: Ticket Range/Now Serving, Live State/History, then System reset/Share.
