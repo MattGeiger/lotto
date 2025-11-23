@@ -228,11 +228,14 @@ const AdminPage = () => {
     currentIndex >= 0 && state?.generatedOrder ? state.generatedOrder[currentIndex] : null;
   const prevArrowVariant: ButtonProps["variant"] =
     currentIndex === -1 ? "secondary" : "outline";
+  const appendMin = (state?.endNumber ?? 0) + 1;
   const parsedAppendValue = Number(appendEnd);
   const resolvedAppendValue =
     Number.isFinite(parsedAppendValue) && appendEnd.trim() !== ""
       ? parsedAppendValue
-      : (state?.endNumber ?? 0) + 1;
+      : appendMin;
+  const appendLeftVariant: ButtonProps["variant"] =
+    !state || resolvedAppendValue <= appendMin ? "secondary" : "outline";
 
   const formatOrdinal = (value: number) => {
     const remainder = value % 100;
@@ -429,7 +432,7 @@ const AdminPage = () => {
                     />
                     <Button
                       type="button"
-                      variant="outline"
+                      variant={appendLeftVariant}
                       size="icon"
                       onClick={() => handleAppendStep(-1)}
                       disabled={!state}

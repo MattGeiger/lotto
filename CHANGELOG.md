@@ -39,3 +39,4 @@
 - Kept append arrows inline with the input and placed the Append button beneath for consistent layout.
 - Corrected append section markup after layout changes.
 - Prevented append arrows from wrapping under the input by constraining widths and disabling wrap on larger screens.
+- Made the append left arrow start as secondary and switch to outline once the value advances beyond the starting end.
