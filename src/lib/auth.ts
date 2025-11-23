@@ -31,7 +31,7 @@ export const authOptions: NextAuthConfig = {
 
         const { error } = await resend.emails.send({
           from: fromAddress,
-          to: email,
+          to: [email],
           subject: "Your William Temple House login link",
           html: `
             <p>Click the link below to sign in:</p>
