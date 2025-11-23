@@ -222,7 +222,7 @@ const htmlPage = `<!doctype html>
 
       <div class="grid">
         <div class="card">
-          <h3>Tickets Issued</h3>
+          <h3>Tickets Issued Today</h3>
           <p id="range">—</p>
         </div>
         <div class="card">
@@ -294,7 +294,7 @@ const htmlPage = `<!doctype html>
         const { startNumber, endNumber, mode, generatedOrder, currentlyServing, timestamp } = state;
         servingEl.textContent = currentlyServing ?? "Waiting";
         rangeEl.textContent =
-          startNumber && endNumber ? startNumber + "–" + endNumber : "Not set";
+          startNumber && endNumber ? startNumber + " – " + endNumber : "Not set";
         modeEl.textContent =
           mode === "random" ? "Raffle" : mode === "sequential" ? "Sequential" : "—";
         countEl.textContent =

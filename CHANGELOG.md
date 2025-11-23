@@ -48,3 +48,4 @@
 - Broke the read-only empty-state message into centered, large multiline lines.
 - Forced the read-only empty-state lines to block display to ensure visible line breaks.
 - Moved the “Now Serving” card inline with the logo at the top of the read-only layout.
+- Added spacing around the ticket range dash on the read-only “Tickets Issued” card for clarity.
