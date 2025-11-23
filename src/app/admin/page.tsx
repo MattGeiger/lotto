@@ -74,6 +74,25 @@ const AdminPage = () => {
   const [snapshots, setSnapshots] = React.useState<Snapshot[]>([]);
   const [selectedSnapshot, setSelectedSnapshot] = React.useState<string>("");
 
+  const refreshSnapshots = React.useCallback(async () => {
+    try {
+      const response = await fetch("/api/state", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "listSnapshots" }),
+      });
+      if (response.ok) {
+        const snaps = (await response.json()) as Snapshot[];
+        setSnapshots(snaps);
+        if (snaps.length && !selectedSnapshot) {
+          setSelectedSnapshot(snaps[0].id);
+        }
+      }
+    } catch {
+      // ignore snapshot refresh errors in UI
+    }
+  }, [selectedSnapshot]);
+
   React.useEffect(() => {
     if (typeof window !== "undefined") {
       setDisplayUrl(`${window.location.origin}/display`);
@@ -307,31 +326,6 @@ const AdminPage = () => {
     await setServingByIndex(currentIndex + 1);
   };
 
-  const refreshSnapshots = React.useCallback(async () => {
-    try {
-      const response = await fetch("/api/state", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "listSnapshots" }),
-      });
-      if (response.ok) {
-        const snaps = (await response.json()) as Snapshot[];
-        setSnapshots(snaps);
-        if (snaps.length && !selectedSnapshot) {
-          setSelectedSnapshot(snaps[0].id);
-        }
-      }
-    } catch {
-      // ignore snapshot refresh errors in UI
-    }
-  }, [selectedSnapshot]);
-
-  React.useEffect(() => {
-    if (snapshots.length && !selectedSnapshot) {
-      setSelectedSnapshot(snapshots[0].id);
-    }
-  }, [snapshots, selectedSnapshot]);
-
   const handleUndo = async () => {
     await sendAction({ action: "undo" });
     await refreshSnapshots();
@@ -347,6 +341,12 @@ const AdminPage = () => {
     await sendAction({ action: "restoreSnapshot", id: selectedSnapshot });
     await refreshSnapshots();
   };
+
+  React.useEffect(() => {
+    if (snapshots.length && !selectedSnapshot) {
+      setSelectedSnapshot(snapshots[0].id);
+    }
+  }, [snapshots, selectedSnapshot]);
 
   return (
     <TooltipProvider>
