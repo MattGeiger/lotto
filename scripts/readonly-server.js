@@ -166,6 +166,9 @@ const htmlPage = `<!doctype html>
         color: #e5e7eb;
         font-size: 14px;
       }
+      .empty-state {
+        margin-top: 8px;
+      }
       .error {
         color: #fb7185;
       }
@@ -210,6 +213,7 @@ const htmlPage = `<!doctype html>
 
       <div class="card" style="margin-top: 18px;">
         <h3>Drawing Order</h3>
+        <div class="muted empty-state" id="empty-state">Welcome! The raffle has not yet started. Check back soon for updates.</div>
         <div class="order" id="order"></div>
         <div class="muted" id="status" style="margin-top: 8px;">Polling for latest state…</div>
       </div>
@@ -223,6 +227,7 @@ const htmlPage = `<!doctype html>
       const modeEl = document.getElementById("mode");
       const countEl = document.getElementById("count");
       const orderEl = document.getElementById("order");
+      const emptyStateEl = document.getElementById("empty-state");
       const timestampEl = document.getElementById("timestamp");
       const pageTitleEl = document.getElementById("page-title");
 
@@ -272,12 +277,11 @@ const htmlPage = `<!doctype html>
           generatedOrder && currentlyServing !== null
             ? generatedOrder.indexOf(currentlyServing)
             : -1;
-        if (!generatedOrder || generatedOrder.length === 0) {
-          const badge = document.createElement("div");
-          badge.className = "badge";
-          badge.textContent = "No tickets generated yet";
-          orderEl.appendChild(badge);
-        } else {
+        const hasTickets = generatedOrder && generatedOrder.length > 0;
+        if (emptyStateEl) {
+          emptyStateEl.style.display = hasTickets ? "none" : "block";
+        }
+        if (hasTickets) {
           generatedOrder.forEach((value, index) => {
             const badge = document.createElement("div");
             badge.className = "badge";
