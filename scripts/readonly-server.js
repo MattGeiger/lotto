@@ -178,6 +178,10 @@ const htmlPage = `<!doctype html>
         align-items: center;
         gap: 6px;
       }
+      .empty-state .line {
+        display: block;
+        width: 100%;
+      }
       .error {
         color: #fb7185;
       }
@@ -223,9 +227,9 @@ const htmlPage = `<!doctype html>
       <div class="card" style="margin-top: 18px;">
         <h3>Drawing Order</h3>
         <div class="muted empty-state" id="empty-state">
-          <span>Welcome!</span>
-          <span>The raffle has not yet started.</span>
-          <span>Check back soon for updates.</span>
+          <span class="line">Welcome!</span>
+          <span class="line">The raffle has not yet started.</span>
+          <span class="line">Check back soon for updates.</span>
         </div>
         <div class="order" id="order"></div>
         <div class="muted" id="status" style="margin-top: 8px;">Polling for latest state…</div>

@@ -46,3 +46,4 @@
 - Added a welcoming empty state outside the grid when no tickets exist on the read-only board.
 - Enlarged the read-only empty-state welcome message for long-distance readability.
 - Broke the read-only empty-state message into centered, large multiline lines.
+- Forced the read-only empty-state lines to block display to ensure visible line breaks.
