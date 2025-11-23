@@ -118,7 +118,9 @@ const htmlPage = `<!doctype html>
         line-height: 1.2;
       }
       .now-serving-card p {
-        font-size: 36px;
+        font-size: 48px;
+        line-height: 1.15;
+        font-weight: 900;
       }
       .order {
         display: grid;
