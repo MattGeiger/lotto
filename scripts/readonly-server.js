@@ -155,12 +155,21 @@ const htmlPage = `<!doctype html>
       }
       .logo {
         display: flex;
-        justify-content: flex-start;
+        justify-content: center;
         margin-bottom: 8px;
       }
       .logo img {
         max-width: min(320px, 45vw);
         height: auto;
+      }
+      .top-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 12px;
+        text-align: center;
       }
       .muted {
         color: #e5e7eb;
@@ -194,8 +203,14 @@ const htmlPage = `<!doctype html>
   </head>
   <body>
     <div class="shell">
-      <div class="logo">
-        <img src="/wth-logo-horizontal-reverse.png" alt="William Temple House" />
+      <div class="top-row">
+        <div class="logo">
+          <img src="/wth-logo-horizontal-reverse.png" alt="William Temple House" />
+        </div>
+        <div class="card">
+          <h3>Now Serving</h3>
+          <p id="serving">—</p>
+        </div>
       </div>
       <header>
         <div>
@@ -207,11 +222,7 @@ const htmlPage = `<!doctype html>
 
       <div class="grid">
         <div class="card">
-          <h3>Now Serving</h3>
-          <p id="serving">—</p>
-        </div>
-        <div class="card">
-          <h3>Ticket Range</h3>
+          <h3>Tickets Issued</h3>
           <p id="range">—</p>
         </div>
         <div class="card">
