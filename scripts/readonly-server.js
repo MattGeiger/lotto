@@ -167,7 +167,12 @@ const htmlPage = `<!doctype html>
         font-size: 14px;
       }
       .empty-state {
-        margin-top: 8px;
+        margin-top: 12px;
+        padding: 16px;
+        text-align: center;
+        font-size: 28px;
+        line-height: 1.3;
+        font-weight: 700;
       }
       .error {
         color: #fb7185;
