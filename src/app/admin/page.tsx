@@ -299,9 +299,6 @@ const AdminPage = () => {
                   order. Mode controls how the order is built.
                 </CardDescription>
               </div>
-              <Badge variant="muted" className="uppercase">
-                Mode: {mode}
-              </Badge>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">

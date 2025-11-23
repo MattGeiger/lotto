@@ -51,3 +51,4 @@ Next.js (App Router) app with ShadCN-inspired UI, JSON persistence, and atomic b
 ## Theme / design tokens
 - Global palette and design tokens live in `src/app/globals.css` (`--color-primary`, surfaces, borders, focus, status colors).
 - UI components (buttons, badges, cards, inputs, switches, tooltips) consume those tokens rather than hard-coded colors. Update tokens to change app-wide styling.
+- The public display no longer shows a mode pill; mode selection is still managed in the admin controls but not surfaced in the UI chrome.

@@ -58,9 +58,6 @@ const DisplayPage = () => {
             <Badge variant="success" className="bg-emerald-500 text-white">
               Live
             </Badge>
-            <Badge variant="muted" className="bg-white/10 text-white">
-              Mode: {state?.mode ?? "—"}
-            </Badge>
             {state?.timestamp && (
               <Badge variant="muted" className="bg-white/10 text-white">
                 Updated {new Date(state.timestamp).toLocaleTimeString()}
