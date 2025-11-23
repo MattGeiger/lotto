@@ -29,23 +29,29 @@ export const authOptions: NextAuthConfig = {
           throw new Error("Email domain is not allowed.");
         }
 
-        const { error } = await resend.emails.send({
-          from: fromAddress,
-          to: [email],
-          subject: "Your William Temple House login link",
-          html: `
-            <p>Click the link below to sign in:</p>
-            <p><a href="${url}">${url}</a></p>
-            <p>This link will expire shortly. If you did not request it, you can ignore this email.</p>
-          `,
-        });
+        try {
+          const { error } = await resend.emails.send({
+            from: fromAddress,
+            to: [email],
+            subject: "Your William Temple House login link",
+            html: `
+              <p>Click the link below to sign in:</p>
+              <p><a href="${url}">${url}</a></p>
+              <p>This link will expire shortly. If you did not request it, you can ignore this email.</p>
+            `,
+          });
 
-        if (error) {
-          throw new Error(
-            provider?.type === "email"
-              ? `Unable to send verification email: ${String(error)}`
-              : "Unable to send verification email.",
-          );
+          if (error) {
+            console.error("Magic link send failed", { error, to: email, from: fromAddress });
+            throw new Error(
+              provider?.type === "email"
+                ? `Unable to send verification email: ${String(error)}`
+                : "Unable to send verification email.",
+            );
+          }
+        } catch (err) {
+          console.error("Magic link send threw", { err, to: email, from: fromAddress });
+          throw err;
         }
       },
     }),
