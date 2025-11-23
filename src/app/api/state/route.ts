@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { authOptions } from "@/lib/auth";
 import { stateManager, type Mode } from "@/lib/state-manager";
+import { getServerSession } from "next-auth";
 
 const actionSchema = z.discriminatedUnion("action", [
   z.object({
@@ -57,6 +59,11 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const parsed = actionSchema.safeParse(await request.json());
     if (!parsed.success) {
       return NextResponse.json(
