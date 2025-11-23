@@ -121,6 +121,11 @@ const htmlPage = `<!doctype html>
         font-size: 96px;
         line-height: 1.05;
         font-weight: 900;
+        color: #fbbf24;
+        background: linear-gradient(135deg, #f59e0b, #fbbf24);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
       }
       .order {
         display: grid;
