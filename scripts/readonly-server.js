@@ -170,9 +170,13 @@ const htmlPage = `<!doctype html>
         margin-top: 12px;
         padding: 16px;
         text-align: center;
-        font-size: 28px;
-        line-height: 1.3;
-        font-weight: 700;
+        font-size: 36px;
+        line-height: 1.25;
+        font-weight: 800;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
       }
       .error {
         color: #fb7185;
@@ -218,7 +222,11 @@ const htmlPage = `<!doctype html>
 
       <div class="card" style="margin-top: 18px;">
         <h3>Drawing Order</h3>
-        <div class="muted empty-state" id="empty-state">Welcome! The raffle has not yet started. Check back soon for updates.</div>
+        <div class="muted empty-state" id="empty-state">
+          <span>Welcome!</span>
+          <span>The raffle has not yet started.</span>
+          <span>Check back soon for updates.</span>
+        </div>
         <div class="order" id="order"></div>
         <div class="muted" id="status" style="margin-top: 8px;">Polling for latest state…</div>
       </div>

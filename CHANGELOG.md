@@ -45,3 +45,4 @@
 - Removed the read-only board shell background so content sits directly on the page.
 - Added a welcoming empty state outside the grid when no tickets exist on the read-only board.
 - Enlarged the read-only empty-state welcome message for long-distance readability.
+- Broke the read-only empty-state message into centered, large multiline lines.
