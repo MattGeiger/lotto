@@ -185,6 +185,9 @@ const htmlPage = `<!doctype html>
         justify-self: center;
         min-width: 200px;
       }
+      .now-serving-card {
+        border-color: transparent;
+      }
       .spacer {
         width: min(320px, 45vw);
         height: 1px;
