@@ -25,7 +25,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, type ButtonProps } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -220,6 +220,8 @@ const AdminPage = () => {
   const totalTickets = state?.generatedOrder.length ?? 0;
   const currentTicket =
     currentIndex >= 0 && state?.generatedOrder ? state.generatedOrder[currentIndex] : null;
+  const prevArrowVariant: ButtonProps["variant"] =
+    currentIndex === -1 ? "secondary" : "outline";
 
   const formatOrdinal = (value: number) => {
     const remainder = value % 100;
@@ -463,7 +465,7 @@ const AdminPage = () => {
                 <div className="flex items-center gap-2">
                   <Button
                     type="button"
-                    variant="secondary"
+                    variant={prevArrowVariant}
                     size="icon"
                     onClick={handlePrevServing}
                     disabled={loading || !state || totalTickets === 0}
