@@ -463,7 +463,7 @@ const AdminPage = () => {
                 <div className="flex items-center gap-2">
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="ghost"
                     size="icon"
                     onClick={handlePrevServing}
                     disabled={loading || !state || totalTickets === 0}
