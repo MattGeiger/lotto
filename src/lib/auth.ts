@@ -8,13 +8,6 @@ import { Resend } from "resend";
 const allowedDomain = process.env.ADMIN_EMAIL_DOMAIN?.toLowerCase();
 const fromAddress = process.env.EMAIL_FROM ?? "noreply@example.com";
 const resendApiKey = process.env.RESEND_API_KEY;
-const databaseUrl =
-  process.env.POSTGRES_PRISMA_URL ||
-  process.env.POSTGRES_URL ||
-  process.env.POSTGRES_URL_NON_POOLING ||
-  process.env.POSTGRES_URL_NON_POOLING_NO_TLS ||
-  process.env.DATABASE_URL;
-const useDatabase = process.env.USE_DATABASE !== "false";
 
 const resend = resendApiKey ? new Resend(resendApiKey) : null;
 const emailServer =
@@ -26,6 +19,14 @@ const emailServer =
   } as const);
 
 export const { handlers: authHandlers, auth } = NextAuth(() => {
+  const useDatabase = process.env.USE_DATABASE !== "false";
+  const databaseUrl =
+    process.env.POSTGRES_PRISMA_URL ||
+    process.env.POSTGRES_URL ||
+    process.env.POSTGRES_URL_NON_POOLING ||
+    process.env.POSTGRES_URL_NON_POOLING_NO_TLS ||
+    process.env.DATABASE_URL;
+
   const adapter =
     databaseUrl && useDatabase ? PostgresAdapter(new Pool({ connectionString: databaseUrl })) : undefined;
 
