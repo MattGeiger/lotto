@@ -1,17 +1,25 @@
-import type { NextAuthOptions } from "next-auth";
+import NextAuth, { type NextAuthConfig } from "next-auth";
 import EmailProvider from "next-auth/providers/email";
 import { Resend } from "resend";
 
 const allowedDomain = process.env.ADMIN_EMAIL_DOMAIN?.toLowerCase();
-const fromAddress = process.env.EMAIL_FROM;
+const fromAddress = process.env.EMAIL_FROM ?? "noreply@example.com";
 const resendApiKey = process.env.RESEND_API_KEY;
 
 const resend = resendApiKey ? new Resend(resendApiKey) : null;
+const emailServer =
+  process.env.EMAIL_SERVER ??
+  ({
+    host: "localhost",
+    port: 1025,
+    auth: { user: "user", pass: "pass" },
+  } as const);
 
-export const authOptions: NextAuthOptions = {
+export const authOptions: NextAuthConfig = {
   providers: [
     EmailProvider({
       from: fromAddress,
+      server: emailServer,
       sendVerificationRequest: async ({ identifier, url, provider }) => {
         const email = identifier.toLowerCase();
         if (!fromAddress || !resend) {
@@ -58,3 +66,5 @@ export const authOptions: NextAuthOptions = {
   },
   session: { strategy: "jwt" },
 };
+
+export const { handlers: authHandlers, auth } = NextAuth(authOptions);
