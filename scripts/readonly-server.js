@@ -117,6 +117,9 @@ const htmlPage = `<!doctype html>
         color: #fff;
         line-height: 1.2;
       }
+      .now-serving-card p {
+        font-size: 36px;
+      }
       .order {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
