@@ -108,7 +108,8 @@ export const ReadOnlyDisplay = () => {
             <div className="text-center">
               <p className="mb-1 text-lg uppercase tracking-[0.14em] text-muted-foreground">Now Serving</p>
               <p
-                className="bg-gradient-to-br from-amber-400 to-amber-300 bg-clip-text text-[96px] font-black leading-[1.15] text-transparent"
+                className="bg-clip-text text-[96px] font-black leading-[1.15] text-transparent"
+                style={{ backgroundImage: "var(--serving-text-gradient)" }}
                 aria-label="Currently serving ticket number"
               >
                 {currentlyServing ?? "Waiting"}
