@@ -6,32 +6,10 @@ import QRCode from "react-qr-code";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TicketDetailDialog } from "@/components/ticket-detail-dialog";
+import { useLanguage } from "@/contexts/language-context";
+import { formatDate } from "@/lib/date-format";
+import { formatWaitTime } from "@/lib/time-format";
 import type { RaffleState } from "@/lib/state-types";
-
-const formatDate = () => {
-  const now = new Date();
-  const weekday = now.toLocaleString("en-US", { weekday: "long" });
-  const day = now.getDate();
-  const month = now.toLocaleString("en-US", { month: "long" });
-  const year = now.getFullYear();
-
-  const suffix = (() => {
-    const remainder = day % 100;
-    if (remainder >= 11 && remainder <= 13) return "th";
-    switch (day % 10) {
-      case 1:
-        return "st";
-      case 2:
-        return "nd";
-      case 3:
-        return "rd";
-      default:
-        return "th";
-    }
-  })();
-
-  return `${weekday}, ${month} ${day}${suffix}, ${year}`;
-};
 
 const formatTime = (input?: Date | number | null) => {
   if (!input && input !== 0) return "—";
@@ -40,15 +18,16 @@ const formatTime = (input?: Date | number | null) => {
 };
 
 export const ReadOnlyDisplay = () => {
+  const { language, t } = useLanguage();
   const [state, setState] = React.useState<RaffleState | null>(null);
-  const [status, setStatus] = React.useState("Polling for latest state…");
+  const [status, setStatus] = React.useState("");
   const [hasError, setHasError] = React.useState(false);
   const [selectedTicket, setSelectedTicket] = React.useState<number | null>(null);
 
-  const formattedDate = React.useMemo(() => formatDate(), []);
+  const formattedDate = React.useMemo(() => formatDate(language), [language]);
 
   const fetchState = React.useCallback(async () => {
-    setStatus("Refreshing…");
+    setStatus(t("refreshing"));
     setHasError(false);
     try {
       const response = await fetch("/api/state", { cache: "no-store" });
@@ -57,12 +36,13 @@ export const ReadOnlyDisplay = () => {
       }
       const payload = (await response.json()) as RaffleState;
       setState(payload);
-      setStatus(`Last checked: ${formatTime(new Date())}`);
+      setStatus(`${t("lastChecked")}: ${formatTime(new Date())}`);
     } catch (error) {
-      setStatus(`Error loading state: ${error instanceof Error ? error.message : "Unknown error"}`);
+      const message = error instanceof Error ? error.message : t("unknownError");
+      setStatus(`${t("errorLoadingState")}: ${message}`);
       setHasError(true);
     }
-  }, []);
+  }, [t]);
 
   React.useEffect(() => {
     fetchState();
@@ -71,8 +51,12 @@ export const ReadOnlyDisplay = () => {
   }, [fetchState]);
 
   React.useEffect(() => {
-    document.title = `Food Pantry Service For ${formattedDate}`;
-  }, [formattedDate]);
+    setStatus(t("pollingState"));
+  }, [t]);
+
+  React.useEffect(() => {
+    document.title = `${t("foodPantryServiceFor")} ${formattedDate}`;
+  }, [formattedDate, t]);
 
   const startNumber = state?.startNumber ?? 0;
   const endNumber = state?.endNumber ?? 0;
@@ -121,13 +105,13 @@ export const ReadOnlyDisplay = () => {
           {/* NOW SERVING - center */}
           <div className="flex justify-center">
             <div className="text-center">
-              <p className="mb-1 text-lg uppercase tracking-[0.14em] text-muted-foreground">Now Serving</p>
+              <p className="mb-1 text-lg uppercase tracking-[0.14em] text-muted-foreground">{t("nowServing")}</p>
               <p
                 className="bg-clip-text text-[96px] font-black leading-[1.15] text-transparent"
                 style={{ backgroundImage: "var(--serving-text-gradient)" }}
                 aria-label="Currently serving ticket number"
               >
-                {currentlyServing ?? "Waiting"}
+                {currentlyServing ?? t("waiting")}
               </p>
             </div>
           </div>
@@ -146,9 +130,9 @@ export const ReadOnlyDisplay = () => {
           <Card className="border-border/80 bg-card/80 text-left">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between gap-2">
-                <CardTitle className="text-lg uppercase tracking-[0.14em] text-muted-foreground">
-                Food Pantry Service For
-                </CardTitle>
+              <CardTitle className="text-lg uppercase tracking-[0.14em] text-muted-foreground">
+                {t("foodPantryServiceFor")}
+              </CardTitle>
               </div>
             </CardHeader>
             <CardContent className="space-y-1">
@@ -158,7 +142,7 @@ export const ReadOnlyDisplay = () => {
           <Card className="border-border/80 bg-card/80 text-center">
             <CardHeader className="pb-2">
               <CardTitle className="text-lg uppercase tracking-[0.14em] text-muted-foreground">
-                Tickets Issued Today
+                {t("ticketsIssuedToday")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -170,7 +154,7 @@ export const ReadOnlyDisplay = () => {
           <Card className="border-border/80 bg-card/80 text-center">
             <CardHeader className="pb-2">
               <CardTitle className="text-lg uppercase tracking-[0.14em] text-muted-foreground">
-                Total Tickets Issued
+                {t("totalTicketsIssued")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -185,22 +169,22 @@ export const ReadOnlyDisplay = () => {
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between gap-2">
               <CardTitle className="text-lg uppercase tracking-[0.14em] text-muted-foreground">
-                Drawing Order
+                {t("drawingOrder")}
               </CardTitle>
               <Badge
                 variant="muted"
                 className="border-border/50 bg-secondary/50 text-xs font-medium text-muted-foreground"
               >
-                Updated: {updatedTime}
+                {t("updated")}: {updatedTime}
               </Badge>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
             {!hasTickets && (
               <div className="flex flex-col items-center gap-1 rounded-xl bg-muted/20 px-4 py-6 text-center text-3xl font-extrabold leading-snug text-foreground">
-                <span className="block w-full">Welcome!</span>
-                <span className="block w-full">The raffle has not yet started.</span>
-                <span className="block w-full">Check back soon for updates.</span>
+                <span className="block w-full">{t("welcome")}</span>
+                <span className="block w-full">{t("raffleNotStarted")}</span>
+                <span className="block w-full">{t("checkBackSoon")}</span>
               </div>
             )}
 
@@ -265,6 +249,7 @@ export const ReadOnlyDisplay = () => {
             }}
             ticketNumber={selectedTicket}
             {...getTicketDetails(selectedTicket)!}
+            language={language}
           />
         )}
       </div>

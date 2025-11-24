@@ -2,7 +2,9 @@
 
 import { Clock, ListOrdered, Users, X } from "lucide-react";
 
+import { useLanguage, type Language } from "@/contexts/language-context";
 import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { formatWaitTime } from "@/lib/time-format";
 
 type TicketDetailDialogProps = {
   open: boolean;
@@ -11,14 +13,7 @@ type TicketDetailDialogProps = {
   queuePosition: number;
   ticketsAhead: number;
   estimatedWaitMinutes: number;
-};
-
-const formatWaitTime = (minutes: number) => {
-  if (minutes < 60) return `${minutes} minute${minutes === 1 ? "" : "s"}`;
-  const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  if (mins === 0) return `${hours} hour${hours === 1 ? "" : "s"}`;
-  return `${hours} hour${hours === 1 ? "" : "s"}, ${mins} minute${mins === 1 ? "" : "s"}`;
+  language: Language;
 };
 
 export function TicketDetailDialog({
@@ -28,23 +23,27 @@ export function TicketDetailDialog({
   queuePosition,
   ticketsAhead,
   estimatedWaitMinutes,
+  language,
 }: TicketDetailDialogProps) {
+  const { t } = useLanguage();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-center text-3xl font-bold">Ticket #{ticketNumber}</DialogTitle>
+          <DialogTitle className="text-center text-3xl font-bold">
+            {t("ticket")} #{ticketNumber}
+          </DialogTitle>
         </DialogHeader>
         <DialogClose className="absolute right-4 top-4 rounded-full p-1 text-muted-foreground transition hover:bg-muted/40">
           <X className="h-4 w-4" />
-          <span className="sr-only">Close</span>
+          <span className="sr-only">{t("close")}</span>
         </DialogClose>
 
         <div className="space-y-3 py-4">
           <div className="flex items-center gap-3 rounded-lg border bg-card p-4">
             <ListOrdered className="h-6 w-6 text-primary dark:text-[color:var(--ticket-serving-border)]" />
             <div className="flex-1">
-              <p className="text-sm font-medium text-muted-foreground">Queue Position</p>
+              <p className="text-sm font-medium text-muted-foreground">{t("queuePosition")}</p>
               <p className="text-2xl font-bold text-foreground">{queuePosition}</p>
             </div>
           </div>
@@ -52,7 +51,7 @@ export function TicketDetailDialog({
           <div className="flex items-center gap-3 rounded-lg border bg-card p-4">
             <Users className="h-6 w-6 text-primary dark:text-[color:var(--ticket-serving-border)]" />
             <div className="flex-1">
-              <p className="text-sm font-medium text-muted-foreground">Tickets Ahead</p>
+              <p className="text-sm font-medium text-muted-foreground">{t("ticketsAhead")}</p>
               <p className="text-2xl font-bold text-foreground">{ticketsAhead}</p>
             </div>
           </div>
@@ -60,8 +59,10 @@ export function TicketDetailDialog({
           <div className="flex items-center gap-3 rounded-lg border bg-card p-4">
             <Clock className="h-6 w-6 text-primary dark:text-[color:var(--ticket-serving-border)]" />
             <div className="flex-1">
-              <p className="text-sm font-medium text-muted-foreground">Estimated Wait</p>
-              <p className="text-2xl font-bold text-foreground">{formatWaitTime(estimatedWaitMinutes)}</p>
+              <p className="text-sm font-medium text-muted-foreground">{t("estimatedWait")}</p>
+              <p className="text-2xl font-bold text-foreground">
+                {formatWaitTime(estimatedWaitMinutes, language)}
+              </p>
             </div>
           </div>
         </div>
