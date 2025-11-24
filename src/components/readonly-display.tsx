@@ -114,21 +114,20 @@ export const ReadOnlyDisplay = () => {
           <div className="hidden sm:block" />
         </div>
 
-        <header className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur">
-          <div className="space-y-1">
-            <div className="text-[11px] uppercase tracking-[0.16em] text-slate-300">
-              Food Pantry Service For
-            </div>
-            <div className="text-2xl font-bold leading-tight tracking-tight text-white sm:text-3xl">
-              {formattedDate}
-            </div>
-          </div>
-          <Badge variant="muted" className="border-white/20 bg-black/50 text-xs font-medium text-slate-100">
-            Updated: {updatedTime}
-          </Badge>
-        </header>
-
         <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-3 sm:gap-4">
+          <Card className="border-neutral-800/80 bg-neutral-950/80 text-center">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xs uppercase tracking-[0.14em] text-slate-300">
+                Food Pantry Service For
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <p className="text-2xl font-semibold text-white">{formattedDate}</p>
+              <Badge variant="muted" className="border-white/20 bg-black/50 text-xs font-medium text-slate-100">
+                Updated: {updatedTime}
+              </Badge>
+            </CardContent>
+          </Card>
           <Card className="border-neutral-800/80 bg-neutral-950/80 text-center">
             <CardHeader className="pb-2">
               <CardTitle className="text-xs uppercase tracking-[0.14em] text-slate-300">
