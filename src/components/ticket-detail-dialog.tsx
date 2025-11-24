@@ -38,7 +38,7 @@ export function TicketDetailDialog({
 
         <div className="space-y-3 py-4">
           <div className="flex items-center gap-3 rounded-lg border bg-card p-4">
-            <ListOrdered className="h-6 w-6 text-primary" />
+            <ListOrdered className="h-6 w-6 text-primary dark:text-[color:var(--ticket-serving-border)]" />
             <div className="flex-1">
               <p className="text-sm font-medium text-muted-foreground">Queue Position</p>
               <p className="text-2xl font-bold text-foreground">{queuePosition}</p>
@@ -46,7 +46,7 @@ export function TicketDetailDialog({
           </div>
 
           <div className="flex items-center gap-3 rounded-lg border bg-card p-4">
-            <Users className="h-6 w-6 text-primary" />
+            <Users className="h-6 w-6 text-primary dark:text-[color:var(--ticket-serving-border)]" />
             <div className="flex-1">
               <p className="text-sm font-medium text-muted-foreground">Tickets Ahead</p>
               <p className="text-2xl font-bold text-foreground">{ticketsAhead}</p>
@@ -54,7 +54,7 @@ export function TicketDetailDialog({
           </div>
 
           <div className="flex items-center gap-3 rounded-lg border bg-card p-4">
-            <Clock className="h-6 w-6 text-primary" />
+            <Clock className="h-6 w-6 text-primary dark:text-[color:var(--ticket-serving-border)]" />
             <div className="flex-1">
               <p className="text-sm font-medium text-muted-foreground">Estimated Wait</p>
               <p className="text-2xl font-bold text-foreground">{formatWaitTime(estimatedWaitMinutes)}</p>
