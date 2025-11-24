@@ -46,7 +46,7 @@ The app must:
 - **ShadCN UI components** for clean, accessible styling  
 - **Global CSS** for consistency  
 - **Client view without background polling** to avoid clobbering in-progress form input on `/admin`
-- **Built-in read-only board** at `/display` that polls `/api/state` for wall screens, plus an optional standalone server (`npm run readonly`) for edge/legacy hosting
+- **Built-in read-only board** at `/` that polls `/api/state` for wall screens, plus an optional standalone server (`npm run readonly`) for edge/legacy hosting
 
 ### **3.2 Back-End**
 - Hosted inside Next.js API routes  
@@ -83,7 +83,7 @@ The app must:
 	•	Total tickets issued
 	•	Randomized (or sequential) ticket order
 	•	Highlighted “Now Serving” indicator
-	•	Auto-updating information available via the separate read-only board
+	•	Auto-updating information available via the read-only board at `/`
 
 4.2 Back-End (Staff & Volunteers)
 
@@ -210,7 +210,7 @@ Requires:
 
 8. QR Code Support
 	•	QR code generated client-side
-	•	Links to /display page
+	•	Links to the public board at `/`
 	•	Updated automatically with each new state change
 	•	Helpful for clients away from the board
 

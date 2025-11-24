@@ -70,7 +70,7 @@ const AdminPage = () => {
   const [pendingModeChoice, setPendingModeChoice] = React.useState<Mode | null>(null);
   const [modeChanging, setModeChanging] = React.useState(false);
   const [resetPhrase, setResetPhrase] = React.useState("");
-  const [displayUrl, setDisplayUrl] = React.useState("https://example.com/display");
+  const [displayUrl, setDisplayUrl] = React.useState("https://example.com/");
   const [copied, setCopied] = React.useState(false);
   const [snapshots, setSnapshots] = React.useState<Snapshot[]>([]);
   const [selectedSnapshot, setSelectedSnapshot] = React.useState<string>("");
@@ -96,7 +96,7 @@ const AdminPage = () => {
 
   React.useEffect(() => {
     if (typeof window !== "undefined") {
-      setDisplayUrl(`${window.location.origin}/display`);
+      setDisplayUrl(`${window.location.origin}/`);
     }
   }, []);
 
@@ -762,7 +762,7 @@ const AdminPage = () => {
               </p>
                 <div className="flex flex-wrap gap-2">
                   <Button asChild variant="secondary" size="sm">
-                    <Link href="/display">Open display</Link>
+                    <Link href="/">Open display</Link>
                   </Button>
                   <Button variant="ghost" size="sm" onClick={handleCopyLink}>
                     {copied ? "Copied!" : "Copy link"}

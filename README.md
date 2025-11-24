@@ -4,10 +4,16 @@ Next.js (App Router) app with ShadCN-inspired UI, JSON persistence, and atomic b
 
 ## Features
 - Staff dashboard (`/admin`) to set ranges, toggle random vs sequential, append tickets, re-randomize, update “now serving,” and reset with confirmations.
-- Public display (`/display`) with airport-style grid and QR code sharing, now auto-polling `/api/state` every 4s.
+- Public display (`/`) with airport-style grid and QR code sharing, auto-polling `/api/state` every 4s.
 - Built-in read-only board in Next.js plus an optional standalone server (`npm run readonly`) on its own port for edge/legacy hosting.
 - File-based datastore with atomic writes, timestamped backups, and append logic that preserves prior random order.
 - Tests written with Vitest + Testing Library for the state manager and grid highlighting.
+
+## Local URLs
+- Display: http://localhost:3000/
+- Admin: http://localhost:3000/admin
+- Login: http://localhost:3000/login
+- Staff intro: http://localhost:3000/staff
 
 ## Scripts
 - `npm run dev` — start the Next.js dev server.
@@ -18,7 +24,7 @@ Next.js (App Router) app with ShadCN-inspired UI, JSON persistence, and atomic b
 - `npm run lint` — run ESLint.
 
 ## Read-only board options
-- Built-in: `/display` in Next.js, polling `/api/state` every 4s; high-contrast wall-screen UI with WTH logo.
+- Built-in: `/` in Next.js, polling `/api/state` every 4s; high-contrast wall-screen UI with WTH logo.
 - Optional standalone: `npm run readonly` on port `4000`, still polling `data/state.json` for legacy/edge hosting.
 - Configure standalone via env vars:
   - `READONLY_PORT` — port to listen on (default `4000`).
@@ -88,7 +94,7 @@ Next.js (App Router) app with ShadCN-inspired UI, JSON persistence, and atomic b
 
 6) Deploy
 - Set all env vars in Vercel.
-- Deploy the Next.js app; verify `/display`, `/admin` (auth required), and `/api/state` reads/writes against Neon.
+- Deploy the Next.js app; verify `/` (public board), `/admin` (auth required), and `/api/state` reads/writes against Neon.
 - Confirm magic-link delivery works for an `@williamtemple.org` address.
 
 7) Observability
@@ -98,10 +104,11 @@ Next.js (App Router) app with ShadCN-inspired UI, JSON persistence, and atomic b
 ## Routing and domains (deployment)
 - Production domain: `williamtemple.app` (custom domain in Vercel).
 - Planned routes:
-  - `/` → public read-only board (serve `/display` at the root in production).
+  - `/` → public read-only board (default homepage).
   - `/login` → magic-link entry; after sign-in, redirect to the staff landing page (current homepage content).
   - `/admin` → staff dashboard (unchanged), linked from the staff landing page after login.
-- Update Vercel project settings to point the production domain at this app; keep localhost paths for development (`http://localhost:3000` app with `/display`, optional `http://localhost:4000` standalone read-only server).
+  - `/staff` → staff welcome/intro (former homepage).
+- Update Vercel project settings to point the production domain at this app; keep localhost paths for development (`http://localhost:3000` app with `/`, optional `http://localhost:4000` standalone read-only server).
 
 ## Local development (no external deps)
 - `docker-compose` runs the app, Postgres, and MailDev (SMTP + web UI). Default `.env.local` uses `DATABASE_URL=postgresql://postgres:postgres@db:5432/neondb?sslmode=disable`, `EMAIL_SERVER_HOST=maildev`, `EMAIL_SERVER_PORT=1025`.
@@ -150,7 +157,7 @@ Local options:
   ```bash
   docker compose up --build
   ```
-- App listens on `http://localhost:3000` (staff dashboard `/admin`, public board `/display`).
+- App listens on `http://localhost:3000` (public board `/`, staff dashboard `/admin`, staff intro `/staff`).
 - Stored state lives in your host `./data` directory so it survives container restarts.
 
 ## Tech
