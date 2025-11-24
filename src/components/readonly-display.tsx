@@ -115,17 +115,22 @@ export const ReadOnlyDisplay = () => {
         </div>
 
         <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-3 sm:gap-4">
-          <Card className="border-neutral-800/80 bg-neutral-950/80 text-center">
+          <Card className="border-neutral-800/80 bg-neutral-950/80 text-left">
             <CardHeader className="pb-2">
-              <CardTitle className="text-xs uppercase tracking-[0.14em] text-slate-300">
+              <div className="flex items-center justify-between gap-2">
+                <CardTitle className="text-xs uppercase tracking-[0.14em] text-slate-300">
                 Food Pantry Service For
-              </CardTitle>
+                </CardTitle>
+                <Badge
+                  variant="muted"
+                  className="border-white/20 bg-black/50 text-[11px] font-medium text-slate-100"
+                >
+                  Updated: {updatedTime}
+                </Badge>
+              </div>
             </CardHeader>
-            <CardContent className="space-y-2">
+            <CardContent className="space-y-1">
               <p className="text-2xl font-semibold text-white">{formattedDate}</p>
-              <Badge variant="muted" className="border-white/20 bg-black/50 text-xs font-medium text-slate-100">
-                Updated: {updatedTime}
-              </Badge>
             </CardContent>
           </Card>
           <Card className="border-neutral-800/80 bg-neutral-950/80 text-center">
