@@ -82,7 +82,10 @@ export const ReadOnlyDisplay = () => {
   const updatedTime = formatTime(state?.timestamp ?? null);
 
   return (
-    <div className="min-h-screen w-full bg-[var(--gradient-display-bg)] px-2 py-8 text-foreground sm:px-4 lg:px-6">
+    <div
+      className="min-h-screen w-full px-2 py-8 text-foreground sm:px-4 lg:px-6"
+      style={{ background: "var(--gradient-display-bg)" }}
+    >
       <div className="mx-auto flex w-full flex-col gap-4">
         {/* Logo + Now Serving Row */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-[minmax(280px,320px)_1fr_minmax(280px,320px)] sm:items-center sm:gap-6">
