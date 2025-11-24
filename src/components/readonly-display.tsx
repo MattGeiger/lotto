@@ -110,8 +110,22 @@ export const ReadOnlyDisplay = () => {
             </div>
           </div>
 
-          {/* Spacer - right (invisible but maintains grid balance) */}
-          <div className="hidden sm:block" />
+          {/* QR Code - right */}
+          <div className="hidden sm:block">
+            <Card className="border-neutral-800/80 bg-neutral-950/80 text-center">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg uppercase tracking-[0.14em] text-slate-300">
+                  Share
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col items-center justify-center space-y-2">
+                <div className="rounded-xl border border-neutral-800 bg-neutral-900/80 p-3">
+                  <QRCode value={typeof window !== "undefined" ? window.location.href : ""} size={120} />
+                </div>
+                <p className="text-xs text-slate-300">Scan to open</p>
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
         <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-3 sm:gap-4">
