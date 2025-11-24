@@ -91,7 +91,8 @@ export const ReadOnlyDisplay = () => {
       state.currentlyServing !== null ? state.generatedOrder.indexOf(state.currentlyServing) : -1;
     const ticketsAhead =
       servingIndex === -1 ? Math.max(0, queuePosition - 1) : Math.max(0, queuePosition - servingIndex - 1);
-    const estimatedWaitMinutes = ticketsAhead * 3;
+    // 165 minutes / 75 shoppers = 2.2 minutes per shopper
+    const estimatedWaitMinutes = Math.round(ticketsAhead * 2.2);
     return { queuePosition, ticketsAhead, estimatedWaitMinutes };
   };
 
