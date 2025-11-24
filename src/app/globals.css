@@ -55,8 +55,8 @@
   --serving-text-gradient: linear-gradient(135deg, oklch(0.62 0.21 255), oklch(0.7 0.22 255));
 
   --gradient-display-bg:
-    radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.12), transparent 32%),
-    radial-gradient(circle at 80% 0%, rgba(59, 130, 246, 0.08), transparent 28%),
+    radial-gradient(circle at 20% 20%, oklch(0.62 0.21 255 / 0.12), transparent 32%),
+    radial-gradient(circle at 80% 0%, oklch(0.62 0.21 255 / 0.08), transparent 28%),
     linear-gradient(145deg, oklch(1 0 0), oklch(0.96 0.02 255) 45%, oklch(0.99 0.01 255));
 
   --font-sans: var(--font-geist-sans);
@@ -112,9 +112,10 @@
   --status-neutral-border: oklch(0.6 0.02 250);
   --status-neutral-text: oklch(0.86 0.02 250);
 
-  --gradient-display-bg: radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.18), transparent 32%),
-    radial-gradient(circle at 80% 0%, rgba(59, 130, 246, 0.12), transparent 28%),
-    linear-gradient(145deg, #000, #0a0a0a 45%, #000);
+  --gradient-display-bg:
+    radial-gradient(circle at 20% 20%, oklch(0.62 0.21 255 / 0.18), transparent 32%),
+    radial-gradient(circle at 80% 0%, oklch(0.62 0.21 255 / 0.12), transparent 28%),
+    linear-gradient(145deg, oklch(0.12 0 0), oklch(0.14 0 0) 45%, oklch(0.12 0 0));
 }
 
 @theme inline {
