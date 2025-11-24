@@ -104,7 +104,7 @@ export const ReadOnlyDisplay = () => {
           <div className="flex justify-center">
             <div className="text-center">
               <p className="mb-1 text-xs uppercase tracking-[0.14em] text-slate-200">Now Serving</p>
-              <p className="bg-gradient-to-br from-amber-400 to-amber-300 bg-clip-text text-[96px] font-black leading-[1.1] text-transparent">
+              <p className="bg-gradient-to-br from-amber-400 to-amber-300 bg-clip-text text-[96px] font-black leading-[1.15] text-transparent">
                 {currentlyServing ?? "Waiting"}
               </p>
             </div>
