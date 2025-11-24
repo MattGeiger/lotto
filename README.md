@@ -68,8 +68,8 @@ Next.js (App Router) app with ShadCN-inspired UI, JSON persistence, and atomic b
 - Enforce `@williamtemple.org` allowlist in the sign-in callback and/or before sending links.
 - Required env vars (set in Vercel project):
   - `DATABASE_URL` (Neon connection string)
-  - `NEXTAUTH_URL` (e.g., `https://your-app.vercel.app`)
-  - `NEXTAUTH_SECRET` (strong random string)
+  - `AUTH_SECRET` (strong random string)
+  - `AUTH_TRUST_HOST=true`
   - `EMAIL_FROM` (verified sender in Resend)
   - `RESEND_API_KEY`
   - `ADMIN_EMAIL_DOMAIN=williamtemple.org`
@@ -107,9 +107,10 @@ Next.js (App Router) app with ShadCN-inspired UI, JSON persistence, and atomic b
 - Update Vercel project settings to point the production domain at this app; keep localhost paths for development (`http://localhost:3000` app, `http://localhost:4000` standalone read-only server).
 
 ## Local development (no external deps)
-- Default behavior: file-based datastore under `./data` and no auth guard when `AUTH_BYPASS=true`. Keep `DATABASE_URL` unset and `USE_DATABASE=false` (or unset) to avoid Neon/Vercel dependencies while on localhost.
-- To exercise Postgres locally, set `DATABASE_URL` to a Neon/local instance and unset `AUTH_BYPASS`.
-- Docker: `docker-compose.yml` loads `.env.local` via `env_file`. Populate `.env.local` with `NEXTAUTH_URL`/`AUTH_URL`, `AUTH_SECRET`, `RESEND_API_KEY`, `EMAIL_FROM`, `ADMIN_EMAIL_DOMAIN`, etc., before running `docker compose up --build`.
+- `docker-compose` runs the app, Postgres, and MailDev (SMTP + web UI). Default `.env.local` uses `DATABASE_URL=postgresql://postgres:postgres@db:5432/neondb?sslmode=disable`, `EMAIL_SERVER_HOST=maildev`, `EMAIL_SERVER_PORT=1025`.
+- Fully offline: leave `RESEND_API_KEY` unset, keep `EMAIL_FROM=login@localhost`, and optionally set `AUTH_BYPASS=true` to skip auth.
+- To exercise the full email flow locally, keep `AUTH_BYPASS=false`, start docker, and open magic links from MailDev at `http://localhost:1080`.
+- Prefer file-based state? Set `USE_DATABASE=false` (still works with `AUTH_BYPASS=true` if you want to skip auth).
 
 ## Environment Setup
 
@@ -124,14 +125,15 @@ Next.js (App Router) app with ShadCN-inspired UI, JSON persistence, and atomic b
    openssl rand -base64 32
    ```
 3. Fill `.env.local` with required values:
-   - `AUTH_SECRET` and `NEXTAUTH_SECRET` (same value)
-   - `DATABASE_URL` (Neon Postgres connection string)
-   - `RESEND_API_KEY` (https://resend.com/api-keys)
-   - `EMAIL_FROM` (verified sender, e.g., login@williamtemple.app)
-   - `ADMIN_EMAIL_DOMAIN` (e.g., williamtemple.org)
+   - `AUTH_SECRET` (required) and `AUTH_TRUST_HOST=true`
+   - `USE_DATABASE=true` and `DATABASE_URL=postgresql://postgres:postgres@db:5432/neondb?sslmode=disable`
+   - `EMAIL_FROM=login@localhost`, `EMAIL_SERVER_HOST=maildev`, `EMAIL_SERVER_PORT=1025`
+   - `ADMIN_EMAIL_DOMAIN` (optional; restrict sign-ins)
+   - Optional: `RESEND_API_KEY` + production `EMAIL_FROM` when testing Resend instead of MailDev
+   - Optional: `AUTH_BYPASS=true` to skip auth during UI work
 4. Required services:
-   - Neon Postgres (free tier): https://neon.tech
-   - Resend (free tier): https://resend.com
+   - Provided by docker compose: app, Postgres, MailDev (open http://localhost:1080 to view emails)
+   - Neon/Resend are only needed for production or remote testing
 
 ### Environment Variables Reference
 

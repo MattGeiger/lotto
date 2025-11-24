@@ -53,15 +53,15 @@ Goal: run the same stack locally and on Vercel using Neon Postgres, NextAuth v5 
    - Add/edit `.env.local`:
      ```
      USE_DATABASE=true
-     DATABASE_URL=postgresql://<neon-connection-string>
-     RESEND_API_KEY=...
-     EMAIL_FROM=login@williamtemple.app
+     DATABASE_URL=postgresql://postgres:postgres@db:5432/neondb?sslmode=disable
+     EMAIL_FROM=login@localhost
+     EMAIL_SERVER_HOST=maildev
+     EMAIL_SERVER_PORT=1025
      ADMIN_EMAIL_DOMAIN=williamtemple.org
-     NEXTAUTH_URL=http://localhost:3000
-     AUTH_URL=http://localhost:3000
      AUTH_SECRET=<openssl rand -base64 32>
      AUTH_BYPASS=false
      AUTH_TRUST_HOST=true
+     # RESEND_API_KEY=... (only needed when testing Resend instead of MailDev)
      ```
    - Docker pulls these via `env_file: .env.local`.
 
@@ -74,7 +74,7 @@ Goal: run the same stack locally and on Vercel using Neon Postgres, NextAuth v5 
      - Create `resend` only when `RESEND_API_KEY` is set.
      - Build `adapter` conditionally when `DATABASE_URL` is present and `USE_DATABASE` is not false.
      - Wrap NextAuth config in a function: `export const { handlers, auth } = NextAuth(() => ({ ... }))`.
-     - Keep domain allowlist, magic link email send via Resend, trustHost checking `AUTH_URL`/`NEXTAUTH_URL`/`AUTH_TRUST_HOST`.
+     - Keep domain allowlist, magic link email send via Resend, `trustHost` true for proxy environments.
      - Log a warning if no adapter (email auth won’t work without DB).
 
 5) Docker config
@@ -82,9 +82,10 @@ Goal: run the same stack locally and on Vercel using Neon Postgres, NextAuth v5 
      ```yaml
      env_file:
        - .env.local
-     environment:
-       - NODE_ENV=production
+    environment:
+       - NODE_ENV=development
      ```
+   - Services: app, Postgres (`db`), MailDev (`maildev`).
 
 6) Test flow checklist
    - `docker compose down && docker compose up --build`
@@ -94,8 +95,7 @@ Goal: run the same stack locally and on Vercel using Neon Postgres, NextAuth v5 
    - `/admin` accessible post-login; non-allowed domains rejected.
 
 7) Vercel notes
-   - Set envs in Vercel: `DATABASE_URL`, `AUTH_SECRET`, `AUTH_URL` (prod domain), `RESEND_API_KEY`, `EMAIL_FROM`, `ADMIN_EMAIL_DOMAIN`, `USE_DATABASE=true`.
-   - Do not set `AUTH_TRUST_HOST` in production.
+   - Set envs in Vercel: `DATABASE_URL`, `AUTH_SECRET`, `AUTH_TRUST_HOST=true`, `RESEND_API_KEY`, `EMAIL_FROM`, `ADMIN_EMAIL_DOMAIN`, `USE_DATABASE=true`.
    - Same auth config works on Vercel; Neon free tier is sufficient.
 
 ### Status

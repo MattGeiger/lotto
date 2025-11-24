@@ -6,20 +6,26 @@ import EmailProvider from "next-auth/providers/email";
 import { Resend } from "resend";
 
 const allowedDomain = process.env.ADMIN_EMAIL_DOMAIN?.toLowerCase();
-const fromAddress = process.env.EMAIL_FROM ?? "noreply@example.com";
+const fromAddress = process.env.EMAIL_FROM ?? "login@localhost";
 const resendApiKey = process.env.RESEND_API_KEY;
 
 const resend = resendApiKey ? new Resend(resendApiKey) : null;
-const emailServer =
-  process.env.EMAIL_SERVER ??
-  ({
-    host: "localhost",
-    port: 1025,
-    auth: { user: "user", pass: "pass" },
-  } as const);
+const emailServer = {
+  host: process.env.EMAIL_SERVER_HOST ?? "localhost",
+  port: Number(process.env.EMAIL_SERVER_PORT ?? "1025"),
+  auth: process.env.EMAIL_SERVER_USER
+    ? {
+        user: process.env.EMAIL_SERVER_USER,
+        pass: process.env.EMAIL_SERVER_PASSWORD ?? "",
+      }
+    : undefined,
+} as const;
 
 export const { handlers: authHandlers, auth } = NextAuth(() => {
   const useDatabase = process.env.USE_DATABASE !== "false";
+  const bypassAuth = process.env.AUTH_BYPASS === "true";
+  const isProduction = process.env.NODE_ENV === "production";
+  const useResend = isProduction && !!resend;
   const dbSources = [
     ["POSTGRES_PRISMA_URL", process.env.POSTGRES_PRISMA_URL],
     ["POSTGRES_URL", process.env.POSTGRES_URL],
@@ -38,6 +44,12 @@ export const { handlers: authHandlers, auth } = NextAuth(() => {
     hasDbUrl: !!databaseUrl,
     dbSource: picked?.[0] ?? "none",
     hasResendKey: !!resendApiKey,
+    useResend,
+    emailServer: {
+      host: emailServer.host,
+      port: emailServer.port,
+      hasAuth: Boolean(emailServer.auth),
+    },
     fromAddress,
   });
 
@@ -59,50 +71,52 @@ export const { handlers: authHandlers, auth } = NextAuth(() => {
     providers: [
       EmailProvider({
         from: fromAddress,
-        server: emailServer,
-        sendVerificationRequest: async ({ identifier, url, provider }) => {
-          console.log("[Auth] sendVerificationRequest START", {
-            identifier,
-            hasResend: !!resend,
-            fromAddress,
-            hasResendApiKey: !!resendApiKey,
-          });
+        server: useResend ? undefined : emailServer,
+        sendVerificationRequest: useResend
+          ? async ({ identifier, url, provider }) => {
+              console.log("[Auth] sendVerificationRequest START", {
+                identifier,
+                hasResend: !!resend,
+                fromAddress,
+                hasResendApiKey: !!resendApiKey,
+              });
 
-          const email = identifier.toLowerCase();
-          if (!fromAddress || !resend) {
-            throw new Error("Email auth is not configured. Set EMAIL_FROM and RESEND_API_KEY.");
-          }
-          if (allowedDomain && !email.endsWith(`@${allowedDomain}`)) {
-            throw new Error("Email domain is not allowed.");
-          }
+              const email = identifier.toLowerCase();
+              if (!fromAddress || !resend) {
+                throw new Error("Email auth is not configured. Set EMAIL_FROM and RESEND_API_KEY.");
+              }
+              if (allowedDomain && !email.endsWith(`@${allowedDomain}`)) {
+                throw new Error("Email domain is not allowed.");
+              }
 
-          try {
-            console.log("[Auth] Sending email via Resend...", { to: email });
-            const { error } = await resend.emails.send({
-              from: fromAddress,
-              to: [email],
-              subject: "Your William Temple House login link",
-              html: `
+              try {
+                console.log("[Auth] Sending email via Resend...", { to: email });
+                const { error } = await resend.emails.send({
+                  from: fromAddress,
+                  to: [email],
+                  subject: "Your William Temple House login link",
+                  html: `
                 <p>Click the link below to sign in:</p>
                 <p><a href="${url}">${url}</a></p>
                 <p>This link will expire shortly. If you did not request it, you can ignore this email.</p>
               `,
-            });
+                });
 
-            if (error) {
-              console.error("[Auth] Resend API error:", { error, to: email, from: fromAddress });
-              throw new Error(
-                provider?.type === "email"
-                  ? `Unable to send verification email: ${String(error)}`
-                  : "Unable to send verification email.",
-              );
+                if (error) {
+                  console.error("[Auth] Resend API error:", { error, to: email, from: fromAddress });
+                  throw new Error(
+                    provider?.type === "email"
+                      ? `Unable to send verification email: ${String(error)}`
+                      : "Unable to send verification email.",
+                  );
+                }
+                console.log("[Auth] Email sent successfully!", { to: email });
+              } catch (err) {
+                console.error("[Auth] sendVerificationRequest FAILED:", { err, to: email, from: fromAddress });
+                throw err;
+              }
             }
-            console.log("[Auth] Email sent successfully!", { to: email });
-          } catch (err) {
-            console.error("[Auth] sendVerificationRequest FAILED:", { err, to: email, from: fromAddress });
-            throw err;
-          }
-        },
+          : undefined,
       }),
     ],
     pages: {
@@ -112,6 +126,10 @@ export const { handlers: authHandlers, auth } = NextAuth(() => {
     },
     callbacks: {
       async signIn({ user }) {
+        if (bypassAuth) {
+          console.log("[Auth] signIn bypass");
+          return true;
+        }
         console.log("[Auth] signIn callback", { email: user.email });
         const email = user.email?.toLowerCase();
         if (allowedDomain && email && email.endsWith(`@${allowedDomain}`)) {
@@ -123,10 +141,7 @@ export const { handlers: authHandlers, auth } = NextAuth(() => {
       },
     },
     session: { strategy: "jwt" },
-    trustHost:
-      process.env.AUTH_TRUST_HOST === "true" ||
-      process.env.NODE_ENV !== "production" ||
-      (process.env.AUTH_URL ?? process.env.NEXTAUTH_URL ?? "").includes("localhost"),
+    trustHost: true,
     debug: true,
   };
 

@@ -6,7 +6,33 @@ services:
     env_file:
       - .env.local
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development
     volumes:
       - ./data:/app/data
+    depends_on:
+      - db
+      - maildev
     restart: unless-stopped
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: neondb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  maildev:
+    image: maildev/maildev
+    ports:
+      - "1080:1080"
+      - "1025:1025"
+    environment:
+      - MAILDEV_WEB_PORT=1080
+      - MAILDEV_SMTP_PORT=1025
+
+volumes:
+  postgres_data:

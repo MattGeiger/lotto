@@ -13,7 +13,10 @@ export async function middleware(request: NextRequest) {
   const authBypass = process.env.AUTH_BYPASS === "true";
 
   if ((isAdmin || isWriteApi) && !authBypass) {
-    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    const token = await getToken({
+      req: request,
+      secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
+    });
     if (!token) {
       if (pathname.startsWith("/api/")) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
