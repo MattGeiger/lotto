@@ -102,7 +102,7 @@ export const ReadOnlyDisplay = () => {
     >
       <div className="mx-auto flex w-full flex-col gap-4">
         {/* Logo + Now Serving Row */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-[minmax(280px,320px)_1fr_minmax(280px,320px)] sm:items-center sm:gap-6">
+        <div className="mt-10 grid grid-cols-1 gap-4 sm:mt-12 sm:grid-cols-[minmax(280px,320px)_1fr_minmax(280px,320px)] sm:items-center sm:gap-6">
           {/* Logo - left */}
           <div className="flex justify-center sm:justify-start">
             <img
