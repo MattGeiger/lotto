@@ -118,7 +118,7 @@ export const ReadOnlyDisplay = () => {
           <Card className="border-neutral-800/80 bg-neutral-950/80 text-left">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between gap-2">
-                <CardTitle className="text-xs uppercase tracking-[0.14em] text-slate-300">
+                <CardTitle className="text-lg uppercase tracking-[0.14em] text-slate-300">
                 Food Pantry Service For
                 </CardTitle>
                 <Badge
@@ -135,7 +135,7 @@ export const ReadOnlyDisplay = () => {
           </Card>
           <Card className="border-neutral-800/80 bg-neutral-950/80 text-center">
             <CardHeader className="pb-2">
-              <CardTitle className="text-xs uppercase tracking-[0.14em] text-slate-300">
+              <CardTitle className="text-lg uppercase tracking-[0.14em] text-slate-300">
                 Tickets Issued Today
               </CardTitle>
             </CardHeader>
@@ -147,7 +147,7 @@ export const ReadOnlyDisplay = () => {
           </Card>
           <Card className="border-neutral-800/80 bg-neutral-950/80 text-center">
             <CardHeader className="pb-2">
-              <CardTitle className="text-xs uppercase tracking-[0.14em] text-slate-300">
+              <CardTitle className="text-lg uppercase tracking-[0.14em] text-slate-300">
                 Total Tickets Issued
               </CardTitle>
             </CardHeader>
