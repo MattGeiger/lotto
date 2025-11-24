@@ -92,7 +92,7 @@ export const ReadOnlyDisplay = () => {
           {/* Logo - left */}
           <div className="flex justify-center sm:justify-start">
             <img
-              src="/WTH_Logo_Horizontal_Black_Outline.png"
+              src="/wth-logo-horizontal.png"
               alt="William Temple House"
               className="block h-auto w-full max-w-[400px] dark:hidden"
             />
