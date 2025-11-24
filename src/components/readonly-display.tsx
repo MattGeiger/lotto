@@ -159,12 +159,12 @@ export const ReadOnlyDisplay = () => {
           </Card>
         </div>
 
-        <Card className="border-neutral-800/80 bg-neutral-950/80">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xs uppercase tracking-[0.14em] text-slate-300">
-              Drawing Order
-            </CardTitle>
-          </CardHeader>
+          <Card className="border-neutral-800/80 bg-neutral-950/80">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg uppercase tracking-[0.14em] text-slate-300">
+                Drawing Order
+              </CardTitle>
+            </CardHeader>
           <CardContent className="space-y-4">
             {!hasTickets && (
               <div className="flex flex-col items-center gap-1 rounded-xl bg-black/30 px-4 py-6 text-center text-3xl font-extrabold leading-snug text-slate-100">
