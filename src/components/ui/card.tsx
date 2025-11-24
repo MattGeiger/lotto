@@ -1,47 +1,28 @@
-import * as React from "react";
-
 import { cn } from "@/lib/utils";
 
-const Card = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & { muted?: boolean }
->(({ className, ...props }, ref) => (
+type CardProps = React.ComponentProps<"div"> & { muted?: boolean };
+
+const Card = ({ className, ...props }: CardProps) => (
   <div
-    ref={ref}
-    className={cn(
-      "rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-md",
-      className,
-    )}
+    data-slot="card"
+    className={cn("rounded-xl border border-border bg-card p-4 text-card-foreground shadow-md", className)}
     {...props}
   />
-));
-Card.displayName = "Card";
+);
 
-const CardHeader = ({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) => (
+const CardHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
   <div className={cn("space-y-1", className)} {...props} />
 );
 
-const CardTitle = ({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLHeadingElement>) => (
-  <h3 className={cn("text-lg font-semibold text-[var(--color-foreground)]", className)} {...props} />
+const CardTitle = ({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
+  <h3 className={cn("text-lg font-semibold text-card-foreground", className)} {...props} />
 );
 
-const CardDescription = ({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLParagraphElement>) => (
-  <p className={cn("text-sm text-[var(--color-muted)]", className)} {...props} />
+const CardDescription = ({ className, ...props }: React.HTMLAttributes<HTMLParagraphElement>) => (
+  <p className={cn("text-sm text-muted-foreground", className)} {...props} />
 );
 
-const CardContent = ({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) => (
+const CardContent = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
   <div className={cn("mt-4 space-y-3", className)} {...props} />
 );
 
