@@ -364,7 +364,7 @@ const AdminPage = () => {
         </div>
         <div className="flex items-center gap-3">
           <Button asChild variant="secondary" size="sm">
-            <Link href="/">
+            <Link href="/staff">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back
             </Link>
