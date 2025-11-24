@@ -89,15 +89,15 @@ export const ReadOnlyDisplay = () => {
       }}
     >
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
-        <div className="flex flex-col items-center gap-3 text-center sm:grid sm:grid-cols-[auto,1fr,auto] sm:items-center sm:gap-4 sm:text-left md:gap-6">
-          <div className="flex justify-start sm:justify-start">
+        <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left md:gap-6">
+          <div className="flex items-center gap-4 sm:gap-6">
             <img
               src="/wth-logo-horizontal-reverse.png"
               alt="William Temple House"
-              className="h-auto w-[min(320px,60vw)] max-w-[320px]"
+              className="h-auto w-[min(280px,50vw)] max-w-[320px]"
             />
           </div>
-          <Card className="border-transparent bg-transparent text-center shadow-none">
+          <Card className="border-transparent bg-transparent text-center shadow-none sm:text-right">
             <CardHeader className="pb-2">
               <CardTitle className="text-xs uppercase tracking-[0.14em] text-slate-200">
                 Now Serving
@@ -109,7 +109,6 @@ export const ReadOnlyDisplay = () => {
               </p>
             </CardContent>
           </Card>
-          <div className="hidden w-[min(320px,45vw)] sm:block" aria-hidden="true" />
         </div>
 
         <header className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur">
