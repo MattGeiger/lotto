@@ -122,7 +122,7 @@ export const ReadOnlyDisplay = () => {
             <QRCode
               aria-label="Scan to view display"
               value={typeof window !== "undefined" ? window.location.href : ""}
-              size={180}
+              size={150}
             />
           </div>
         </div>
