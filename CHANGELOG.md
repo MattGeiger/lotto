@@ -1,5 +1,10 @@
 # Changelog
 
+## 2025-11-23
+- Replaced `/display` with the high-contrast read-only UI from the standalone server, now polling `/api/state` every 4 seconds inside Next.js.
+- Added `ReadOnlyDisplay` React component to render the wall-screen layout with served/upcoming styling and date/title updates.
+- Documented the built-in display route and clarified the standalone `npm run readonly` server is optional/legacy.
+
 ## 2025-11-22
 - Removed client-side polling timers from `/admin` and `/display` to keep form inputs stable while editing.
 - Added a standalone read-only board server (`npm run readonly`) on its own port that polls the persisted JSON state.

@@ -4,8 +4,8 @@ Next.js (App Router) app with ShadCN-inspired UI, JSON persistence, and atomic b
 
 ## Features
 - Staff dashboard (`/admin`) to set ranges, toggle random vs sequential, append tickets, re-randomize, update “now serving,” and reset with confirmations.
-- Public display (`/display`) with airport-style grid and QR code sharing (no auto-polling to avoid interrupting form entry).
-- Isolated read-only board server (`npm run readonly`) on its own port that polls the JSON state and exposes zero write paths.
+- Public display (`/display`) with airport-style grid and QR code sharing, now auto-polling `/api/state` every 4s.
+- Built-in read-only board in Next.js plus an optional standalone server (`npm run readonly`) on its own port for edge/legacy hosting.
 - File-based datastore with atomic writes, timestamped backups, and append logic that preserves prior random order.
 - Tests written with Vitest + Testing Library for the state manager and grid highlighting.
 
@@ -13,20 +13,17 @@ Next.js (App Router) app with ShadCN-inspired UI, JSON persistence, and atomic b
 - `npm run dev` — start the Next.js dev server.
 - `npm run build` — production build.
 - `npm start` — run the built app.
-- `npm run readonly` — start the standalone read-only board on port 4000 (configurable via `READONLY_PORT`).
+- `npm run readonly` — start the optional standalone read-only board on port 4000 (configurable via `READONLY_PORT`).
 - `npm test` — run Vitest suite.
 - `npm run lint` — run ESLint.
 
-## Read-only board server
-- Runs on a separate port (default `4000`) and serves a static view that polls `data/state.json` every 4s.
-- Defaults to a high-contrast, read-only display suitable for wall screens.
-- No controls or writes are exposed—purely a viewer for wall displays or embeds.
-- Displays the WTH horizontal logo at the top of the read-only board.
-- Configure via env vars:
+## Read-only board options
+- Built-in: `/display` in Next.js, polling `/api/state` every 4s; high-contrast wall-screen UI with WTH logo.
+- Optional standalone: `npm run readonly` on port `4000`, still polling `data/state.json` for legacy/edge hosting.
+- Configure standalone via env vars:
   - `READONLY_PORT` — port to listen on (default `4000`).
   - `READONLY_POLL_MS` — poll interval in milliseconds (default `4000`).
   - `READONLY_DATA_DIR` — directory containing `state.json` (default `./data`).
-- Start it alongside the main app:
   ```bash
   npm run readonly
   # open http://localhost:4000
@@ -101,10 +98,10 @@ Next.js (App Router) app with ShadCN-inspired UI, JSON persistence, and atomic b
 ## Routing and domains (deployment)
 - Production domain: `williamtemple.app` (custom domain in Vercel).
 - Planned routes:
-  - `/` → public read-only board (currently at `http://localhost:4000` via the standalone server). For deployment, serve the read-only page at the root.
+  - `/` → public read-only board (serve `/display` at the root in production).
   - `/login` → magic-link entry; after sign-in, redirect to the staff landing page (current homepage content).
   - `/admin` → staff dashboard (unchanged), linked from the staff landing page after login.
-- Update Vercel project settings to point the production domain at this app; keep localhost paths for development (`http://localhost:3000` app, `http://localhost:4000` standalone read-only server).
+- Update Vercel project settings to point the production domain at this app; keep localhost paths for development (`http://localhost:3000` app with `/display`, optional `http://localhost:4000` standalone read-only server).
 
 ## Local development (no external deps)
 - `docker-compose` runs the app, Postgres, and MailDev (SMTP + web UI). Default `.env.local` uses `DATABASE_URL=postgresql://postgres:postgres@db:5432/neondb?sslmode=disable`, `EMAIL_SERVER_HOST=maildev`, `EMAIL_SERVER_PORT=1025`.
