@@ -5,6 +5,7 @@ import QRCode from "react-qr-code";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TicketDetailDialog } from "@/components/ticket-detail-dialog";
 import type { RaffleState } from "@/lib/state-types";
 
 const formatDate = () => {
@@ -42,6 +43,7 @@ export const ReadOnlyDisplay = () => {
   const [state, setState] = React.useState<RaffleState | null>(null);
   const [status, setStatus] = React.useState("Polling for latest state…");
   const [hasError, setHasError] = React.useState(false);
+  const [selectedTicket, setSelectedTicket] = React.useState<number | null>(null);
 
   const formattedDate = React.useMemo(() => formatDate(), []);
 
@@ -80,6 +82,18 @@ export const ReadOnlyDisplay = () => {
     generatedOrder && currentlyServing !== null ? generatedOrder.indexOf(currentlyServing) : -1;
   const hasTickets = generatedOrder.length > 0;
   const updatedTime = formatTime(state?.timestamp ?? null);
+
+  const getTicketDetails = (ticketNumber: number) => {
+    if (!state?.generatedOrder?.length) return null;
+    const queuePosition = state.generatedOrder.indexOf(ticketNumber) + 1;
+    if (queuePosition <= 0) return null;
+    const servingIndex =
+      state.currentlyServing !== null ? state.generatedOrder.indexOf(state.currentlyServing) : -1;
+    const ticketsAhead =
+      servingIndex === -1 ? Math.max(0, queuePosition - 1) : Math.max(0, queuePosition - servingIndex - 1);
+    const estimatedWaitMinutes = ticketsAhead * 3;
+    return { queuePosition, ticketsAhead, estimatedWaitMinutes };
+  };
 
   return (
     <div
@@ -192,7 +206,7 @@ export const ReadOnlyDisplay = () => {
             <div className="grid grid-cols-[repeat(auto-fill,minmax(96px,1fr))] gap-3 md:gap-4">
               {generatedOrder.map((value, index) => {
                 const baseClasses =
-                  "flex items-center justify-center rounded-xl border text-center text-2xl font-extrabold leading-[1.2] px-4 py-3";
+                  "flex items-center justify-center rounded-xl border text-center text-2xl font-extrabold leading-[1.2] px-4 py-3 cursor-pointer transition-transform hover:scale-[1.03]";
                 const stateStyles =
                   value === currentlyServing
                     ? {
@@ -213,7 +227,20 @@ export const ReadOnlyDisplay = () => {
                           opacity: 0.85,
                         };
                 return (
-                  <div key={value} className={baseClasses} style={stateStyles}>
+                  <div
+                    key={value}
+                    className={baseClasses}
+                    style={stateStyles}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setSelectedTicket(value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setSelectedTicket(value);
+                      }
+                    }}
+                  >
                     {value}
                   </div>
                 );
@@ -229,6 +256,16 @@ export const ReadOnlyDisplay = () => {
             </div>
           </CardContent>
         </Card>
+        {selectedTicket !== null && getTicketDetails(selectedTicket) && (
+          <TicketDetailDialog
+            open={selectedTicket !== null}
+            onOpenChange={(open) => {
+              if (!open) setSelectedTicket(null);
+            }}
+            ticketNumber={selectedTicket}
+            {...getTicketDetails(selectedTicket)!}
+          />
+        )}
       </div>
     </div>
   );
