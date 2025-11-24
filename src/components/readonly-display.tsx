@@ -114,16 +114,8 @@ export const ReadOnlyDisplay = () => {
           {/* QR Code - right */}
           <div className="hidden sm:block">
             <Card className="border-neutral-800/80 bg-neutral-950/80 text-center">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg uppercase tracking-[0.14em] text-slate-300">
-                  Share
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-col items-center justify-center space-y-2">
-                <div className="rounded-xl border border-neutral-800 bg-neutral-900/80 p-3">
-                  <QRCode value={typeof window !== "undefined" ? window.location.href : ""} size={120} />
-                </div>
-                <p className="text-xs text-slate-300">Scan to open</p>
+              <CardContent className="flex items-center justify-center py-6">
+                <QRCode value={typeof window !== "undefined" ? window.location.href : ""} size={160} />
               </CardContent>
             </Card>
           </div>
