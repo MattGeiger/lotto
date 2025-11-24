@@ -96,7 +96,7 @@ export const ReadOnlyDisplay = () => {
             <img
               src="/wth-logo-horizontal-reverse.png"
               alt="William Temple House"
-              className="h-auto w-full max-w-[320px]"
+              className="h-auto w-full max-w-[400px]"
             />
           </div>
 
@@ -112,15 +112,6 @@ export const ReadOnlyDisplay = () => {
 
           {/* Spacer - right (invisible but maintains grid balance) */}
           <div className="hidden sm:block" />
-        </div>
-
-        <div className="flex items-start justify-end">
-          <Badge
-            variant="muted"
-            className="border-white/20 bg-black/50 text-[11px] font-medium text-slate-100"
-          >
-            Updated: {updatedTime}
-          </Badge>
         </div>
 
         <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-3 sm:gap-4">
@@ -162,12 +153,20 @@ export const ReadOnlyDisplay = () => {
           </Card>
         </div>
 
-          <Card className="border-neutral-800/80 bg-neutral-950/80">
-            <CardHeader className="pb-2">
+        <Card className="border-neutral-800/80 bg-neutral-950/80">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between gap-2">
               <CardTitle className="text-lg uppercase tracking-[0.14em] text-slate-300">
                 Drawing Order
               </CardTitle>
-            </CardHeader>
+              <Badge
+                variant="muted"
+                className="border-white/20 bg-black/50 text-[11px] font-medium text-slate-100"
+              >
+                Updated: {updatedTime}
+              </Badge>
+            </div>
+          </CardHeader>
           <CardContent className="space-y-4">
             {!hasTickets && (
               <div className="flex flex-col items-center gap-1 rounded-xl bg-black/30 px-4 py-6 text-center text-3xl font-extrabold leading-snug text-slate-100">
