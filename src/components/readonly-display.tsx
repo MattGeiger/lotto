@@ -103,7 +103,7 @@ export const ReadOnlyDisplay = () => {
           {/* NOW SERVING - center */}
           <div className="flex justify-center">
             <div className="text-center">
-              <p className="mb-1 text-xs uppercase tracking-[0.14em] text-slate-200">Now Serving</p>
+              <p className="mb-1 text-lg uppercase tracking-[0.14em] text-slate-200">Now Serving</p>
               <p className="bg-gradient-to-br from-amber-400 to-amber-300 bg-clip-text text-[96px] font-black leading-[1.15] text-transparent">
                 {currentlyServing ?? "Waiting"}
               </p>
@@ -114,6 +114,15 @@ export const ReadOnlyDisplay = () => {
           <div className="hidden sm:block" />
         </div>
 
+        <div className="flex items-start justify-end">
+          <Badge
+            variant="muted"
+            className="border-white/20 bg-black/50 text-[11px] font-medium text-slate-100"
+          >
+            Updated: {updatedTime}
+          </Badge>
+        </div>
+
         <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-3 sm:gap-4">
           <Card className="border-neutral-800/80 bg-neutral-950/80 text-left">
             <CardHeader className="pb-2">
@@ -121,12 +130,6 @@ export const ReadOnlyDisplay = () => {
                 <CardTitle className="text-lg uppercase tracking-[0.14em] text-slate-300">
                 Food Pantry Service For
                 </CardTitle>
-                <Badge
-                  variant="muted"
-                  className="border-white/20 bg-black/50 text-[11px] font-medium text-slate-100"
-                >
-                  Updated: {updatedTime}
-                </Badge>
               </div>
             </CardHeader>
             <CardContent className="space-y-1">
