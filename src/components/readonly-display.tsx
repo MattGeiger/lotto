@@ -198,7 +198,7 @@ export const ReadOnlyDisplay = () => {
                     ? {
                         background: "var(--ticket-serving)",
                         borderColor: "var(--ticket-serving-border)",
-                        color: "white",
+                        color: "var(--ticket-serving-text)",
                       }
                     : currentIndex !== -1 && index < currentIndex
                       ? {
