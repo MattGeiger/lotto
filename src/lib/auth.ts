@@ -33,14 +33,25 @@ export const { handlers: authHandlers, auth } = NextAuth(() => {
   const picked = dbSources.find(([, value]) => Boolean(value));
   const databaseUrl = picked?.[1];
 
+  console.log("[Auth] Initializing with:", {
+    useDatabase,
+    hasDbUrl: !!databaseUrl,
+    dbSource: picked?.[0] ?? "none",
+    hasResendKey: !!resendApiKey,
+    fromAddress,
+  });
+
   const adapter =
     databaseUrl && useDatabase ? PostgresAdapter(new Pool({ connectionString: databaseUrl })) : undefined;
 
   if (!adapter) {
-    console.warn(
-      "[Auth] No database adapter configured. Email auth requires DATABASE_URL/USE_DATABASE.",
-      { useDatabase, pickedSource: picked?.[0] ?? null },
-    );
+    console.error("[Auth] No database adapter configured!", {
+      useDatabase,
+      hasDbUrl: !!databaseUrl,
+      pickedSource: picked?.[0] ?? null,
+    });
+  } else {
+    console.log("[Auth] Adapter initialized successfully");
   }
 
   const config: NextAuthConfig = {
@@ -50,6 +61,13 @@ export const { handlers: authHandlers, auth } = NextAuth(() => {
         from: fromAddress,
         server: emailServer,
         sendVerificationRequest: async ({ identifier, url, provider }) => {
+          console.log("[Auth] sendVerificationRequest START", {
+            identifier,
+            hasResend: !!resend,
+            fromAddress,
+            hasResendApiKey: !!resendApiKey,
+          });
+
           const email = identifier.toLowerCase();
           if (!fromAddress || !resend) {
             throw new Error("Email auth is not configured. Set EMAIL_FROM and RESEND_API_KEY.");
@@ -59,6 +77,7 @@ export const { handlers: authHandlers, auth } = NextAuth(() => {
           }
 
           try {
+            console.log("[Auth] Sending email via Resend...", { to: email });
             const { error } = await resend.emails.send({
               from: fromAddress,
               to: [email],
@@ -71,15 +90,16 @@ export const { handlers: authHandlers, auth } = NextAuth(() => {
             });
 
             if (error) {
-              console.error("Magic link send failed", { error, to: email, from: fromAddress });
+              console.error("[Auth] Resend API error:", { error, to: email, from: fromAddress });
               throw new Error(
                 provider?.type === "email"
                   ? `Unable to send verification email: ${String(error)}`
                   : "Unable to send verification email.",
               );
             }
+            console.log("[Auth] Email sent successfully!", { to: email });
           } catch (err) {
-            console.error("Magic link send threw", { err, to: email, from: fromAddress });
+            console.error("[Auth] sendVerificationRequest FAILED:", { err, to: email, from: fromAddress });
             throw err;
           }
         },
@@ -92,10 +112,13 @@ export const { handlers: authHandlers, auth } = NextAuth(() => {
     },
     callbacks: {
       async signIn({ user }) {
+        console.log("[Auth] signIn callback", { email: user.email });
         const email = user.email?.toLowerCase();
         if (allowedDomain && email && email.endsWith(`@${allowedDomain}`)) {
+          console.log("[Auth] signIn approved");
           return true;
         }
+        console.log("[Auth] signIn rejected - domain mismatch");
         return false;
       },
     },
@@ -104,6 +127,7 @@ export const { handlers: authHandlers, auth } = NextAuth(() => {
       process.env.AUTH_TRUST_HOST === "true" ||
       process.env.NODE_ENV !== "production" ||
       (process.env.AUTH_URL ?? process.env.NEXTAUTH_URL ?? "").includes("localhost"),
+    debug: true,
   };
 
   return config;
