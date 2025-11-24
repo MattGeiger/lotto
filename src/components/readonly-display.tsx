@@ -89,34 +89,29 @@ export const ReadOnlyDisplay = () => {
       }}
     >
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
-        <div className="grid grid-cols-1 items-center gap-4 text-center sm:grid-cols-[auto,1fr,auto] sm:gap-6">
-          {/* Logo */}
+        {/* Logo + Now Serving Row */}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-[minmax(280px,320px)_1fr_minmax(280px,320px)] sm:items-center sm:gap-6">
+          {/* Logo - left */}
           <div className="flex justify-center sm:justify-start">
             <img
               src="/wth-logo-horizontal-reverse.png"
               alt="William Temple House"
-              className="h-auto w-[min(320px,45vw)]"
+              className="h-auto w-full max-w-[320px]"
             />
           </div>
 
-          {/* NOW SERVING - centered in middle column */}
-          <div className="flex items-center justify-center">
-            <Card className="border-transparent bg-transparent shadow-none">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-xs uppercase tracking-[0.14em] text-slate-200">
-                  Now Serving
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <p className="bg-gradient-to-br from-amber-400 to-amber-300 bg-clip-text text-8xl font-black leading-[1.1] text-transparent">
-                  {currentlyServing ?? "Waiting"}
-                </p>
-              </CardContent>
-            </Card>
+          {/* NOW SERVING - center */}
+          <div className="flex justify-center">
+            <div className="text-center">
+              <p className="mb-1 text-xs uppercase tracking-[0.14em] text-slate-200">Now Serving</p>
+              <p className="bg-gradient-to-br from-amber-400 to-amber-300 bg-clip-text text-[96px] font-black leading-[1.1] text-transparent">
+                {currentlyServing ?? "Waiting"}
+              </p>
+            </div>
           </div>
 
-          {/* Spacer for balance (hidden on mobile) */}
-          <div className="hidden w-[min(320px,45vw)] sm:block" aria-hidden="true" />
+          {/* Spacer - right (invisible but maintains grid balance) */}
+          <div className="hidden sm:block" />
         </div>
 
         <header className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur">
