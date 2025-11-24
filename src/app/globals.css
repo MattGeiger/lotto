@@ -49,7 +49,10 @@
   --ticket-upcoming: oklch(0.92 0.01 250);
   --ticket-upcoming-border: oklch(0.8 0.01 250);
 
-  --gradient-display-bg: linear-gradient(to bottom, oklch(0.98 0.01 255), oklch(0.96 0.01 255));
+  --gradient-display-bg:
+    radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.06), transparent 32%),
+    radial-gradient(circle at 80% 0%, rgba(59, 130, 246, 0.04), transparent 28%),
+    linear-gradient(145deg, oklch(1 0 0), oklch(0.98 0.01 255) 45%, oklch(1 0 0));
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
