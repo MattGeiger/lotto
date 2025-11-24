@@ -89,26 +89,29 @@ export const ReadOnlyDisplay = () => {
       }}
     >
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
-        <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left md:gap-6">
-          <div className="flex items-center gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 items-start gap-4 text-center sm:grid-cols-[1fr,auto,1fr] sm:items-center sm:gap-6 sm:text-left">
+          <div className="flex items-center sm:justify-start">
             <img
               src="/wth-logo-horizontal-reverse.png"
               alt="William Temple House"
               className="h-auto w-[min(280px,50vw)] max-w-[320px]"
             />
           </div>
-          <Card className="border-transparent bg-transparent text-center shadow-none sm:text-right">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs uppercase tracking-[0.14em] text-slate-200">
-                Now Serving
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <p className="text-8xl font-black leading-[1.1] bg-gradient-to-br from-amber-400 to-amber-300 bg-clip-text text-transparent">
-                {currentlyServing ?? "Waiting"}
-              </p>
-            </CardContent>
-          </Card>
+          <div className="flex justify-center">
+            <Card className="border-transparent bg-transparent text-center shadow-none">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xs uppercase tracking-[0.14em] text-slate-200">
+                  Now Serving
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <p className="text-8xl font-black leading-[1.1] bg-gradient-to-br from-amber-400 to-amber-300 bg-clip-text text-transparent">
+                  {currentlyServing ?? "Waiting"}
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+          <div aria-hidden="true" />
         </div>
 
         <header className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur">
