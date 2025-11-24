@@ -141,7 +141,7 @@ export const ReadOnlyDisplay = () => {
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold text-white">
-                {startNumber && endNumber ? `${startNumber} – ${endNumber}` : "Not set"}
+                {startNumber && endNumber ? `${startNumber} – ${endNumber}` : "—"}
               </p>
             </CardContent>
           </Card>
