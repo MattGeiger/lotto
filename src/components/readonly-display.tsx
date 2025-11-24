@@ -38,6 +38,12 @@ const formatMode = (mode?: RaffleState["mode"]) => {
   return "—";
 };
 
+const formatTime = (input?: Date | number | null) => {
+  if (!input && input !== 0) return "—";
+  const date = input instanceof Date ? input : new Date(input);
+  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+};
+
 export const ReadOnlyDisplay = () => {
   const [state, setState] = React.useState<RaffleState | null>(null);
   const [status, setStatus] = React.useState("Polling for latest state…");
@@ -55,7 +61,7 @@ export const ReadOnlyDisplay = () => {
       }
       const payload = (await response.json()) as RaffleState;
       setState(payload);
-      setStatus(`Last checked: ${new Date().toLocaleTimeString()}`);
+      setStatus(`Last checked: ${formatTime(new Date())}`);
     } catch (error) {
       setStatus(`Error loading state: ${error instanceof Error ? error.message : "Unknown error"}`);
       setHasError(true);
@@ -79,7 +85,7 @@ export const ReadOnlyDisplay = () => {
   const currentIndex =
     generatedOrder && currentlyServing !== null ? generatedOrder.indexOf(currentlyServing) : -1;
   const hasTickets = generatedOrder.length > 0;
-  const updatedTime = state?.timestamp ? new Date(state.timestamp).toLocaleTimeString() : "—";
+  const updatedTime = formatTime(state?.timestamp ?? null);
 
   return (
     <div
