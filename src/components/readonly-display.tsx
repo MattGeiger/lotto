@@ -142,14 +142,6 @@ export const ReadOnlyDisplay = () => {
           </Card>
           <Card className="border-neutral-800/80 bg-neutral-950/80 text-center">
             <CardHeader className="pb-2">
-              <CardTitle className="text-xs uppercase tracking-[0.14em] text-slate-300">Mode</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-white">{formatMode(state?.mode)}</p>
-            </CardContent>
-          </Card>
-          <Card className="border-neutral-800/80 bg-neutral-950/80 text-center">
-            <CardHeader className="pb-2">
               <CardTitle className="text-xs uppercase tracking-[0.14em] text-slate-300">
                 Total Tickets Issued
               </CardTitle>
