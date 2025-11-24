@@ -416,15 +416,15 @@ const AdminPage = () => {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50/80 p-3">
+              <div className="flex items-center justify-between rounded-lg border border-border bg-muted/50 p-3">
                 <div>
-                  <p className="text-sm font-semibold text-slate-900">Order mode</p>
-                  <p className="text-xs text-slate-600">
+                  <p className="text-sm font-semibold text-foreground">Order mode</p>
+                  <p className="text-xs text-muted-foreground">
                     Controls how new tickets are placed. Existing order stays untouched.
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-xs uppercase tracking-wide text-slate-600">Sequential</span>
+                  <span className="text-xs uppercase tracking-wide text-muted-foreground">Sequential</span>
                   <Switch
                     checked={mode === "random"}
                     onCheckedChange={(checked) =>
@@ -433,7 +433,7 @@ const AdminPage = () => {
                     aria-label="Toggle random order"
                     disabled={modeChanging || pendingAction !== null}
                   />
-                  <span className="text-xs uppercase tracking-wide text-slate-600">Random</span>
+                  <span className="text-xs uppercase tracking-wide text-muted-foreground">Random</span>
                 </div>
               </div>
 
@@ -486,7 +486,7 @@ const AdminPage = () => {
 
               <div className="grid gap-3 sm:grid-cols-3 sm:items-end">
                 <div className="space-y-2 sm:col-span-2">
-                  <Label htmlFor="append" className="text-lg font-semibold text-slate-900">
+                  <Label htmlFor="append" className="text-lg font-semibold text-foreground">
                     Append additional tickets
                   </Label>
                   <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
@@ -544,13 +544,13 @@ const AdminPage = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white/70 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-3 rounded-lg border border-border bg-card/70 p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="space-y-1">
-                  <p className="text-xs uppercase tracking-wide text-slate-500">Draw position</p>
-                  <p className="text-2xl font-semibold text-slate-900">
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">Draw position</p>
+                  <p className="text-2xl font-semibold text-foreground">
                     {currentDrawNumber ? formatOrdinal(currentDrawNumber) : "Not started"}
                   </p>
-                  <p className="text-sm text-slate-600">
+                  <p className="text-sm text-muted-foreground">
                     Ticket {currentTicket ? `#${currentTicket}` : "—"} of{" "}
                     {totalTickets || "—"}
                   </p>
@@ -612,39 +612,36 @@ const AdminPage = () => {
               )}
             </CardHeader>
             <CardContent className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-1 rounded-lg border border-slate-200 bg-white/70 p-3">
-                <p className="text-xs uppercase tracking-wide text-slate-500">Range</p>
-                <p className="text-lg font-semibold text-slate-900">
+              <div className="space-y-1 rounded-lg border border-border bg-card/70 p-3">
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">Range</p>
+                <p className="text-lg font-semibold text-foreground">
                   {state?.startNumber || "—"} – {state?.endNumber || "—"}
                 </p>
               </div>
-              <div className="space-y-1 rounded-lg border border-slate-200 bg-white/70 p-3">
-                <p className="text-xs uppercase tracking-wide text-slate-500">Tickets issued</p>
-                <p className="text-lg font-semibold text-slate-900">
+              <div className="space-y-1 rounded-lg border border-border bg-card/70 p-3">
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">Tickets issued</p>
+                <p className="text-lg font-semibold text-foreground">
                   {state ? state.endNumber - state.startNumber + 1 : "—"}
                 </p>
               </div>
-              <div className="space-y-1 rounded-lg border border-slate-200 bg-white/70 p-3">
-                <p className="text-xs uppercase tracking-wide text-slate-500">Current mode</p>
-                <p className="text-lg font-semibold text-slate-900 capitalize">{state?.mode}</p>
+              <div className="space-y-1 rounded-lg border border-border bg-card/70 p-3">
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">Current mode</p>
+                <p className="text-lg font-semibold text-foreground capitalize">{state?.mode}</p>
               </div>
-              <div className="space-y-1 rounded-lg border border-slate-200 bg-white/70 p-3">
-                <p className="text-xs uppercase tracking-wide text-slate-500">Now serving</p>
-                <p className="text-lg font-semibold text-slate-900">
+              <div className="space-y-1 rounded-lg border border-border bg-card/70 p-3">
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">Now serving</p>
+                <p className="text-lg font-semibold text-foreground">
                   {state?.currentlyServing ?? "—"}
                 </p>
               </div>
-              <div className="space-y-1 rounded-lg border border-slate-200 bg-white/70 p-3 sm:col-span-2">
-                <p className="text-xs uppercase tracking-wide text-slate-500">Next up</p>
+              <div className="space-y-1 rounded-lg border border-border bg-card/70 p-3 sm:col-span-2">
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">Next up</p>
                 <div className="flex flex-wrap gap-2">
                   {nextFive?.length
                     ? nextFive.map((ticket) => (
-                        <span
-                          key={ticket}
-                          className="rounded-md bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-800"
-                        >
+                        <Badge key={ticket} variant="success">
                           #{ticket}
-                        </span>
+                        </Badge>
                       ))
                     : "—"}
                 </div>
@@ -688,15 +685,16 @@ const AdminPage = () => {
                 </Button>
               </div>
               <div className="flex flex-col gap-2">
-                <label className="text-sm text-slate-700" htmlFor="snapshot-select">
+                <label className="text-sm text-foreground" htmlFor="snapshot-select" id="snapshot-label">
                   Restore snapshot
                 </label>
                 <div className="flex flex-wrap items-center gap-2">
                   <select
                     id="snapshot-select"
-                    className="h-10 min-w-[220px] rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+                    className="h-10 min-w-[220px] rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground"
                     value={selectedSnapshot}
                     onChange={(e) => setSelectedSnapshot(e.target.value)}
+                    aria-labelledby="snapshot-label"
                   >
                     {snapshots.length === 0 && <option value="">No snapshots yet</option>}
                     {snapshots.map((snap) => (
@@ -754,12 +752,10 @@ const AdminPage = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="flex justify-center rounded-xl border border-slate-200 bg-white p-4">
+              <div className="flex justify-center rounded-xl border border-border bg-card p-4">
                 <QRCode value={displayUrl} size={160} />
               </div>
-              <p className="rounded-md bg-slate-50 px-3 py-2 text-xs text-slate-700">
-                {displayUrl}
-              </p>
+              <p className="rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">{displayUrl}</p>
                 <div className="flex flex-wrap gap-2">
                   <Button asChild variant="secondary" size="sm">
                     <Link href="/">Open display</Link>
@@ -773,28 +769,28 @@ const AdminPage = () => {
         </div>
 
         {(error || actionError) && (
-          <Card className="border-rose-200 bg-rose-50">
+          <Card className="border-status-danger-border bg-status-danger-bg">
             <CardContent className="flex items-start gap-3">
-              <AlertTriangle className="mt-1 h-5 w-5 text-rose-600" />
+              <AlertTriangle className="mt-1 h-5 w-5 text-status-danger-text" />
               <div>
-                <p className="font-semibold text-rose-800">Something needs attention</p>
-                <p className="text-sm text-rose-700">{error ?? actionError}</p>
+                <p className="font-semibold text-status-danger-text">Something needs attention</p>
+                <p className="text-sm text-status-danger-text">{error ?? actionError}</p>
               </div>
             </CardContent>
           </Card>
         )}
 
         {!error && state && (
-          <Card className="border-emerald-200 bg-emerald-50">
+          <Card className="border-status-success-border bg-status-success-bg">
             <CardContent className="flex items-start gap-3">
-              <CheckCircle2 className="mt-1 h-5 w-5 text-emerald-600" />
+              <CheckCircle2 className="mt-1 h-5 w-5 text-status-success-text" />
               <div className="space-y-1">
-                <p className="font-semibold text-emerald-800">Persistence confirmed</p>
-                <p className="text-sm text-emerald-700">
+                <p className="font-semibold text-status-success-text">Persistence confirmed</p>
+                <p className="text-sm text-status-success-text">
                   Last write: {new Date(state.timestamp ?? Date.now()).toLocaleString()} — backups
                   stored alongside the JSON data.
                 </p>
-                <p className="flex items-center gap-2 text-xs uppercase tracking-wide text-emerald-700">
+                <p className="flex items-center gap-2 text-xs uppercase tracking-wide text-status-success-text">
                   <Sparkles className="h-4 w-4" />
                   Atomic writes • Backup snapshots • Auto-refresh every 5s
                 </p>
@@ -804,7 +800,7 @@ const AdminPage = () => {
         )}
 
         {loading && (
-          <div className="flex items-center gap-2 text-sm text-slate-600">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" /> Loading state from datastore...
           </div>
         )}
