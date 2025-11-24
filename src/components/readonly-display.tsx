@@ -121,10 +121,7 @@ export const ReadOnlyDisplay = () => {
               {formattedDate}
             </div>
           </div>
-          <Badge
-            variant="outline"
-            className="border-white/20 bg-black/50 text-xs font-medium text-slate-100"
-          >
+          <Badge variant="muted" className="border-white/20 bg-black/50 text-xs font-medium text-slate-100">
             Updated: {updatedTime}
           </Badge>
         </header>
@@ -190,11 +187,7 @@ export const ReadOnlyDisplay = () => {
                       ? "border-teal-300 bg-gradient-to-br from-emerald-400 to-cyan-300 text-emerald-950"
                       : "border-slate-800 bg-neutral-900/80 text-slate-200 opacity-80";
                 return (
-                  <Badge
-                    key={value}
-                    variant="outline"
-                    className={`${baseClasses} ${stateClasses}`}
-                  >
+                  <Badge key={value} className={`${baseClasses} ${stateClasses}`}>
                     {value}
                   </Badge>
                 );
