@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import QRCode from "react-qr-code";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
