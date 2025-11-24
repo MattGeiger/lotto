@@ -1,8 +1,8 @@
 "use client";
 
-import { Clock, ListOrdered, Users } from "lucide-react";
+import { Clock, ListOrdered, Users, X } from "lucide-react";
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 type TicketDetailDialogProps = {
   open: boolean;
@@ -35,6 +35,10 @@ export function TicketDetailDialog({
         <DialogHeader>
           <DialogTitle className="text-center text-3xl font-bold">Ticket #{ticketNumber}</DialogTitle>
         </DialogHeader>
+        <DialogClose className="absolute right-4 top-4 rounded-full p-1 text-muted-foreground transition hover:bg-muted/40">
+          <X className="h-4 w-4" />
+          <span className="sr-only">Close</span>
+        </DialogClose>
 
         <div className="space-y-3 py-4">
           <div className="flex items-center gap-3 rounded-lg border bg-card p-4">
