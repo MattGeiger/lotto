@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import QRCode from "react-qr-code";
+import QRCode from "qrcode";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,6 +24,7 @@ export const ReadOnlyDisplay = () => {
   const [hasError, setHasError] = React.useState(false);
   const [selectedTicket, setSelectedTicket] = React.useState<number | null>(null);
   const [qrUrl, setQrUrl] = React.useState("");
+  const qrCanvasRef = React.useRef<HTMLCanvasElement | null>(null);
 
   const formattedDate = React.useMemo(() => formatDate(language), [language]);
 
@@ -75,6 +76,15 @@ export const ReadOnlyDisplay = () => {
     };
     fetchDisplayUrl();
   }, []);
+
+  React.useEffect(() => {
+    const target = qrUrl || (typeof window !== "undefined" ? window.location.href : "");
+    const canvas = qrCanvasRef.current;
+    if (!canvas) return;
+    QRCode.toCanvas(canvas, target, { width: 150, margin: 1 }).catch(() => {
+      // ignore render errors
+    });
+  }, [qrUrl]);
 
   const startNumber = state?.startNumber ?? 0;
   const endNumber = state?.endNumber ?? 0;
@@ -136,11 +146,14 @@ export const ReadOnlyDisplay = () => {
 
           {/* QR Code - right */}
           <div className="hidden sm:flex items-center justify-center">
-            <QRCode
-              aria-label="Scan to view display"
-              value={qrUrl || (typeof window !== "undefined" ? window.location.href : "")}
-              size={150}
-            />
+            <div className="rounded-lg border border-border/60 bg-card/30 p-3">
+              <canvas
+                ref={qrCanvasRef}
+                width={150}
+                height={150}
+                aria-label="Scan to view display"
+              />
+            </div>
           </div>
         </div>
 

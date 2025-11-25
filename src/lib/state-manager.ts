@@ -314,6 +314,11 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
     return persist({ ...current, displayUrl: url });
   };
 
+  const getDisplayUrl = async () => {
+    const current = await safeReadState();
+    return current.displayUrl || null;
+  };
+
   return {
     loadState,
     generateState,
@@ -327,6 +332,7 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
     undo,
     redo,
     setDisplayUrl,
+    getDisplayUrl,
   };
 };
 

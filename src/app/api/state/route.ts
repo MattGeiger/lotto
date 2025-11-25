@@ -45,6 +45,9 @@ const actionSchema = z.discriminatedUnion("action", [
     action: z.literal("setDisplayUrl"),
     url: z.string().max(64).url().nullable(),
   }),
+  z.object({
+    action: z.literal("getDisplayUrl"),
+  }),
 ]);
 
 export async function GET() {
@@ -101,6 +104,10 @@ export async function POST(request: Request) {
         return NextResponse.json(await stateManager.redo());
       case "setDisplayUrl":
         return NextResponse.json(await stateManager.setDisplayUrl(payload.url));
+      case "getDisplayUrl": {
+        const state = await stateManager.loadState();
+        return NextResponse.json({ displayUrl: state.displayUrl || null });
+      }
       default:
         return NextResponse.json({ error: "Unsupported action" }, { status: 400 });
     }
