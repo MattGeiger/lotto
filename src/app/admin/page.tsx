@@ -39,6 +39,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ThemeSwitcher } from "@/components/theme-switcher";
 import type { Mode, RaffleState } from "@/lib/state-manager";
 
 type ActionPayload =
@@ -351,34 +352,46 @@ const AdminPage = () => {
 
   return (
     <TooltipProvider>
-      <main className="mx-auto flex min-h-screen max-w-6xl flex-col gap-6 px-6 py-10">
+      <div className="min-h-screen w-full" style={{ background: "var(--gradient-display-bg)" }}>
+        <main className="relative mx-auto flex min-h-screen max-w-6xl flex-col gap-6 px-6 py-10">
         <div className="w-full">
           <Image
             src="/wth-logo-horizontal.png"
             alt="William Temple House"
             width={900}
             height={240}
-            className="h-auto w-full max-w-3xl"
+            className="h-auto w-full max-w-[400px] dark:hidden"
             priority
+          />
+          <Image
+            src="/wth-logo-horizontal-reverse.png"
+            alt="William Temple House"
+            width={900}
+            height={240}
+            className="hidden h-auto w-full max-w-[400px] dark:block"
           />
         </div>
         <div className="flex items-center gap-3">
           <Button asChild variant="secondary" size="sm">
             <Link href="/staff">
-              <ArrowLeft className="mr-2 h-4 w-4" />
+              <ArrowLeft className="mr-2 size-4" />
               Back
             </Link>
           </Button>
           {pendingAction && (
             <Badge variant="success" className="flex items-center gap-2">
-              <Loader2 className="h-3 w-3 animate-spin" />
+              <Loader2 className="size-3 animate-spin" />
               {pendingAction}...
             </Badge>
           )}
         </div>
 
+        <div className="absolute right-6 top-10 z-50 lg:right-8">
+          <ThemeSwitcher />
+        </div>
+
         <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
-          <Card>
+          <Card className="bg-card">
             <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <CardTitle>Ticket Range & Order</CardTitle>
@@ -416,7 +429,10 @@ const AdminPage = () => {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between rounded-lg border border-border bg-muted/50 p-3">
+              <div
+                className="flex items-center justify-between rounded-lg border border-border p-3"
+                style={{ background: "var(--gradient-card-info)" }}
+              >
                 <div>
                   <p className="text-sm font-semibold text-foreground">Order mode</p>
                   <p className="text-xs text-muted-foreground">
@@ -506,9 +522,9 @@ const AdminPage = () => {
                       onClick={() => handleAppendStep(-1)}
                       disabled={!state}
                       aria-label="Decrease append end"
-                      className="flex-none text-[var(--color-muted-foreground)]"
+                      className="flex-none text-muted-foreground"
                     >
-                      <ChevronLeft className="h-4 w-4" />
+                      <ChevronLeft className="size-4" />
                     </Button>
                     <Button
                       type="button"
@@ -517,9 +533,9 @@ const AdminPage = () => {
                       onClick={() => handleAppendStep(1)}
                       disabled={!state}
                       aria-label="Increase append end"
-                      className="flex-none text-[var(--color-muted-foreground)]"
+                      className="flex-none text-muted-foreground"
                     >
-                      <ChevronRight className="h-4 w-4" />
+                      <ChevronRight className="size-4" />
                     </Button>
                   </div>
                   <ConfirmAction
@@ -536,7 +552,7 @@ const AdminPage = () => {
             </CardContent>
           </Card>
 
-          <Card className="space-y-4">
+          <Card className="bg-card space-y-4">
             <CardHeader>
               <CardTitle>Now Serving</CardTitle>
               <CardDescription>
@@ -544,7 +560,10 @@ const AdminPage = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex flex-col gap-3 rounded-lg border border-border bg-card/70 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div
+                className="flex flex-col gap-3 rounded-lg border border-border p-4 sm:flex-row sm:items-center sm:justify-between"
+                style={{ background: "var(--gradient-card-info)" }}
+              >
                 <div className="space-y-1">
                   <p className="text-xs uppercase tracking-wide text-muted-foreground">Draw position</p>
                   <p className="text-2xl font-semibold text-foreground">
@@ -555,33 +574,34 @@ const AdminPage = () => {
                     {totalTickets || "—"}
                   </p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    type="button"
-                    variant={prevArrowVariant}
-                    size="icon"
-                    onClick={handlePrevServing}
-                    disabled={loading || !state || totalTickets === 0}
-                    aria-label="Previous draw"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={handleNextServing}
-                    disabled={
-                      loading ||
-                      !state ||
-                      totalTickets === 0 ||
-                      (currentIndex !== -1 && currentIndex >= totalTickets - 1)
-                    }
-                    aria-label="Next draw"
-                    className="text-[var(--color-muted-foreground)]"
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant={prevArrowVariant}
+                  size="icon"
+                  onClick={handlePrevServing}
+                  disabled={loading || !state || totalTickets === 0}
+                  aria-label="Previous draw"
+                  className={prevArrowVariant === "secondary" ? "bg-muted opacity-80" : "bg-card"}
+                >
+                  <ChevronLeft className="size-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={handleNextServing}
+                  disabled={
+                    loading ||
+                    !state ||
+                    totalTickets === 0 ||
+                    (currentIndex !== -1 && currentIndex >= totalTickets - 1)
+                  }
+                  aria-label="Next draw"
+                  className="bg-card text-muted-foreground"
+                >
+                  <ChevronRight className="size-4" />
+                </Button>
                   <Button
                     type="button"
                     variant="ghost"
@@ -599,42 +619,60 @@ const AdminPage = () => {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
-          <Card>
+          <Card className="bg-card">
             <CardHeader className="flex items-center justify-between">
               <div>
                 <CardTitle>Live State</CardTitle>
                 <CardDescription>Everything stored in the JSON datastore.</CardDescription>
               </div>
               {state?.timestamp && (
-                <Badge variant="muted">
+                <Badge
+                  variant="muted"
+                  className="border-border/50 bg-secondary/50 text-xs font-medium text-muted-foreground"
+                >
                   Updated {new Date(state.timestamp).toLocaleTimeString()}
                 </Badge>
               )}
             </CardHeader>
             <CardContent className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-1 rounded-lg border border-border bg-card/70 p-3">
+              <div
+                className="space-y-1 rounded-lg border border-border p-3"
+                style={{ background: "var(--gradient-card-accent)" }}
+              >
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">Range</p>
                 <p className="text-lg font-semibold text-foreground">
                   {state?.startNumber || "—"} – {state?.endNumber || "—"}
                 </p>
               </div>
-              <div className="space-y-1 rounded-lg border border-border bg-card/70 p-3">
+              <div
+                className="space-y-1 rounded-lg border border-border p-3"
+                style={{ background: "var(--gradient-card-accent)" }}
+              >
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">Tickets issued</p>
                 <p className="text-lg font-semibold text-foreground">
                   {state ? state.endNumber - state.startNumber + 1 : "—"}
                 </p>
               </div>
-              <div className="space-y-1 rounded-lg border border-border bg-card/70 p-3">
+              <div
+                className="space-y-1 rounded-lg border border-border p-3"
+                style={{ background: "var(--gradient-card-accent)" }}
+              >
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">Current mode</p>
                 <p className="text-lg font-semibold text-foreground capitalize">{state?.mode}</p>
               </div>
-              <div className="space-y-1 rounded-lg border border-border bg-card/70 p-3">
+              <div
+                className="space-y-1 rounded-lg border border-border p-3"
+                style={{ background: "var(--gradient-card-accent)" }}
+              >
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">Now serving</p>
                 <p className="text-lg font-semibold text-foreground">
                   {state?.currentlyServing ?? "—"}
                 </p>
               </div>
-              <div className="space-y-1 rounded-lg border border-border bg-card/70 p-3 sm:col-span-2">
+              <div
+                className="space-y-1 rounded-lg border border-border p-3 sm:col-span-2"
+                style={{ background: "var(--gradient-card-accent)" }}
+              >
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">Next up</p>
                 <div className="flex flex-wrap gap-2">
                   {nextFive?.length
@@ -649,7 +687,7 @@ const AdminPage = () => {
             </CardContent>
           </Card>
 
-          <Card className="space-y-3">
+          <Card className="bg-card space-y-3">
             <CardHeader className="pb-2">
               <CardTitle>History</CardTitle>
               <CardDescription>Undo/redo or restore from snapshots.</CardDescription>
@@ -719,7 +757,7 @@ const AdminPage = () => {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
-          <Card className="space-y-3">
+          <Card className="bg-card space-y-3">
             <CardHeader>
               <CardTitle>System reset</CardTitle>
               <CardDescription>
@@ -744,7 +782,7 @@ const AdminPage = () => {
             </CardContent>
           </Card>
 
-          <Card className="space-y-4">
+          <Card className="bg-card space-y-4">
             <CardHeader>
               <CardTitle>Share the live board</CardTitle>
               <CardDescription>
@@ -771,7 +809,7 @@ const AdminPage = () => {
         {(error || actionError) && (
           <Card className="border-status-danger-border bg-status-danger-bg">
             <CardContent className="flex items-start gap-3">
-              <AlertTriangle className="mt-1 h-5 w-5 text-status-danger-text" />
+              <AlertTriangle className="mt-1 size-5 text-status-danger-text" />
               <div>
                 <p className="font-semibold text-status-danger-text">Something needs attention</p>
                 <p className="text-sm text-status-danger-text">{error ?? actionError}</p>
@@ -783,7 +821,7 @@ const AdminPage = () => {
         {!error && state && (
           <Card className="border-status-success-border bg-status-success-bg">
             <CardContent className="flex items-start gap-3">
-              <CheckCircle2 className="mt-1 h-5 w-5 text-status-success-text" />
+              <CheckCircle2 className="mt-1 size-5 text-status-success-text" />
               <div className="space-y-1">
                 <p className="font-semibold text-status-success-text">Persistence confirmed</p>
                 <p className="text-sm text-status-success-text">
@@ -791,7 +829,7 @@ const AdminPage = () => {
                   stored alongside the JSON data.
                 </p>
                 <p className="flex items-center gap-2 text-xs uppercase tracking-wide text-status-success-text">
-                  <Sparkles className="h-4 w-4" />
+                  <Sparkles className="size-4" />
                   Atomic writes • Backup snapshots • Auto-refresh every 5s
                 </p>
               </div>
@@ -801,10 +839,11 @@ const AdminPage = () => {
 
         {loading && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" /> Loading state from datastore...
+            <Loader2 className="size-4 animate-spin" /> Loading state from datastore...
           </div>
         )}
-      </main>
+        </main>
+      </div>
     </TooltipProvider>
   );
 };
