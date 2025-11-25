@@ -138,6 +138,7 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
     endNumber: number;
     mode: Mode;
   }) => {
+    const current = await safeReadState();
     validateRange(input.startNumber, input.endNumber);
     const generatedOrder = generateOrder(
       input.startNumber,
@@ -151,6 +152,7 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
       generatedOrder,
       currentlyServing: null,
       timestamp: null,
+      displayUrl: current.displayUrl ?? null,
     });
   };
 

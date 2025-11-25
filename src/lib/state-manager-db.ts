@@ -134,6 +134,7 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
     endNumber: number;
     mode: Mode;
   }) => {
+    const current = await safeReadState();
     validateRange(input.startNumber, input.endNumber);
     const generatedOrder = generateOrder(input.startNumber, input.endNumber, input.mode);
     return persist({
@@ -143,6 +144,7 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
       generatedOrder,
       currentlyServing: null,
       timestamp: null,
+      displayUrl: current.displayUrl ?? null,
     });
   };
 
