@@ -627,8 +627,8 @@ const AdminPage = () => {
               </div>
               {state?.timestamp && (
                 <Badge
-                  variant="muted"
-                  className="border-border/50 bg-secondary/50 text-xs font-medium text-muted-foreground"
+                  variant="outline"
+                  className="border-border/60 text-xs font-medium text-muted-foreground"
                 >
                   Updated {new Date(state.timestamp).toLocaleTimeString()}
                 </Badge>

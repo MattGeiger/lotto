@@ -172,8 +172,8 @@ export const ReadOnlyDisplay = () => {
                 {t("drawingOrder")}
               </CardTitle>
               <Badge
-                variant="muted"
-                className="border-border/50 bg-secondary/50 text-xs font-medium text-muted-foreground"
+                variant="outline"
+                className="border-border/60 text-xs font-medium text-muted-foreground"
               >
                 {t("updated")}: {updatedTime}
               </Badge>
