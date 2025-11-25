@@ -23,6 +23,7 @@ export const ReadOnlyDisplay = () => {
   const [status, setStatus] = React.useState("");
   const [hasError, setHasError] = React.useState(false);
   const [selectedTicket, setSelectedTicket] = React.useState<number | null>(null);
+  const [qrUrl, setQrUrl] = React.useState("");
 
   const formattedDate = React.useMemo(() => formatDate(language), [language]);
 
@@ -57,6 +58,23 @@ export const ReadOnlyDisplay = () => {
   React.useEffect(() => {
     document.title = `${t("foodPantryServiceFor")} ${formattedDate}`;
   }, [formattedDate, t]);
+
+  React.useEffect(() => {
+    const fetchDisplayUrl = async () => {
+      try {
+        const response = await fetch("/api/state", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "getDisplayUrl" }),
+        });
+        const data = await response.json();
+        setQrUrl(data.displayUrl || (typeof window !== "undefined" ? window.location.href : ""));
+      } catch {
+        setQrUrl(typeof window !== "undefined" ? window.location.href : "");
+      }
+    };
+    fetchDisplayUrl();
+  }, []);
 
   const startNumber = state?.startNumber ?? 0;
   const endNumber = state?.endNumber ?? 0;
@@ -120,7 +138,7 @@ export const ReadOnlyDisplay = () => {
           <div className="hidden sm:flex items-center justify-center">
             <QRCode
               aria-label="Scan to view display"
-              value={typeof window !== "undefined" ? window.location.href : ""}
+              value={qrUrl || (typeof window !== "undefined" ? window.location.href : "")}
               size={150}
             />
           </div>
