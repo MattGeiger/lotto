@@ -87,6 +87,11 @@ We use the generator OKLCH palette and map it with `@theme inline` so Tailwind u
 
 Custom WTH tokens (status, ticket gradients, display/admin gradients) live alongside these core tokens.
 
+### Display/QR Styling
+- Display background and serving text gradients are exposed as utilities (`bg-gradient-display`, `bg-gradient-serving-text`) instead of inline styles.
+- Ticket states use utility classes mapped to tokens (`ticket-serving`, `ticket-served`, `ticket-upcoming`) with dedicated text/border/background tokens (including `--ticket-served-text`).
+- Public display QR uses a canvas implementation (`qrcode` library) to avoid SVG viewBox scaling issues on long URLs; the QR points to the admin-configured `displayUrl` when set, falling back to the current origin.
+
 ### Adding Custom Colors (Tailwind v4)
 
 **Modern approach:** Use `@theme inline` directive (CSS-first configuration):
