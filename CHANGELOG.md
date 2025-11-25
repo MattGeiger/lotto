@@ -8,6 +8,7 @@
 - Updated staff/login/read-only surfaces to use semantic tokens (no slate/emerald/blue literals) and generator gradients; board grid now uses status tokens instead of hard-coded colors.
 - Documented Shadcn/Tailwind v4 theme structure and current palette in `docs/UI_DESIGN.md`; cleaned globals to remove stray imports and ensure generator colors drive components.
 - NOW SERVING headline gradient: blue in light mode, gold in dark mode via `--serving-text-gradient`.
+- Added utilities for badge success styling and gradient cards; removed inline styles from login and staff pages.
 
 ## 2025-11-23
 - Replaced `/display` with the high-contrast read-only UI from the standalone server, now polling `/api/state` every 4 seconds inside Next.js.

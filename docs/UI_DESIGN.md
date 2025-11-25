@@ -129,6 +129,10 @@ Keep styles minimal and utility-driven:
 ### ✅ Good Practice
 - Use Shadcn components as generated (`npx shadcn add ...`), with semantic variants (`primary`, `secondary`, `outline`, `destructive`, plus custom badge `success|warning|danger` mapped to status tokens).
 - Keep sizing utilities modern (`size-*`), colors semantic (`bg-primary`, `text-muted-foreground`), and gradients via tokens.
+- Prefer utility classes over inline styles:
+  - Use `bg-gradient-display`, `bg-gradient-serving-text` for display gradients.
+  - Use `bg-gradient-card-info` / `bg-gradient-card-accent` for gradient cards.
+  - Use `badge-success` (and other status variants) instead of per-instance CSS variables.
 
 ### ❌ Avoid
 - Custom CSS overrides for colors/hover where Shadcn variants exist
