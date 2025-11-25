@@ -91,6 +91,7 @@ Custom WTH tokens (status, ticket gradients, display/admin gradients) live along
 - Display background and serving text gradients are exposed as utilities (`bg-gradient-display`, `bg-gradient-serving-text`) instead of inline styles.
 - Ticket states use utility classes mapped to tokens (`ticket-serving`, `ticket-served`, `ticket-upcoming`) with dedicated text/border/background tokens (including `--ticket-served-text`).
 - Public display QR uses a canvas implementation (`qrcode` library) to avoid SVG viewBox scaling issues on long URLs; the QR points to the admin-configured `displayUrl` when set, falling back to the current origin.
+- Serving headline uses `bg-gradient-serving-text`; blue gradient in light mode, gold gradient in dark mode for readability and brand fit.
 
 ### Adding Custom Colors (Tailwind v4)
 
