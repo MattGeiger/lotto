@@ -52,7 +52,7 @@ export default function Home() {
         </div>
         <Separator />
         <div className="grid gap-4 sm:grid-cols-2">
-          <Card style={{ background: "var(--gradient-card-info)" }}>
+          <Card className="bg-gradient-card-info">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Lock className="size-4 text-primary" />
@@ -64,17 +64,17 @@ export default function Home() {
               </CardDescription>
             </CardHeader>
           </Card>
-          <Card style={{ background: "var(--gradient-card-accent)" }}>
+          <Card className="bg-gradient-card-accent">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <QrCode className="size-4 text-primary" />
                 Client-friendly display
               </CardTitle>
-              <CardDescription>
-                QR code to the live board at `/`, mobile-friendly layout, and high-contrast “now
-                serving” highlights to cut down on crowding.
-              </CardDescription>
-            </CardHeader>
+            <CardDescription>
+              QR code to the live board at `/`, mobile-friendly layout, and high-contrast “now
+              serving” highlights to cut down on crowding.
+            </CardDescription>
+          </CardHeader>
           </Card>
         </div>
       </div>

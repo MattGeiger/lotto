@@ -67,10 +67,7 @@ const LoginForm = () => {
           </Button>
         </form>
         {status === "sent" && (
-          <Badge
-            variant="secondary"
-            className="w-full justify-center border-[var(--status-success-border)] bg-[var(--status-success-bg)] text-[var(--status-success-text)] hover:bg-[var(--status-success-bg)]"
-          >
+          <Badge variant="secondary" className="badge-success w-full justify-center">
             Check your email for the sign-in link.
           </Badge>
         )}

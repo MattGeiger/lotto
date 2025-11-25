@@ -255,15 +255,15 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 
-  /* Shadows */
-  --shadow-2xs: var(--shadow-2xs);
-  --shadow-xs: var(--shadow-xs);
-  --shadow-sm: var(--shadow-sm);
-  --shadow: var(--shadow);
-  --shadow-md: var(--shadow-md);
-  --shadow-lg: var(--shadow-lg);
-  --shadow-xl: var(--shadow-xl);
-  --shadow-2xl: var(--shadow-2xl);
+  /* Box shadows for Tailwind utilities */
+  --box-shadow-2xs: var(--shadow-2xs);
+  --box-shadow-xs: var(--shadow-xs);
+  --box-shadow-sm: var(--shadow-sm);
+  --box-shadow: var(--shadow);
+  --box-shadow-md: var(--shadow-md);
+  --box-shadow-lg: var(--shadow-lg);
+  --box-shadow-xl: var(--shadow-xl);
+  --box-shadow-2xl: var(--shadow-2xl);
 
   /* Fonts */
   --font-sans: var(--font-sans);
@@ -311,6 +311,26 @@ a {
     border-color: var(--ticket-upcoming-border);
     color: var(--muted-foreground);
     opacity: 0.85;
+  }
+
+  /* Status badge variants */
+  .badge-success {
+    border-color: var(--status-success-border);
+    background: var(--status-success-bg);
+    color: var(--status-success-text);
+  }
+
+  .badge-success:hover {
+    background: var(--status-success-bg);
+  }
+
+  /* Card gradient backgrounds */
+  .bg-gradient-card-info {
+    background: var(--gradient-card-info);
+  }
+
+  .bg-gradient-card-accent {
+    background: var(--gradient-card-accent);
   }
 }
 
