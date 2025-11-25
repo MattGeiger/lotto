@@ -109,10 +109,7 @@ export const ReadOnlyDisplay = () => {
   };
 
   return (
-    <div
-      className="min-h-screen w-full px-2 py-8 text-foreground sm:px-4 lg:px-6"
-      style={{ background: "var(--gradient-display-bg)" }}
-    >
+    <div className="min-h-screen w-full bg-gradient-display px-2 py-8 text-foreground sm:px-4 lg:px-6">
       <div className="mx-auto flex w-full flex-col gap-4">
         {/* Logo + Now Serving Row */}
         <div className="mt-10 grid grid-cols-1 gap-4 sm:mt-12 sm:grid-cols-[minmax(280px,320px)_1fr_minmax(280px,320px)] sm:items-center sm:gap-6">
@@ -135,8 +132,7 @@ export const ReadOnlyDisplay = () => {
             <div className="text-center">
               <p className="mb-1 text-lg uppercase tracking-[0.14em] text-muted-foreground">{t("nowServing")}</p>
               <p
-                className="bg-clip-text text-[96px] font-black leading-[1.15] text-transparent"
-                style={{ backgroundImage: "var(--serving-text-gradient)" }}
+                className="bg-gradient-serving-text bg-clip-text text-[96px] font-black leading-[1.15] text-transparent"
                 aria-label="Currently serving ticket number"
               >
                 {currentlyServing ?? t("waiting")}
@@ -223,30 +219,16 @@ export const ReadOnlyDisplay = () => {
               {generatedOrder.map((value, index) => {
                 const baseClasses =
                   "flex items-center justify-center rounded-xl border text-center text-2xl font-extrabold leading-[1.2] px-4 py-3 cursor-pointer transition-transform hover:scale-[1.03]";
-                const stateStyles =
+                const stateClass =
                   value === currentlyServing
-                    ? {
-                        background: "var(--ticket-serving)",
-                        borderColor: "var(--ticket-serving-border)",
-                        color: "var(--ticket-serving-text)",
-                      }
+                    ? "ticket-serving"
                     : currentIndex !== -1 && index < currentIndex
-                      ? {
-                          background: "var(--ticket-served)",
-                          borderColor: "var(--ticket-served-border)",
-                          color: "oklch(0.18 0 0)",
-                        }
-                      : {
-                          background: "var(--ticket-upcoming)",
-                          borderColor: "var(--ticket-upcoming-border)",
-                          color: "var(--muted-foreground)",
-                          opacity: 0.85,
-                        };
+                      ? "ticket-served"
+                      : "ticket-upcoming";
                 return (
                   <div
                     key={value}
-                    className={baseClasses}
-                    style={stateStyles}
+                    className={`${baseClasses} ${stateClass}`}
                     role="button"
                     tabIndex={0}
                     onClick={() => setSelectedTicket(value)}
