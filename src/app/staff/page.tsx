@@ -15,7 +15,7 @@ import { Separator } from "@/components/ui/separator";
 export default function Home() {
   return (
     <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-8 px-6 py-12">
-      <div className="flex flex-col gap-6 rounded-3xl bg-white/80 p-10 shadow-xl backdrop-blur">
+      <div className="flex flex-col gap-6 rounded-3xl bg-card/80 p-10 shadow-xl backdrop-blur">
         <div className="w-full">
           <Image
             src="/wth-logo-horizontal.png"
@@ -28,10 +28,10 @@ export default function Home() {
         </div>
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div className="space-y-2">
-            <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
               Fair, simple queue management
             </h1>
-            <p className="max-w-2xl text-base leading-relaxed text-slate-600">
+            <p className="max-w-2xl text-base leading-relaxed text-muted-foreground">
               A lightweight Next.js app that replaces the coffee-can raffle with a durable,
               randomized, volunteer-friendly system. Manage ticket ranges, keep clients informed,
               and display the board on phones or a wall screen.
@@ -52,10 +52,10 @@ export default function Home() {
         </div>
         <Separator />
         <div className="grid gap-4 sm:grid-cols-2">
-          <Card className="bg-gradient-to-br from-white to-blue-50">
+          <Card style={{ background: "var(--gradient-card-info)" }}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Lock className="h-4 w-4 text-blue-600" />
+                <Lock className="size-4 text-primary" />
                 Volunteer-safe controls
               </CardTitle>
               <CardDescription>
@@ -64,10 +64,10 @@ export default function Home() {
               </CardDescription>
             </CardHeader>
           </Card>
-          <Card className="bg-gradient-to-br from-white to-emerald-50">
+          <Card style={{ background: "var(--gradient-card-accent)" }}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <QrCode className="h-4 w-4 text-emerald-600" />
+                <QrCode className="size-4 text-primary" />
                 Client-friendly display
               </CardTitle>
               <CardDescription>

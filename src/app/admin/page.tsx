@@ -269,16 +269,12 @@ const AdminPage = () => {
   const totalTickets = state?.generatedOrder.length ?? 0;
   const currentTicket =
     currentIndex >= 0 && state?.generatedOrder ? state.generatedOrder[currentIndex] : null;
-  const prevArrowVariant: ButtonProps["variant"] =
-    currentIndex === -1 ? "secondary" : "outline";
   const appendMin = (state?.endNumber ?? 0) + 1;
   const parsedAppendValue = Number(appendEnd);
   const resolvedAppendValue =
     Number.isFinite(parsedAppendValue) && appendEnd.trim() !== ""
       ? parsedAppendValue
       : appendMin;
-  const appendLeftVariant: ButtonProps["variant"] =
-    !state || resolvedAppendValue <= appendMin ? "secondary" : "outline";
 
   const formatOrdinal = (value: number) => {
     const remainder = value % 100;
@@ -372,14 +368,17 @@ const AdminPage = () => {
           />
         </div>
         <div className="flex items-center gap-3">
-          <Button asChild variant="secondary" size="sm">
+          <Button asChild variant="outline" size="sm">
             <Link href="/staff">
               <ArrowLeft className="mr-2 size-4" />
               Back
             </Link>
           </Button>
           {pendingAction && (
-            <Badge variant="success" className="flex items-center gap-2">
+            <Badge
+              variant="success"
+              className="flex items-center gap-2"
+            >
               <Loader2 className="size-3 animate-spin" />
               {pendingAction}...
             </Badge>
@@ -517,12 +516,12 @@ const AdminPage = () => {
                     />
                     <Button
                       type="button"
-                      variant={appendLeftVariant}
+                      variant="outline"
                       size="icon"
                       onClick={() => handleAppendStep(-1)}
                       disabled={!state}
                       aria-label="Decrease append end"
-                      className="flex-none text-muted-foreground"
+                      className={!state || resolvedAppendValue <= appendMin ? "flex-none opacity-50" : "flex-none"}
                     >
                       <ChevronLeft className="size-4" />
                     </Button>
@@ -533,7 +532,7 @@ const AdminPage = () => {
                       onClick={() => handleAppendStep(1)}
                       disabled={!state}
                       aria-label="Increase append end"
-                      className="flex-none text-muted-foreground"
+                      className="flex-none"
                     >
                       <ChevronRight className="size-4" />
                     </Button>
@@ -577,12 +576,12 @@ const AdminPage = () => {
               <div className="flex items-center gap-2">
                 <Button
                   type="button"
-                  variant={prevArrowVariant}
+                  variant="outline"
                   size="icon"
                   onClick={handlePrevServing}
                   disabled={loading || !state || totalTickets === 0}
                   aria-label="Previous draw"
-                  className={prevArrowVariant === "secondary" ? "bg-muted opacity-80" : "bg-card"}
+                  className={currentIndex <= 0 ? "opacity-50" : ""}
                 >
                   <ChevronLeft className="size-4" />
                 </Button>
@@ -598,7 +597,7 @@ const AdminPage = () => {
                     (currentIndex !== -1 && currentIndex >= totalTickets - 1)
                   }
                   aria-label="Next draw"
-                  className="bg-card text-muted-foreground"
+                  className=""
                 >
                   <ChevronRight className="size-4" />
                 </Button>
@@ -675,7 +674,7 @@ const AdminPage = () => {
               >
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">Next up</p>
                 <div className="flex flex-wrap gap-2">
-                  {nextFive?.length
+                    {nextFive?.length
                     ? nextFive.map((ticket) => (
                         <Badge key={ticket} variant="success">
                           #{ticket}
@@ -795,7 +794,7 @@ const AdminPage = () => {
               </div>
               <p className="rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">{displayUrl}</p>
                 <div className="flex flex-wrap gap-2">
-                  <Button asChild variant="secondary" size="sm">
+                  <Button asChild variant="outline" size="sm">
                     <Link href="/">Open display</Link>
                   </Button>
                   <Button variant="ghost" size="sm" onClick={handleCopyLink}>

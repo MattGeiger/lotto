@@ -36,21 +36,22 @@ export const BoardGrid: React.FC<BoardGridProps> = ({
             key={ticket}
             aria-label={label}
             className={cn(
-              "relative flex h-16 items-center justify-center rounded-xl border border-slate-200 bg-white text-xl font-bold text-slate-900 shadow-sm transition",
-              "before:absolute before:inset-0 before:-z-10 before:rounded-xl before:bg-gradient-to-br before:from-white before:to-slate-50",
+              "relative flex h-16 items-center justify-center rounded-xl border border-border bg-card text-xl font-bold text-foreground shadow-sm transition",
               isCurrent &&
-                "border-2 border-amber-500 bg-amber-50 text-amber-900 shadow-lg shadow-amber-100",
-              isUpcoming && !isCurrent && "border-blue-200 bg-blue-50 text-blue-800",
+                "border-2 border-[var(--status-warning-border)] bg-[var(--status-warning-bg)] text-[var(--status-warning-text)] shadow-md",
+              isUpcoming &&
+                !isCurrent &&
+                "border-[var(--status-success-border)] bg-[var(--status-success-bg)] text-[var(--status-success-text)]",
             )}
           >
             <span className="tabular-nums">#{ticket}</span>
             {isCurrent && (
-              <span className="absolute -top-2 right-2 rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold uppercase text-white shadow">
+              <span className="absolute -top-2 right-2 rounded-full bg-[var(--status-warning-border)] px-2 py-0.5 text-[10px] font-bold uppercase text-[var(--status-warning-text)] shadow">
                 Now
               </span>
             )}
             {isUpcoming && !isCurrent && (
-              <span className="absolute -top-2 right-2 rounded-full bg-blue-600 px-2 py-0.5 text-[10px] font-bold uppercase text-white shadow">
+              <span className="absolute -top-2 right-2 rounded-full bg-[var(--status-success-border)] px-2 py-0.5 text-[10px] font-bold uppercase text-[var(--status-success-text)] shadow">
                 Next
               </span>
             )}
@@ -58,7 +59,7 @@ export const BoardGrid: React.FC<BoardGridProps> = ({
         );
       })}
       {trimmed.length === 0 && (
-        <div className="col-span-full rounded-lg border border-dashed border-slate-200 bg-slate-50 p-6 text-center text-sm text-slate-600">
+        <div className="col-span-full rounded-lg border border-dashed border-border bg-muted p-6 text-center text-sm text-muted-foreground">
           Waiting for tickets to be generated.
         </div>
       )}

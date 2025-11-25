@@ -38,7 +38,7 @@ const LoginForm = () => {
     <Card className="mx-auto w-full max-w-xl">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Mail className="h-4 w-4 text-emerald-600" />
+          <Mail className="size-4 text-primary" />
           Magic link login
         </CardTitle>
         <CardDescription>
@@ -49,7 +49,7 @@ const LoginForm = () => {
       <CardContent className="space-y-4">
         <form className="space-y-3" onSubmit={handleSubmit}>
           <div className="space-y-1">
-            <label htmlFor="email" className="text-sm font-medium text-slate-700">
+            <label htmlFor="email" className="text-sm font-medium text-foreground">
               Work email
             </label>
             <Input
@@ -67,7 +67,10 @@ const LoginForm = () => {
           </Button>
         </form>
         {status === "sent" && (
-          <Badge variant="success" className="w-full justify-center">
+          <Badge
+            variant="secondary"
+            className="w-full justify-center border-[var(--status-success-border)] bg-[var(--status-success-bg)] text-[var(--status-success-text)] hover:bg-[var(--status-success-bg)]"
+          >
             Check your email for the sign-in link.
           </Badge>
         )}
@@ -76,7 +79,7 @@ const LoginForm = () => {
             {error}
           </Badge>
         )}
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-muted-foreground">
           After signing in, you will be redirected to the staff dashboard or your requested page.
         </p>
       </CardContent>
@@ -90,7 +93,9 @@ const LoginPage = () => {
       <Suspense
         fallback={
           <Card className="mx-auto w-full max-w-xl">
-            <CardContent className="p-6 text-sm text-slate-600">Loading login...</CardContent>
+            <CardContent className="p-6 text-sm text-muted-foreground">
+              Loading login...
+            </CardContent>
           </Card>
         }
       >
