@@ -269,6 +269,11 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
     return restoreSnapshot(target.id);
   };
 
+  const setDisplayUrl = async (url: string | null) => {
+    const current = await safeReadState();
+    return persist({ ...current, displayUrl: url });
+  };
+
   return {
     loadState,
     generateState,
@@ -281,5 +286,6 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
     restoreSnapshot,
     undo,
     redo,
+    setDisplayUrl,
   };
 };

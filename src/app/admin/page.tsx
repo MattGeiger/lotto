@@ -72,9 +72,14 @@ const AdminPage = () => {
   const [modeChanging, setModeChanging] = React.useState(false);
   const [resetPhrase, setResetPhrase] = React.useState("");
   const [displayUrl, setDisplayUrl] = React.useState("https://example.com/");
+  const [customDisplayUrl, setCustomDisplayUrl] = React.useState<string | null>(null);
+  const [editingUrl, setEditingUrl] = React.useState(false);
+  const [urlInput, setUrlInput] = React.useState("");
+  const [urlError, setUrlError] = React.useState("");
   const [copied, setCopied] = React.useState(false);
   const [snapshots, setSnapshots] = React.useState<Snapshot[]>([]);
   const [selectedSnapshot, setSelectedSnapshot] = React.useState<string>("");
+  const browserOriginRef = React.useRef<string | null>(null);
 
   const refreshSnapshots = React.useCallback(async () => {
     try {
@@ -97,7 +102,9 @@ const AdminPage = () => {
 
   React.useEffect(() => {
     if (typeof window !== "undefined") {
-      setDisplayUrl(`${window.location.origin}/`);
+      const browserUrl = `${window.location.origin}/`;
+      browserOriginRef.current = browserUrl;
+      setDisplayUrl(browserUrl);
     }
   }, []);
 
@@ -132,6 +139,16 @@ const AdminPage = () => {
   React.useEffect(() => {
     fetchState();
   }, [fetchState]);
+
+  React.useEffect(() => {
+    if (state?.displayUrl) {
+      setCustomDisplayUrl(state.displayUrl);
+      setDisplayUrl(state.displayUrl);
+    } else if (browserOriginRef.current) {
+      setCustomDisplayUrl(null);
+      setDisplayUrl(browserOriginRef.current);
+    }
+  }, [state?.displayUrl]);
 
   React.useEffect(() => {
     if (state) {
@@ -244,6 +261,74 @@ const AdminPage = () => {
     } catch {
       setActionError("Unable to copy link to clipboard.");
     }
+  };
+
+  const handleEditUrl = () => {
+    setUrlInput(customDisplayUrl || displayUrl);
+    setEditingUrl(true);
+    setUrlError("");
+  };
+
+  const handleSaveUrl = async () => {
+    if (urlInput.length > 64) {
+      setUrlError("URL must be 64 characters or less");
+      return;
+    }
+    try {
+      // eslint-disable-next-line no-new
+      new URL(urlInput);
+    } catch {
+      setUrlError("Invalid URL format");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/state", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "setDisplayUrl", url: urlInput }),
+      });
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        setUrlError(data.error || "Failed to save URL");
+        return;
+      }
+      setCustomDisplayUrl(urlInput);
+      setDisplayUrl(urlInput);
+      if (state) {
+        setState({ ...state, displayUrl: urlInput });
+      }
+      setEditingUrl(false);
+    } catch {
+      setUrlError("Failed to save URL");
+    }
+  };
+
+  const handleResetUrl = async () => {
+    const browserUrl = browserOriginRef.current ?? (typeof window !== "undefined"
+      ? `${window.location.origin}/`
+      : "");
+    try {
+      await fetch("/api/state", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "setDisplayUrl", url: null }),
+      });
+      setCustomDisplayUrl(null);
+      setDisplayUrl(browserUrl);
+      if (state) {
+        setState({ ...state, displayUrl: null });
+      }
+      setEditingUrl(false);
+      setUrlError("");
+    } catch {
+      setUrlError("Failed to reset URL");
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingUrl(false);
+    setUrlError("");
   };
 
   const upcomingPreview = state?.generatedOrder.slice(0, 16) ?? [];
@@ -792,15 +877,49 @@ const AdminPage = () => {
               <div className="flex justify-center rounded-xl border border-border bg-card p-4">
                 <QRCode value={displayUrl} size={160} />
               </div>
-              <p className="rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">{displayUrl}</p>
-                <div className="flex flex-wrap gap-2">
-                  <Button asChild variant="outline" size="sm">
-                    <Link href="/">Open display</Link>
-                  </Button>
-                  <Button variant="ghost" size="sm" onClick={handleCopyLink}>
-                    {copied ? "Copied!" : "Copy link"}
-                  </Button>
-                </div>
+              {!editingUrl ? (
+                <>
+                  <p className="rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground break-all">
+                    {displayUrl}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <Button asChild variant="outline" size="sm">
+                      <Link href="/">Open display</Link>
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={handleCopyLink}>
+                      {copied ? "Copied!" : "Copy link"}
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={handleEditUrl}>
+                      Edit URL
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    <Input
+                      value={urlInput}
+                      onChange={(e) => setUrlInput(e.target.value)}
+                      placeholder="https://example.com/"
+                      maxLength={64}
+                      className={urlError ? "border-destructive" : ""}
+                    />
+                    {urlError && <p className="text-xs text-destructive">{urlError}</p>}
+                    <p className="text-xs text-muted-foreground">{urlInput.length}/64 characters</p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Button variant="default" size="sm" onClick={handleSaveUrl}>
+                      Save
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={handleResetUrl}>
+                      Use browser URL
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={handleCancelEdit}>
+                      Cancel
+                    </Button>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
         </div>

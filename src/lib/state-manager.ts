@@ -307,6 +307,11 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
     return restoreSnapshot(target.id);
   };
 
+  const setDisplayUrl = async (url: string | null) => {
+    const current = await safeReadState();
+    return persist({ ...current, displayUrl: url });
+  };
+
   return {
     loadState,
     generateState,
@@ -319,6 +324,7 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
     restoreSnapshot,
     undo,
     redo,
+    setDisplayUrl,
   };
 };
 

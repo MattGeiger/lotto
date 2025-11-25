@@ -7,6 +7,7 @@ export type RaffleState = {
   generatedOrder: number[];
   currentlyServing: number | null;
   timestamp: number | null;
+  displayUrl: string | null;
 };
 
 export const defaultState: RaffleState = {
@@ -16,6 +17,7 @@ export const defaultState: RaffleState = {
   generatedOrder: [],
   currentlyServing: null,
   timestamp: null,
+  displayUrl: null,
 };
 
 export const formatTimestamp = (timestamp: number) => {
