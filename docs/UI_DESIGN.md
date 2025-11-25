@@ -1,6 +1,6 @@
 # UI Design Standards: Shadcn/UI Reference Guide
-**Last Updated:** November 2025  
-**Versions:** Shadcn/UI v2.5+, Tailwind CSS v4, React 19, Next.js 15+
+**Last Updated:** November 2025 (updated with generator palette + Shadcn refresh)  
+**Versions:** Shadcn/UI v2.5+, Tailwind CSS v4, React 19, Next.js 16+
 
 ## Philosophy & Core Principles
 
@@ -35,62 +35,57 @@ Organize components by purpose to maintain clarity and scalability:
 
 Shadcn uses CSS variables for theming, allowing color changes without updating class names. Variables must be defined without color space functions.
 
-### Color Naming Convention
+### Color Tokens & @theme (Tailwind v4)
 
-Background and foreground convention: `background` for component background, `foreground` for text color. The background suffix is omitted when used as background color.
-
-**Example:**
-```css
-:root {
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-}
-```
-
-**Usage:**
-```tsx
-<div className="bg-primary text-primary-foreground">Hello</div>
-```
-
-### Standard Theme Variables (2025)
-
-**OKLCH is now the standard color format** (replaced HSL in March 2025). OKLCH provides more perceptually uniform colors and better dark mode accessibility.
+We use the generator OKLCH palette and map it with `@theme inline` so Tailwind utilities resolve the variables. No `tailwind.config.js` needed.
 
 ```css
 @import "tailwindcss";
-@import "tw-animate-css"; /* Replaces tailwindcss-animate */
-
 @custom-variant dark (&:is(.dark *));
 
 :root {
   --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --radius: 0.625rem;
+  --foreground: oklch(0.5078 0.1369 257.6669);
+  --primary: oklch(0.5078 0.1369 257.6669);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.7221 0.0815 206.8111);
+  --secondary-foreground: oklch(1 0 0);
+  --muted: oklch(0.9751 0.0127 244.2507);
+  --muted-foreground: oklch(0.551 0.0234 264.364);
+  --accent: oklch(0.8828 0.1811 94.4604);
+  --accent-foreground: oklch(0.5078 0.1369 257.6669);
+  --destructive: oklch(0.5771 0.2152 27.3250);
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.9276 0.0058 264.5313);
+  --input: oklch(0.9670 0.0029 264.5419);
+  --ring: oklch(0.5078 0.1369 257.6669);
+  --radius: 0.5rem;
 }
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  /* Mirror structure with dark mode values */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 }
 ```
+
+Custom WTH tokens (status, ticket gradients, display/admin gradients) live alongside these core tokens.
 
 ### Adding Custom Colors (Tailwind v4)
 
@@ -118,33 +113,21 @@ Background and foreground convention: `background` for component background, `fo
 ## Tailwind CSS v4 Integration
 
 ### Key Changes from v3:
-- **No tailwind.config.js** - configuration now in CSS using `@theme`
+- **No tailwind.config.js** - configuration now in CSS using `@theme inline`
 - **OKLCH colors** - more accessible, perceptually uniform
 - **New sizing:** `size-10` replaces `w-10 h-10`
-- **Animation:** Use `tw-animate-css` instead of `tailwindcss-animate`
-- **Import syntax:** `@import "tailwindcss"` replaces `@tailwind` directives
+- **Imports:** `@import "tailwindcss"` replaces `@tailwind` directives
 
 Keep styles minimal and utility-driven:
 
 ### ✅ Good Practice
-```tsx
-export function PrimaryButton({ className, ...props }) {
-  return (
-    <Button 
-      className={`bg-blue-600 hover:bg-blue-700 ${className}`} 
-      {...props} 
-    />
-  );
-}
-```
+- Use Shadcn components as generated (`npx shadcn add ...`), with semantic variants (`primary`, `secondary`, `outline`, `destructive`, plus custom badge `success|warning|danger` mapped to status tokens).
+- Keep sizing utilities modern (`size-*`), colors semantic (`bg-primary`, `text-muted-foreground`), and gradients via tokens.
 
 ### ❌ Avoid
-- Custom CSS classes when Tailwind utilities exist
-- Inline styles
-- CSS-in-JS solutions (styled-jsx, emotion, styled-components)
-- Hard-coded color values (`#0b0b0b`) instead of semantic tokens
-- Old sizing patterns: `w-10 h-10` (use `size-10` instead)
-- HSL color format (use OKLCH)
+- Custom CSS overrides for colors/hover where Shadcn variants exist
+- Inline hard-coded colors; prefer semantic tokens/status variables
+- Old sizing patterns (`w-10 h-10`) or legacy imports/config files
 
 ---
 
