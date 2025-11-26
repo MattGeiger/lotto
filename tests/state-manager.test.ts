@@ -116,6 +116,29 @@ describe("state manager", () => {
     expectRelativeOrderPreserved(base.generatedOrder, updated.generatedOrder);
   });
 
+  it("random append shuffles new batch only, preserves exact existing positions", async () => {
+    const base = await manager.generateState({
+      startNumber: 1,
+      endNumber: 3,
+      mode: "random",
+    });
+    const originalOrder = [...base.generatedOrder];
+
+    const updated = await manager.appendTickets(6);
+
+    expect(updated.generatedOrder.slice(0, 3)).toEqual(originalOrder);
+
+    const newTickets = updated.generatedOrder.slice(3);
+    expect(new Set(newTickets)).toEqual(new Set([4, 5, 6]));
+  });
+
+  it("sequential append maintains strict order for new tickets", async () => {
+    await manager.generateState({ startNumber: 1, endNumber: 2, mode: "sequential" });
+    const updated = await manager.appendTickets(5);
+
+    expect(updated.generatedOrder).toEqual([1, 2, 3, 4, 5]);
+  });
+
   it("switches modes without reshaping the existing order", async () => {
     const initial = await manager.generateState({ startNumber: 5, endNumber: 7, mode: "random" });
     const sequential = await manager.setMode("sequential");
