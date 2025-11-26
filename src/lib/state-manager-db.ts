@@ -160,20 +160,18 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
     const current = await safeReadState();
     ensureHasRange(current);
 
-    if (newEndNumber <= current.endNumber) {
-      throw new Error("New end number must be greater than the current end number.");
-    }
+  if (newEndNumber <= current.endNumber) {
+    throw new Error("New end number must be greater than the current end number.");
+  }
 
-    const additions = buildRange(current.endNumber + 1, newEndNumber);
-    const generatedOrder =
-      current.mode === "random"
-        ? insertAtRandomPositions(current.generatedOrder, shuffle(additions))
-        : [...current.generatedOrder, ...additions];
+  const additions = buildRange(current.endNumber + 1, newEndNumber);
+  const newBatch = current.mode === "random" ? shuffle(additions) : additions;
+  const generatedOrder = [...current.generatedOrder, ...newBatch];
 
-    return persist({
-      ...current,
-      endNumber: newEndNumber,
-      generatedOrder,
+  return persist({
+    ...current,
+    endNumber: newEndNumber,
+    generatedOrder,
     });
   };
 
