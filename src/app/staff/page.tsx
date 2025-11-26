@@ -52,7 +52,7 @@ export default function Home() {
         </div>
         <Separator />
         <div className="grid gap-4 sm:grid-cols-2">
-          <Card className="bg-gradient-card-info">
+          <Card className="bg-gradient-card-safe">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Lock className="size-4 text-primary" />
@@ -71,8 +71,7 @@ export default function Home() {
                 Client-friendly display
               </CardTitle>
             <CardDescription>
-              QR code to the live board at `/`, mobile-friendly layout, and high-contrast “now
-              serving” highlights to cut down on crowding.
+              Mobile-friendly access, with QR code linking to the live board and ticket number lookup for estimated wait times
             </CardDescription>
           </CardHeader>
           </Card>
