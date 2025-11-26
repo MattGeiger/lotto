@@ -93,8 +93,8 @@
 
   --gradient-card-info: linear-gradient(135deg, oklch(0.99 0.01 250), oklch(0.96 0.04 250));
   --gradient-card-accent: linear-gradient(135deg, oklch(0.99 0.01 155), oklch(0.96 0.05 155));
-  --card-title-color: var(--muted-foreground);
-  --card-icon-color: var(--muted-foreground);
+  --card-title-color: var(--foreground);
+  --card-icon-color: var(--foreground);
 
   /* Fonts */
   --font-sans: var(--font-lato);
