@@ -6,6 +6,7 @@ export type RaffleState = {
   mode: Mode;
   generatedOrder: number[];
   currentlyServing: number | null;
+  orderLocked: boolean;
   timestamp: number | null;
   displayUrl: string | null;
 };
@@ -16,6 +17,7 @@ export const defaultState: RaffleState = {
   mode: "random",
   generatedOrder: [],
   currentlyServing: null,
+  orderLocked: false,
   timestamp: null,
   displayUrl: null,
 };

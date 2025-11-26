@@ -131,22 +131,30 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
 
   const generateState = async (input: {
     startNumber: number;
-    endNumber: number;
-    mode: Mode;
-  }) => {
-    const current = await safeReadState();
-    validateRange(input.startNumber, input.endNumber);
-    const generatedOrder = generateOrder(input.startNumber, input.endNumber, input.mode);
-    return persist({
-      startNumber: input.startNumber,
-      endNumber: input.endNumber,
-      mode: input.mode,
-      generatedOrder,
-      currentlyServing: null,
-      timestamp: null,
-      displayUrl: current.displayUrl ?? null,
-    });
-  };
+  endNumber: number;
+  mode: Mode;
+}) => {
+  const current = await safeReadState();
+
+  if (current.orderLocked) {
+    throw new Error(
+      "Order is locked. Cannot regenerate—this would change all client positions. Use Reset to start a new lottery.",
+    );
+  }
+
+  validateRange(input.startNumber, input.endNumber);
+  const generatedOrder = generateOrder(input.startNumber, input.endNumber, input.mode);
+  return persist({
+    startNumber: input.startNumber,
+    endNumber: input.endNumber,
+    mode: input.mode,
+    generatedOrder,
+    currentlyServing: null,
+    orderLocked: true,
+    timestamp: null,
+    displayUrl: current.displayUrl ?? null,
+  });
+};
 
   const appendTickets = async (newEndNumber: number) => {
     const current = await safeReadState();

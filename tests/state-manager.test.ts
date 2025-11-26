@@ -83,6 +83,17 @@ describe("state manager", () => {
     expectTimestamped(state);
   });
 
+  it("prevents regeneration when order is locked", async () => {
+    await manager.generateState({ startNumber: 1, endNumber: 3, mode: "random" });
+
+    await expect(
+      manager.generateState({ startNumber: 1, endNumber: 3, mode: "random" }),
+    ).rejects.toThrow(/order is locked/i);
+
+    const state = await manager.loadState();
+    expect(state.orderLocked).toBe(true);
+  });
+
   it("appends tickets in sequential order when in sequential mode", async () => {
     await manager.generateState({ startNumber: 1, endNumber: 3, mode: "sequential" });
     const updated = await manager.appendTickets(5);
