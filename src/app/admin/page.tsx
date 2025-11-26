@@ -12,6 +12,9 @@ import {
   ChevronRight,
   Loader2,
   Sparkles,
+  Undo2,
+  Redo2,
+  History,
 } from "lucide-react";
 
 import { ConfirmAction } from "@/components/confirm-action";
@@ -162,7 +165,6 @@ const AdminPage = () => {
       .then((snapshots) => {
         const undoAvailable = Array.isArray(snapshots) && snapshots.length >= 2;
         setCanUndo(undoAvailable);
-        setCanRedo(false);
       })
       .catch(() => {
         setCanUndo(false);
@@ -197,6 +199,9 @@ const AdminPage = () => {
         }
         const data = (await response.json()) as RaffleState;
         setState(data);
+        if (payload.action !== "undo" && payload.action !== "redo") {
+          setCanRedo(false);
+        }
         await refreshSnapshots();
         return data;
       } catch (err) {
@@ -426,13 +431,39 @@ const AdminPage = () => {
   };
 
   const handleUndo = async () => {
-    await sendAction({ action: "undo" });
-    await refreshSnapshots();
+    try {
+      const response = await fetch("/api/state", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "undo" }),
+      });
+
+      if (!response.ok) throw new Error("Undo failed");
+
+      const newState = (await response.json()) as RaffleState;
+      setState(newState);
+      setCanRedo(true);
+    } catch (error) {
+      console.error("Undo failed:", error);
+    }
   };
 
   const handleRedo = async () => {
-    await sendAction({ action: "redo" });
-    await refreshSnapshots();
+    try {
+      const response = await fetch("/api/state", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "redo" }),
+      });
+
+      if (!response.ok) throw new Error("Redo failed");
+
+      const newState = (await response.json()) as RaffleState;
+      setState(newState);
+      setCanRedo(false);
+    } catch (error) {
+      console.error("Redo failed:", error);
+    }
   };
 
   const handleRestoreSnapshot = async () => {
@@ -484,6 +515,30 @@ const AdminPage = () => {
               {pendingAction}...
             </Badge>
           )}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <History className="size-4 text-muted-foreground" />
+          <div className="flex gap-2">
+            <Button
+              onClick={handleUndo}
+              disabled={!canUndo}
+              variant="outline"
+              title="Undo last action"
+            >
+              <Undo2 className="size-4" />
+              Undo
+            </Button>
+            <Button
+              onClick={handleRedo}
+              disabled={!canRedo}
+              variant="outline"
+              title="Redo last undone action"
+            >
+              <Redo2 className="size-4" />
+              Redo
+            </Button>
+          </div>
         </div>
 
         <div className="absolute right-6 top-10 z-50 lg:right-8">
