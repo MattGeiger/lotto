@@ -546,6 +546,9 @@ const AdminPage = () => {
                   <span className="text-xs uppercase tracking-wide text-muted-foreground">Random</span>
                 </div>
               </div>
+              <p className="text-sm text-muted-foreground">
+                Changing mode does not affect existing tickets in the queue
+              </p>
 
               <AlertDialog open={modeConfirmOpen} onOpenChange={setModeConfirmOpen}>
                 <AlertDialogContent>
