@@ -557,11 +557,16 @@ const AdminPage = () => {
                   <Label htmlFor="start">Start Number</Label>
                   <Input
                     id="start"
-                    type="number"
-                    min={1}
+                    type="text"
+                    inputMode="numeric"
+                    pattern="\d*"
+                    maxLength={6}
                     value={rangeForm.startNumber}
                     onChange={(e) =>
-                      setRangeForm((prev) => ({ ...prev, startNumber: e.target.value }))
+                      setRangeForm((prev) => ({
+                        ...prev,
+                        startNumber: e.target.value.replace(/\D/g, "").slice(0, 6),
+                      }))
                     }
                     className="appearance-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                   />
@@ -570,11 +575,16 @@ const AdminPage = () => {
                   <Label htmlFor="end">End Number</Label>
                   <Input
                     id="end"
-                    type="number"
-                    min={rangeForm.startNumber || 1}
+                    type="text"
+                    inputMode="numeric"
+                    pattern="\d*"
+                    maxLength={6}
                     value={rangeForm.endNumber}
                     onChange={(e) =>
-                      setRangeForm((prev) => ({ ...prev, endNumber: e.target.value }))
+                      setRangeForm((prev) => ({
+                        ...prev,
+                        endNumber: e.target.value.replace(/\D/g, "").slice(0, 6),
+                      }))
                     }
                     className="appearance-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                   />
