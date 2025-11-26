@@ -444,8 +444,8 @@ feat: remove Rerandomize button from UI
 **Implementation:**
 ```typescript
 <ConfirmAction
-  title="Reset Lottery - DESTRUCTIVE ACTION"
-  description="This will completely clear the current lottery and all client positions. Clients who have seen their numbers will lose their place. Only do this to start a new daily cycle. You can undo this action immediately after if needed."
+  title="Confirm Lottery Reset"
+  description="This will completely clear the current lottery and all client positions. Clients who have seen their numbers will lose their place. Only do this to start a new daily cycle. You can reverse this action by clicking "Undo" in the History section."
   confirmText="Yes, Reset Lottery"
   onConfirm={handleReset}
   variant="destructive"
