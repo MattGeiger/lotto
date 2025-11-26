@@ -332,6 +332,10 @@ a {
   .bg-gradient-card-accent {
     background: var(--gradient-card-accent);
   }
+
+  .bg-gradient-serving-card {
+    background: var(--serving-text-gradient);
+  }
 }
 
 @layer base {
