@@ -334,7 +334,7 @@ a {
   }
 
   .bg-gradient-serving-card {
-    background: var(--serving-text-gradient);
+    background-image: var(--serving-text-gradient);
   }
 }
 
