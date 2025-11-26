@@ -6,6 +6,10 @@
 - Reset confirmation dialog with strong warnings
 - Mode selector explanation text
 - Disabled state for Generate button when locked
+- Undo button for immediate error recovery
+- Redo button for reversing undo actions
+- Visual feedback for undo/redo availability
+- SCRAM-button safety mechanism for human error recovery
 
 ### Changed
 - Generate button disabled with tooltip when order locked
