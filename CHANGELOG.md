@@ -10,10 +10,14 @@
 - Redo button for reversing undo actions
 - Visual feedback for undo/redo availability
 - SCRAM-button safety mechanism for human error recovery
+- Added Neon/Postgres schema file (`schema.sql`) capturing state, snapshots, and NextAuth tables.
+- Added `.env.production.example` with required Vercel/Neon environment variables.
 
 ### Changed
 - Generate button disabled with tooltip when order locked
 - Reset requires explicit confirmation to prevent accidents
+- Authentication now uses `DATABASE_URL` exclusively and fails fast when missing while `USE_DATABASE` is enabled.
+- State manager requires `DATABASE_URL` in production; file storage is development-only.
 
 - Locked raffle order after initial generation by adding `orderLocked` state, guarding regenerate attempts, and throwing a descriptive error to prevent position changes.
 - Fixed append behavior so new tickets shuffle within their batch only and always append to the end, preserving all existing client positions; added tests to enforce this.

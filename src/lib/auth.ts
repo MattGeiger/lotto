@@ -22,27 +22,22 @@ const emailServer = {
 } as const;
 
 export const { handlers: authHandlers, auth } = NextAuth(() => {
-  const useDatabase = process.env.USE_DATABASE !== "false";
   const bypassAuth = process.env.AUTH_BYPASS === "true";
   const isProduction = process.env.NODE_ENV === "production";
   const useResend = isProduction && !!resend;
-  const dbSources = [
-    ["POSTGRES_PRISMA_URL", process.env.POSTGRES_PRISMA_URL],
-    ["POSTGRES_URL", process.env.POSTGRES_URL],
-    ["POSTGRES_URL_NON_POOLING", process.env.POSTGRES_URL_NON_POOLING],
-    ["POSTGRES_URL_NON_POOLING_NO_TLS", process.env.POSTGRES_URL_NON_POOLING_NO_TLS],
-    ["POSTGRES_URL_NO_SSL", process.env.POSTGRES_URL_NO_SSL],
-    ["POSTGRES_DATABASE_URL_UNPOOLED", process.env.POSTGRES_DATABASE_URL_UNPOOLED],
-    ["POSTGRES_DATABASE_URL", process.env.POSTGRES_DATABASE_URL],
-    ["DATABASE_URL", process.env.DATABASE_URL],
-  ] as const;
-  const picked = dbSources.find(([, value]) => Boolean(value));
-  const databaseUrl = picked?.[1];
+  const databaseUrl = process.env.DATABASE_URL;
+  const useDatabase = process.env.USE_DATABASE !== "false";
+
+  if (useDatabase && !databaseUrl) {
+    throw new Error(
+      "DATABASE_URL is required for authentication. Set this environment variable to your Neon connection string.",
+    );
+  }
 
   console.log("[Auth] Initializing with:", {
     useDatabase,
     hasDbUrl: !!databaseUrl,
-    dbSource: picked?.[0] ?? "none",
+    dbSource: "DATABASE_URL",
     hasResendKey: !!resendApiKey,
     useResend,
     emailServer: {

@@ -296,11 +296,15 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
   };
 };
 
-const shouldUseDatabase =
-  Boolean(process.env.DATABASE_URL) && process.env.USE_DATABASE !== "false";
+const databaseUrl = process.env.DATABASE_URL;
+const isProduction = process.env.NODE_ENV === "production";
 
-export const stateManager = shouldUseDatabase
-  ? createDbStateManager()
-  : createStateManager();
+if (isProduction && !databaseUrl) {
+  throw new Error(
+    "DATABASE_URL is required for production deployment. File system storage is not supported in production.",
+  );
+}
 
-export const storageMode = shouldUseDatabase ? "database" : "file";
+export const stateManager = databaseUrl ? createDbStateManager(databaseUrl) : createStateManager();
+
+export const storageMode = databaseUrl ? "database" : "file";
