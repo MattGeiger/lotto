@@ -48,7 +48,6 @@ type ActionPayload =
   | { action: "setMode"; mode: Mode }
   | { action: "updateServing"; currentlyServing: number | null }
   | { action: "reset" }
-  | { action: "rerandomize" }
   | { action: "undo" }
   | { action: "redo" }
   | { action: "restoreSnapshot"; id: string };
@@ -234,10 +233,6 @@ const AdminPage = () => {
     }
     await sendAction({ action: "reset" });
     setResetPhrase("");
-  };
-
-  const handleRerandomize = async () => {
-    await sendAction({ action: "rerandomize" });
   };
 
   const handleModeToggleRequest = (newMode: Mode) => {
@@ -567,15 +562,6 @@ const AdminPage = () => {
                   description="Creates a fresh order for the selected range and mode."
                   onConfirm={handleGenerate}
                   disabled={loading || pendingAction !== null}
-                />
-                <ConfirmAction
-                  triggerLabel="Re-randomize"
-                  actionLabel="Shuffle"
-                  title="Re-randomize this range"
-                  description="Shuffle the existing range again to ensure fairness."
-                  onConfirm={handleRerandomize}
-                  disabled={mode !== "random" || loading || !state}
-                  variant="secondary"
                 />
               </div>
 

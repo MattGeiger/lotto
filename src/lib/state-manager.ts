@@ -107,70 +107,51 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
     return mode === "random" ? shuffle(range) : range;
   };
 
-  const reshuffleUntilDifferent = (
-    original: number[],
-    startNumber: number,
-    endNumber: number,
-  ) => {
-    const maxAttempts = 5;
-    for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
-      const candidate = generateOrder(startNumber, endNumber, "random");
-      if (candidate.some((value, index) => value !== original[index])) {
-        return candidate;
-      }
-    }
-    return generateOrder(startNumber, endNumber, "random");
-  };
-
   const loadState = async () => safeReadState();
 
   const generateState = async (input: {
     startNumber: number;
-  endNumber: number;
-  mode: Mode;
-}) => {
-  const current = await safeReadState();
+    endNumber: number;
+    mode: Mode;
+  }) => {
+    const current = await safeReadState();
 
-  if (current.orderLocked) {
-    throw new Error(
-      "Order is locked. Cannot regenerate—this would change all client positions. Use Reset to start a new lottery.",
-    );
-  }
+    if (current.orderLocked) {
+      throw new Error(
+        "Order is locked. Cannot regenerate—this would change all client positions. Use Reset to start a new lottery.",
+      );
+    }
 
-  validateRange(input.startNumber, input.endNumber);
-  const generatedOrder = generateOrder(
-    input.startNumber,
-    input.endNumber,
-    input.mode,
-  );
+    validateRange(input.startNumber, input.endNumber);
+    const generatedOrder = generateOrder(input.startNumber, input.endNumber, input.mode);
     return persist({
       startNumber: input.startNumber,
-    endNumber: input.endNumber,
-    mode: input.mode,
-    generatedOrder,
-    currentlyServing: null,
-    orderLocked: true,
-    timestamp: null,
-    displayUrl: current.displayUrl ?? null,
-  });
-};
+      endNumber: input.endNumber,
+      mode: input.mode,
+      generatedOrder,
+      currentlyServing: null,
+      orderLocked: true,
+      timestamp: null,
+      displayUrl: current.displayUrl ?? null,
+    });
+  };
 
   const appendTickets = async (newEndNumber: number) => {
     const current = await safeReadState();
     ensureHasRange(current);
 
-  if (newEndNumber <= current.endNumber) {
-    throw new Error("New end number must be greater than the current end number.");
-  }
+    if (newEndNumber <= current.endNumber) {
+      throw new Error("New end number must be greater than the current end number.");
+    }
 
-  const additions = buildRange(current.endNumber + 1, newEndNumber);
-  const newBatch = current.mode === "random" ? shuffle(additions) : additions;
-  const generatedOrder = [...current.generatedOrder, ...newBatch];
+    const additions = buildRange(current.endNumber + 1, newEndNumber);
+    const newBatch = current.mode === "random" ? shuffle(additions) : additions;
+    const generatedOrder = [...current.generatedOrder, ...newBatch];
 
-  return persist({
-    ...current,
-    endNumber: newEndNumber,
-    generatedOrder,
+    return persist({
+      ...current,
+      endNumber: newEndNumber,
+      generatedOrder,
     });
   };
 
@@ -200,23 +181,6 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
     return persist({
       ...current,
       mode,
-    });
-  };
-
-  const rerandomize = async () => {
-    const current = await safeReadState();
-    ensureHasRange(current);
-
-    const generatedOrder = reshuffleUntilDifferent(
-      current.generatedOrder,
-      current.startNumber,
-      current.endNumber,
-    );
-
-    return persist({
-      ...current,
-      mode: "random",
-      generatedOrder,
     });
   };
 
@@ -323,7 +287,6 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
     setMode,
     updateCurrentlyServing,
     resetState,
-    rerandomize,
     listSnapshots,
     restoreSnapshot,
     undo,

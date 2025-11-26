@@ -26,9 +26,6 @@ const actionSchema = z.discriminatedUnion("action", [
     action: z.literal("reset"),
   }),
   z.object({
-    action: z.literal("rerandomize"),
-  }),
-  z.object({
     action: z.literal("listSnapshots"),
   }),
   z.object({
@@ -92,8 +89,6 @@ export async function POST(request: Request) {
         );
       case "reset":
         return NextResponse.json(await stateManager.resetState());
-      case "rerandomize":
-        return NextResponse.json(await stateManager.rerandomize());
       case "listSnapshots":
         return NextResponse.json(await stateManager.listSnapshots());
       case "restoreSnapshot":

@@ -157,19 +157,6 @@ describe("state manager", () => {
     expect(appended.generatedOrder.slice(-2)).toEqual([4, 5]);
   });
 
-  it("re-randomizes the existing range", async () => {
-    const initial = await manager.generateState({
-      startNumber: 20,
-      endNumber: 23,
-      mode: "random",
-    });
-
-    const rerolled = await manager.rerandomize();
-
-    expectOrderContainsRange(rerolled.generatedOrder, 20, 23);
-    expect(rerolled.generatedOrder).not.toEqual(initial.generatedOrder);
-  });
-
   it("updates currently serving within range", async () => {
     await manager.generateState({ startNumber: 10, endNumber: 12, mode: "random" });
     const updated = await manager.updateCurrentlyServing(11);
