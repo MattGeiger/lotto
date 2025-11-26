@@ -4,6 +4,7 @@ import React, { Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { Mail } from "lucide-react";
+import Image from "next/image";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -67,7 +68,7 @@ const LoginForm = () => {
           </Button>
         </form>
         {status === "sent" && (
-          <Badge variant="secondary" className="badge-success w-full justify-center">
+          <Badge variant="success" className="w-full justify-center">
             Check your email for the sign-in link.
           </Badge>
         )}
@@ -87,6 +88,24 @@ const LoginForm = () => {
 const LoginPage = () => {
   return (
     <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-6 px-6 py-12">
+      <div className="flex justify-center">
+        <Image
+          src="/wth-logo-horizontal.png"
+          alt="William Temple House"
+          width={900}
+          height={240}
+          className="block h-auto w-full max-w-md dark:hidden"
+          priority
+        />
+        <Image
+          src="/wth-logo-horizontal-reverse.png"
+          alt="William Temple House"
+          width={900}
+          height={240}
+          className="hidden h-auto w-full max-w-md dark:block"
+          priority
+        />
+      </div>
       <Suspense
         fallback={
           <Card className="mx-auto w-full max-w-xl">

@@ -433,7 +433,7 @@ const AdminPage = () => {
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen w-full" style={{ background: "var(--gradient-display-bg)" }}>
+      <div className="min-h-screen w-full bg-gradient-display">
         <main className="relative mx-auto flex min-h-screen max-w-6xl flex-col gap-6 px-6 py-10">
         <div className="w-full">
           <Image
@@ -513,10 +513,7 @@ const AdminPage = () => {
                 </div>
               </div>
 
-              <div
-                className="flex items-center justify-between rounded-lg border border-border p-3"
-                style={{ background: "var(--gradient-card-info)" }}
-              >
+              <div className="flex items-center justify-between rounded-lg border border-border bg-gradient-card-info p-3">
                 <div>
                   <p className="text-sm font-semibold text-foreground">Order mode</p>
                   <p className="text-xs text-muted-foreground">
@@ -644,10 +641,7 @@ const AdminPage = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div
-                className="flex flex-col gap-3 rounded-lg border border-border p-4 sm:flex-row sm:items-center sm:justify-between"
-                style={{ background: "var(--gradient-card-info)" }}
-              >
+              <div className="flex flex-col gap-3 rounded-lg border border-border bg-gradient-card-info p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="space-y-1">
                   <p className="text-xs uppercase tracking-wide text-muted-foreground">Draw position</p>
                   <p className="text-2xl font-semibold text-foreground">
@@ -719,44 +713,29 @@ const AdminPage = () => {
               )}
             </CardHeader>
             <CardContent className="grid gap-4 sm:grid-cols-2">
-              <div
-                className="space-y-1 rounded-lg border border-border p-3"
-                style={{ background: "var(--gradient-card-accent)" }}
-              >
+              <div className="space-y-1 rounded-lg border border-border bg-gradient-card-accent p-3">
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">Range</p>
                 <p className="text-lg font-semibold text-foreground">
                   {state?.startNumber || "—"} – {state?.endNumber || "—"}
                 </p>
               </div>
-              <div
-                className="space-y-1 rounded-lg border border-border p-3"
-                style={{ background: "var(--gradient-card-accent)" }}
-              >
+              <div className="space-y-1 rounded-lg border border-border bg-gradient-card-accent p-3">
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">Tickets issued</p>
                 <p className="text-lg font-semibold text-foreground">
                   {state ? state.endNumber - state.startNumber + 1 : "—"}
                 </p>
               </div>
-              <div
-                className="space-y-1 rounded-lg border border-border p-3"
-                style={{ background: "var(--gradient-card-accent)" }}
-              >
+              <div className="space-y-1 rounded-lg border border-border bg-gradient-card-accent p-3">
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">Current mode</p>
                 <p className="text-lg font-semibold text-foreground capitalize">{state?.mode}</p>
               </div>
-              <div
-                className="space-y-1 rounded-lg border border-border p-3"
-                style={{ background: "var(--gradient-card-accent)" }}
-              >
+              <div className="space-y-1 rounded-lg border border-border bg-gradient-card-accent p-3">
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">Now serving</p>
                 <p className="text-lg font-semibold text-foreground">
                   {state?.currentlyServing ?? "—"}
                 </p>
               </div>
-              <div
-                className="space-y-1 rounded-lg border border-border p-3 sm:col-span-2"
-                style={{ background: "var(--gradient-card-accent)" }}
-              >
+              <div className="space-y-1 rounded-lg border border-border bg-gradient-card-accent p-3 sm:col-span-2">
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">Next up</p>
                 <div className="flex flex-wrap gap-2">
                     {nextFive?.length

@@ -40,12 +40,12 @@ export default function Home() {
           <div className="flex flex-wrap gap-3">
             <Button asChild size="lg">
               <Link href="/admin">
-                Open Staff Dashboard <ArrowRight className="h-4 w-4" />
+                Open Staff Dashboard <ArrowRight className="size-4" />
               </Link>
             </Button>
             <Button asChild variant="secondary" size="lg">
               <Link href="/">
-                View Public Board <Eye className="h-4 w-4" />
+                View Public Board <Eye className="size-4" />
               </Link>
             </Button>
           </div>
