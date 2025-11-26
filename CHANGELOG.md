@@ -1,6 +1,16 @@
 # Changelog
 
 ## [Unreleased]
+### Added
+- Lock status indicator in admin UI
+- Reset confirmation dialog with strong warnings
+- Mode selector explanation text
+- Disabled state for Generate button when locked
+
+### Changed
+- Generate button disabled with tooltip when order locked
+- Reset requires explicit confirmation to prevent accidents
+
 - Locked raffle order after initial generation by adding `orderLocked` state, guarding regenerate attempts, and throwing a descriptive error to prevent position changes.
 - Fixed append behavior so new tickets shuffle within their batch only and always append to the end, preserving all existing client positions; added tests to enforce this.
 - Removed the rerandomize operation across state managers, API, and admin UI to prevent post-publication reshuffling of client positions.
