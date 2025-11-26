@@ -28,15 +28,6 @@ const withTimestamp = (state: RaffleState) => ({
   timestamp: Date.now(),
 });
 
-const insertAtRandomPositions = (base: number[], additions: number[]) => {
-  const result = [...base];
-  for (const value of additions) {
-    const index = Math.floor(Math.random() * (result.length + 1));
-    result.splice(index, 0, value);
-  }
-  return result;
-};
-
 export const createStateManager = (baseDir = path.join(process.cwd(), "data")) => {
   const statePath = path.join(baseDir, "state.json");
   const backupPattern =
