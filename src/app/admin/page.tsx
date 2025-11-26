@@ -443,8 +443,9 @@ const AdminPage = () => {
       const newState = (await response.json()) as RaffleState;
       setState(newState);
       setCanRedo(true);
+      await refreshSnapshots();
     } catch (error) {
-      console.error("Undo failed:", error);
+      setActionError(error instanceof Error ? error.message : "Undo failed");
     }
   };
 
@@ -461,8 +462,9 @@ const AdminPage = () => {
       const newState = (await response.json()) as RaffleState;
       setState(newState);
       setCanRedo(false);
+      await refreshSnapshots();
     } catch (error) {
-      console.error("Redo failed:", error);
+      setActionError(error instanceof Error ? error.message : "Redo failed");
     }
   };
 
@@ -843,35 +845,6 @@ const AdminPage = () => {
               <CardDescription>Undo/redo or restore from snapshots.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  onClick={handleUndo}
-                  disabled={loading || pendingAction !== null}
-                >
-                  Undo
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleRedo}
-                  disabled={loading || pendingAction !== null}
-                >
-                  Redo
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={refreshSnapshots}
-                  disabled={loading}
-                >
-                  Refresh snapshots
-                </Button>
-              </div>
               <div className="flex flex-col gap-2">
                 <label className="text-sm text-foreground" htmlFor="snapshot-select" id="snapshot-label">
                   Restore snapshot
