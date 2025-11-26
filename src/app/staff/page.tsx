@@ -52,7 +52,7 @@ export default function Home() {
         </div>
         <Separator />
         <div className="grid gap-4 sm:grid-cols-2">
-          <Card className="bg-gradient-card-safe">
+          <Card className="bg-gradient-card-info">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Lock className="size-4 text-primary" />
