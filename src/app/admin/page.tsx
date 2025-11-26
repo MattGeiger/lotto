@@ -563,6 +563,7 @@ const AdminPage = () => {
                     onChange={(e) =>
                       setRangeForm((prev) => ({ ...prev, startNumber: e.target.value }))
                     }
+                    className="appearance-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                   />
                 </div>
                 <div className="space-y-2">
@@ -575,6 +576,7 @@ const AdminPage = () => {
                     onChange={(e) =>
                       setRangeForm((prev) => ({ ...prev, endNumber: e.target.value }))
                     }
+                    className="appearance-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                   />
                 </div>
               </div>
