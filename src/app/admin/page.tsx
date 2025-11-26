@@ -25,6 +25,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button, type ButtonProps } from "@/components/ui/button";
 import {
@@ -481,6 +482,23 @@ const AdminPage = () => {
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
+              {state?.orderLocked && (
+                <Alert className="flex items-start gap-3">
+                  <CheckCircle2 className="mt-0.5 size-4" />
+                  <div className="space-y-1">
+                    <AlertTitle>Lottery Active</AlertTitle>
+                    <AlertDescription>
+                      Initial draw: tickets {state.startNumber}-{state.endNumber} (locked)
+                      <br />
+                      Current mode: {state.mode.toUpperCase()}
+                      {state.mode === "random"
+                        ? " (new tickets randomized within batch)"
+                        : " (new tickets added in order)"}
+                    </AlertDescription>
+                  </div>
+                </Alert>
+              )}
+
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="start">Start Number</Label>
