@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 - Locked raffle order after initial generation by adding `orderLocked` state, guarding regenerate attempts, and throwing a descriptive error to prevent position changes.
+- Fixed append behavior so new tickets shuffle within their batch only and always append to the end, preserving all existing client positions; added tests to enforce this.
 
 ## 2025-11-28
 - Made display QR rendering robust: added API `getDisplayUrl`, persisted `displayUrl` in state, and switched the display page QR to canvas (`qrcode`) to avoid SVG cropping for long URLs; display now respects admin-configured URLs.
