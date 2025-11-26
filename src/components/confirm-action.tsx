@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { isValidElement } from "react";
 
 import {
   AlertDialog,
@@ -18,28 +19,33 @@ import { Button, type ButtonProps } from "@/components/ui/button";
 type ConfirmActionProps = {
   title: string;
   description: string;
-  actionLabel: string;
+  actionLabel?: string;
+  confirmText?: string;
   onConfirm: () => Promise<void> | void;
   disabled?: boolean;
-  triggerLabel: string;
+  triggerLabel?: string;
   variant?: ButtonProps["variant"];
   size?: ButtonProps["size"];
   triggerTitle?: string;
+  children?: React.ReactNode;
 };
 
 export const ConfirmAction: React.FC<ConfirmActionProps> = ({
   title,
   description,
   actionLabel,
+  confirmText,
   onConfirm,
   disabled,
   triggerLabel,
   variant,
   size,
   triggerTitle,
+  children,
 }) => {
   const [open, setOpen] = React.useState(false);
   const [busy, setBusy] = React.useState(false);
+  const confirmationLabel = confirmText ?? actionLabel ?? "Confirm";
 
   const handleConfirm = async () => {
     setBusy(true);
@@ -54,9 +60,19 @@ export const ConfirmAction: React.FC<ConfirmActionProps> = ({
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        <Button variant={variant} size={size} disabled={disabled} title={triggerTitle}>
-          {triggerLabel}
-        </Button>
+        {children ? (
+          isValidElement(children) ? (
+            React.cloneElement(children as React.ReactElement<Record<string, unknown>>, {
+              disabled,
+            })
+          ) : (
+            <span>{children}</span>
+          )
+        ) : (
+          <Button variant={variant} size={size} disabled={disabled} title={triggerTitle}>
+            {triggerLabel}
+          </Button>
+        )}
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
@@ -66,7 +82,7 @@ export const ConfirmAction: React.FC<ConfirmActionProps> = ({
         <AlertDialogFooter>
           <AlertDialogCancel disabled={busy}>Cancel</AlertDialogCancel>
           <AlertDialogAction onClick={handleConfirm} disabled={busy}>
-            {busy ? "Working..." : actionLabel}
+            {busy ? "Working..." : confirmationLabel}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

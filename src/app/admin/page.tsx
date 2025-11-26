@@ -843,14 +843,17 @@ const AdminPage = () => {
                 placeholder='Type "RESET" to enable'
               />
               <ConfirmAction
-                triggerLabel="Reset everything"
-                actionLabel="Reset"
-                title="Reset the raffle"
-                description="All generated data will be cleared after backing up the current state."
+                title="Reset Lottery - DESTRUCTIVE ACTION"
+                description="This will completely clear the current lottery and all client positions. Clients who have seen their numbers will lose their place. Only do this to start a new daily cycle. You can undo this action immediately after if needed."
+                confirmText="Yes, Reset Lottery"
                 onConfirm={handleReset}
                 disabled={resetPhrase !== "RESET" || loading}
                 variant="destructive"
-              />
+              >
+                <Button variant="destructive" disabled={resetPhrase !== "RESET" || loading}>
+                  Reset for New Day
+                </Button>
+              </ConfirmAction>
             </CardContent>
           </Card>
 
