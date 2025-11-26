@@ -37,7 +37,6 @@ export const { handlers: authHandlers, auth } = NextAuth(() => {
   console.log("[Auth] Initializing with:", {
     useDatabase,
     hasDbUrl: !!databaseUrl,
-    dbSource: "DATABASE_URL",
     hasResendKey: !!resendApiKey,
     useResend,
     emailServer: {
@@ -55,7 +54,6 @@ export const { handlers: authHandlers, auth } = NextAuth(() => {
     console.error("[Auth] No database adapter configured!", {
       useDatabase,
       hasDbUrl: !!databaseUrl,
-      pickedSource: picked?.[0] ?? null,
     });
   } else {
     console.log("[Auth] Adapter initialized successfully");

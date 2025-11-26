@@ -897,6 +897,7 @@ const AdminPage = () => {
                 title="Reset Lottery - DESTRUCTIVE ACTION"
                 description="This will completely clear the current lottery and all client positions. Clients who have seen their numbers will lose their place. Only do this to start a new daily cycle. You can undo this action immediately after if needed."
                 confirmText="Yes, Reset Lottery"
+                confirmVariant="destructive"
                 onConfirm={handleReset}
                 disabled={resetPhrase !== "RESET" || loading}
                 variant="destructive"

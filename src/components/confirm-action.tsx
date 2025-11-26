@@ -28,6 +28,7 @@ type ConfirmActionProps = {
   size?: ButtonProps["size"];
   triggerTitle?: string;
   children?: React.ReactNode;
+  confirmVariant?: ButtonProps["variant"];
 };
 
 export const ConfirmAction: React.FC<ConfirmActionProps> = ({
@@ -42,6 +43,7 @@ export const ConfirmAction: React.FC<ConfirmActionProps> = ({
   size,
   triggerTitle,
   children,
+  confirmVariant,
 }) => {
   const [open, setOpen] = React.useState(false);
   const [busy, setBusy] = React.useState(false);
@@ -81,8 +83,10 @@ export const ConfirmAction: React.FC<ConfirmActionProps> = ({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={busy}>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={handleConfirm} disabled={busy}>
+          <AlertDialogAction onClick={handleConfirm} disabled={busy} asChild>
+            <Button variant={confirmVariant ?? "default"} disabled={busy}>
             {busy ? "Working..." : confirmationLabel}
+            </Button>
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
