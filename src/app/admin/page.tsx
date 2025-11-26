@@ -519,30 +519,6 @@ const AdminPage = () => {
           )}
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <History className="size-4 text-muted-foreground" />
-          <div className="flex gap-2">
-            <Button
-              onClick={handleUndo}
-              disabled={!canUndo}
-              variant="outline"
-              title="Undo last action"
-            >
-              <Undo2 className="size-4" />
-              Undo
-            </Button>
-            <Button
-              onClick={handleRedo}
-              disabled={!canRedo}
-              variant="outline"
-              title="Redo last undone action"
-            >
-              <Redo2 className="size-4" />
-              Redo
-            </Button>
-          </div>
-        </div>
-
         <div className="absolute right-6 top-10 z-50 lg:right-8">
           <ThemeSwitcher />
         </div>
@@ -845,6 +821,39 @@ const AdminPage = () => {
               <CardDescription>Undo/redo or restore from snapshots.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleUndo}
+                  disabled={!canUndo || loading || pendingAction !== null}
+                  title="Undo last action"
+                >
+                  <Undo2 className="size-4" />
+                  Undo
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRedo}
+                  disabled={!canRedo || loading || pendingAction !== null}
+                  title="Redo last undone action"
+                >
+                  <Redo2 className="size-4" />
+                  Redo
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={refreshSnapshots}
+                  disabled={loading}
+                >
+                  Refresh snapshots
+                </Button>
+              </div>
               <div className="flex flex-col gap-2">
                 <label className="text-sm text-foreground" htmlFor="snapshot-select" id="snapshot-label">
                   Restore snapshot

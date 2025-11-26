@@ -14,7 +14,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Button, type ButtonProps } from "@/components/ui/button";
+import { Button, buttonVariants, type ButtonProps } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 type ConfirmActionProps = {
   title: string;
@@ -83,10 +84,18 @@ export const ConfirmAction: React.FC<ConfirmActionProps> = ({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={busy}>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={handleConfirm} disabled={busy} asChild>
-            <Button variant={confirmVariant ?? "default"} disabled={busy}>
+          <AlertDialogAction
+            onClick={handleConfirm}
+            disabled={busy}
+            className={cn(
+              buttonVariants({
+                variant: confirmVariant ?? "default",
+                size: size ?? "default",
+              }),
+              busy ? "pointer-events-none opacity-50" : "",
+            )}
+          >
             {busy ? "Working..." : confirmationLabel}
-            </Button>
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
