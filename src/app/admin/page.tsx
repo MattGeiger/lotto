@@ -718,7 +718,7 @@ const AdminPage = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex flex-col gap-3 rounded-lg border border-border bg-gradient-serving-card p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-3 rounded-lg border border-border bg-gradient-card-info p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="space-y-1">
                   <p className="text-xs uppercase tracking-wide text-muted-foreground">Draw position</p>
                   <p className="text-2xl font-semibold text-foreground">
