@@ -52,10 +52,10 @@ export default function Home() {
         </div>
         <Separator />
         <div className="grid gap-4 sm:grid-cols-2">
-          <Card className="bg-gradient-card-accent">
+          <Card className="bg-gradient-card-blue">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-card-title">
-                <Lock className="size-4 text-card-icon" />
+                <Lock className="size-4 text-icon-blue" />
                 Error-safe controls
               </CardTitle>
               <CardDescription>
@@ -64,10 +64,10 @@ export default function Home() {
               </CardDescription>
             </CardHeader>
           </Card>
-          <Card className="bg-gradient-card-info">
+          <Card className="bg-gradient-card-emerald">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-card-title">
-                <QrCode className="size-4 text-card-icon" />
+                <QrCode className="size-4 text-icon-emerald" />
                 Client-friendly display
               </CardTitle>
             <CardDescription>
