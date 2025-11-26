@@ -79,6 +79,8 @@ const AdminPage = () => {
   const [copied, setCopied] = React.useState(false);
   const [snapshots, setSnapshots] = React.useState<Snapshot[]>([]);
   const [selectedSnapshot, setSelectedSnapshot] = React.useState<string>("");
+  const [canUndo, setCanUndo] = React.useState(false);
+  const [canRedo, setCanRedo] = React.useState(false);
   const browserOriginRef = React.useRef<string | null>(null);
 
   const refreshSnapshots = React.useCallback(async () => {
@@ -149,6 +151,24 @@ const AdminPage = () => {
       setDisplayUrl(browserOriginRef.current);
     }
   }, [state?.displayUrl]);
+
+  React.useEffect(() => {
+    fetch("/api/state", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "listSnapshots" }),
+    })
+      .then((response) => response.json())
+      .then((snapshots) => {
+        const undoAvailable = Array.isArray(snapshots) && snapshots.length >= 2;
+        setCanUndo(undoAvailable);
+        setCanRedo(false);
+      })
+      .catch(() => {
+        setCanUndo(false);
+        setCanRedo(false);
+      });
+  }, [state]);
 
   React.useEffect(() => {
     if (state) {
