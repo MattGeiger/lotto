@@ -24,6 +24,7 @@ type ConfirmActionProps = {
   triggerLabel: string;
   variant?: ButtonProps["variant"];
   size?: ButtonProps["size"];
+  triggerTitle?: string;
 };
 
 export const ConfirmAction: React.FC<ConfirmActionProps> = ({
@@ -35,6 +36,7 @@ export const ConfirmAction: React.FC<ConfirmActionProps> = ({
   triggerLabel,
   variant,
   size,
+  triggerTitle,
 }) => {
   const [open, setOpen] = React.useState(false);
   const [busy, setBusy] = React.useState(false);
@@ -52,7 +54,7 @@ export const ConfirmAction: React.FC<ConfirmActionProps> = ({
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        <Button variant={variant} size={size} disabled={disabled}>
+        <Button variant={variant} size={size} disabled={disabled} title={triggerTitle}>
           {triggerLabel}
         </Button>
       </AlertDialogTrigger>

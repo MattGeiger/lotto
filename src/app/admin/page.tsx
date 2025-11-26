@@ -561,7 +561,12 @@ const AdminPage = () => {
                   title="Generate ticket order"
                   description="Creates a fresh order for the selected range and mode."
                   onConfirm={handleGenerate}
-                  disabled={loading || pendingAction !== null}
+                  disabled={state?.orderLocked || loading || pendingAction !== null}
+                  triggerTitle={
+                    state?.orderLocked
+                      ? "Order locked. Use Reset to start new lottery."
+                      : undefined
+                  }
                 />
               </div>
 
