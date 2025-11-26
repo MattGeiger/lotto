@@ -54,20 +54,20 @@ export default function Home() {
         <div className="grid gap-4 sm:grid-cols-2">
           <Card className="bg-gradient-card-info">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Lock className="size-4 text-primary" />
-                Volunteer-safe controls
+              <CardTitle className="flex items-center gap-2 text-card-title">
+                <Lock className="size-4 text-card-icon" />
+                Error-safe controls
               </CardTitle>
               <CardDescription>
-                Confirm critical actions, restore previous state automatically, and keep writes
-                atomic so no data is lost mid-shift.
+                Confirm critical actions, restore previous states, and keep writes
+                atomic so no data is lost.
               </CardDescription>
             </CardHeader>
           </Card>
           <Card className="bg-gradient-card-accent">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <QrCode className="size-4 text-primary" />
+              <CardTitle className="flex items-center gap-2 text-card-title">
+                <QrCode className="size-4 text-card-icon" />
                 Client-friendly display
               </CardTitle>
             <CardDescription>

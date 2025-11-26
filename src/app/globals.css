@@ -93,6 +93,8 @@
 
   --gradient-card-info: linear-gradient(135deg, oklch(0.99 0.01 250), oklch(0.96 0.04 250));
   --gradient-card-accent: linear-gradient(135deg, oklch(0.99 0.01 155), oklch(0.96 0.05 155));
+  --card-title-color: var(--muted-foreground);
+  --card-icon-color: var(--muted-foreground);
 
   /* Fonts */
   --font-sans: var(--font-lato);
@@ -188,6 +190,8 @@
 
   --gradient-card-info: linear-gradient(135deg, oklch(0.20 0.02 250), oklch(0.24 0.04 250));
   --gradient-card-accent: linear-gradient(135deg, oklch(0.20 0.02 155), oklch(0.24 0.04 155));
+  --card-title-color: var(--card-foreground);
+  --card-icon-color: var(--card-foreground);
 
   /* Fonts */
   --font-sans: var(--font-lato);
@@ -328,9 +332,17 @@ a {
     background: var(--gradient-card-info);
   }
 
-  .bg-gradient-card-accent {
-    background: var(--gradient-card-accent);
-  }
+.bg-gradient-card-accent {
+  background: var(--gradient-card-accent);
+}
+
+.text-card-title {
+  color: var(--card-title-color);
+}
+
+.text-card-icon {
+  color: var(--card-icon-color);
+}
 
 }
 
