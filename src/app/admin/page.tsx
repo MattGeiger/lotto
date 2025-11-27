@@ -938,36 +938,41 @@ const AdminPage = () => {
             <CardContent className="space-y-2">
               <div className="space-y-2">
                 <Label>Cleanup old snapshots</Label>
+                <div className="flex flex-wrap gap-2">
+                  <ConfirmAction
+                    triggerLabel="Keep last 7 days"
+                    actionLabel="Delete old snapshots"
+                    title="Delete snapshots older than 7 days"
+                    description="This will permanently delete all snapshots older than 7 days. This cannot be undone, but your last 7 days of history remain for undo/redo."
+                    confirmText="Yes, delete old snapshots"
+                    confirmVariant="destructive"
+                    onConfirm={() => handleCleanup(7)}
+                    disabled={loading || pendingAction !== null}
+                    variant="outline"
+                    size="sm"
+                  />
+                  <ConfirmAction
+                    triggerLabel="Keep last 30 days"
+                    actionLabel="Delete old snapshots"
+                    title="Delete snapshots older than 30 days"
+                    description="This will permanently delete all snapshots older than 30 days. This cannot be undone, but your last 30 days of history remain for undo/redo."
+                    confirmText="Yes, delete old snapshots"
+                    confirmVariant="destructive"
+                    onConfirm={() => handleCleanup(30)}
+                    disabled={loading || pendingAction !== null}
+                    variant="outline"
+                    size="sm"
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Free tier has 512MB limit. Cleanup also runs automatically on reset (30 days).
+                </p>
                 {cleanupMessage && (
                   <Alert className="flex items-start gap-2 border-status-success-border bg-status-success-bg">
                     <AlertDescription className="text-status-success-text">
                       {cleanupMessage}
                     </AlertDescription>
                   </Alert>
-                )}
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleCleanup(7)}
-                    disabled={loading || pendingAction !== null}
-                  >
-                    Keep last 7 days
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleCleanup(30)}
-                    disabled={loading || pendingAction !== null}
-                  >
-                    Keep last 30 days
-                  </Button>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Free tier has 512MB limit. Cleanup also runs automatically on reset (30 days).
-                </p>
-                {cleanupMessage && (
-                  <p className="text-xs text-muted-foreground">{cleanupMessage}</p>
                 )}
               </div>
               <Separator />
