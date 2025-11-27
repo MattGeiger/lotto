@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
 const LoginForm = () => {
   const searchParams = useSearchParams();
@@ -192,18 +193,20 @@ const LoginForm = () => {
               <label htmlFor="otp-code" className="text-sm font-medium text-foreground">
                 6-digit code
               </label>
-              <Input
-                id="otp-code"
-                type="text"
-                inputMode="numeric"
-                pattern="\d{6}"
-                maxLength={6}
-                required
+              <InputOTP
                 value={otpCode}
-                onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                placeholder="123456"
-                autoComplete="one-time-code"
-              />
+                onChange={(value) => setOtpCode(value)}
+                maxLength={6}
+              >
+                <InputOTPGroup className="gap-2.5 *:data-[slot=input-otp-slot]:rounded-md *:data-[slot=input-otp-slot]:border">
+                  <InputOTPSlot index={0} value={otpCode[0] ?? ""} onChange={(val) => setOtpCode((prev) => (val + prev.slice(1)).slice(0, 6))} />
+                  <InputOTPSlot index={1} value={otpCode[1] ?? ""} onChange={(val) => setOtpCode((prev) => (prev[0] ?? "") + val + prev.slice(2)).slice(0, 6))} />
+                  <InputOTPSlot index={2} value={otpCode[2] ?? ""} onChange={(val) => setOtpCode((prev) => prev.slice(0, 2) + val + prev.slice(3)).slice(0, 6))} />
+                  <InputOTPSlot index={3} value={otpCode[3] ?? ""} onChange={(val) => setOtpCode((prev) => prev.slice(0, 3) + val + prev.slice(4)).slice(0, 6))} />
+                  <InputOTPSlot index={4} value={otpCode[4] ?? ""} onChange={(val) => setOtpCode((prev) => prev.slice(0, 4) + val + prev.slice(5)).slice(0, 6))} />
+                  <InputOTPSlot index={5} value={otpCode[5] ?? ""} onChange={(val) => setOtpCode((prev) => prev.slice(0, 5) + val).slice(0, 6))} />
+                </InputOTPGroup>
+              </InputOTP>
             </div>
             <Button
               type="submit"
