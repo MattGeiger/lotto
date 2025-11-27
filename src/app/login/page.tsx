@@ -177,11 +177,6 @@ const LoginForm = () => {
                 >
                   {otpStatus === "requesting" ? "Sending..." : "Send 6-digit code"}
                 </Button>
-                {otpStatus === "error" && otpError && (
-                  <Alert variant="destructive">
-                    <AlertDescription>{otpError}</AlertDescription>
-                  </Alert>
-                )}
               </div>
             ) : (
               <>
@@ -228,12 +223,12 @@ const LoginForm = () => {
                     </Button>
                   </div>
                 </form>
-                {otpStatus === "error" && otpError && (
-                  <Alert variant="destructive">
-                    <AlertDescription>{otpError}</AlertDescription>
-                  </Alert>
-                )}
               </>
+            )}
+            {otpError && (
+              <Alert variant="destructive">
+                <AlertDescription>{otpError}</AlertDescription>
+              </Alert>
             )}
           </TabsContent>
         </Tabs>
