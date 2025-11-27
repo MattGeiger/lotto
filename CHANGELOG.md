@@ -6,6 +6,8 @@
 - Branded OTP email template (React Email, Lato) and shared Neon pool for auth/OTP to avoid connection exhaustion.
 - Dual authentication paths (magic link + OTP) with @williamtemple.org domain restriction and rate limiting/lockouts.
 - Phase-specific env templates and production env defaults set to `login@williamtemple.app`.
+- Snapshot cleanup API and admin controls (keep last 7 or 30 days) with automatic 30-day cleanup on reset to stay within Neon 512MB free tier.
+- Vercel Speed Insights integrated in root layout.
 
 ### Changed
 - Default sender updated from `noreply@williamtemple.app` to `login@williamtemple.app` for better deliverability.
