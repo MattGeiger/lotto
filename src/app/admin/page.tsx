@@ -74,6 +74,7 @@ const AdminPage = () => {
   const [pendingModeChoice, setPendingModeChoice] = React.useState<Mode | null>(null);
   const [modeChanging, setModeChanging] = React.useState(false);
   const [resetPhrase, setResetPhrase] = React.useState("");
+  const [cleanupMessage, setCleanupMessage] = React.useState<string | null>(null);
   const [displayUrl, setDisplayUrl] = React.useState("https://example.com/");
   const [customDisplayUrl, setCustomDisplayUrl] = React.useState<string | null>(null);
   const [editingUrl, setEditingUrl] = React.useState(false);
@@ -259,6 +260,31 @@ const AdminPage = () => {
     }
     await sendAction({ action: "reset" });
     setResetPhrase("");
+  };
+
+  const handleCleanup = async (days: number) => {
+    setCleanupMessage(null);
+    setActionError(null);
+    setPendingAction("cleanup");
+    try {
+      const response = await fetch("/api/state/cleanup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ retentionDays: days }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setActionError(data?.error || "Cleanup failed. Please try again.");
+        return;
+      }
+      setCleanupMessage(
+        `Deleted ${data.deletedCount} snapshots older than ${data.retentionDays} days.`,
+      );
+    } catch (err) {
+      setActionError("Cleanup request failed.");
+    } finally {
+      setPendingAction(null);
+    }
   };
 
   const handleModeToggleRequest = (newMode: Mode) => {
@@ -910,6 +936,34 @@ const AdminPage = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
+              <div className="space-y-2">
+                <Label>Cleanup old snapshots</Label>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleCleanup(7)}
+                    disabled={loading || pendingAction !== null}
+                  >
+                    Keep last 7 days
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleCleanup(30)}
+                    disabled={loading || pendingAction !== null}
+                  >
+                    Keep last 30 days
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Free tier has 512MB limit. Cleanup also runs automatically on reset (30 days).
+                </p>
+                {cleanupMessage && (
+                  <p className="text-xs text-muted-foreground">{cleanupMessage}</p>
+                )}
+              </div>
+              <Separator />
               <Input
                 value={resetPhrase}
                 onChange={(e) => setResetPhrase(e.target.value)}

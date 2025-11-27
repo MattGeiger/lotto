@@ -208,7 +208,12 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
     });
   };
 
-  const resetState = async () => persist(defaultState);
+  const resetState = async () => {
+    cleanupOldSnapshots(30).catch((error) => {
+      console.warn("[State] Snapshot cleanup failed:", error);
+    });
+    return persist(defaultState);
+  };
 
   const listSnapshots = async () => {
     const rows = (await withTimeout(sql`
@@ -230,6 +235,15 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
       throw new Error("Snapshot not found.");
     }
     return persist(snapshot.payload, { preserveTimestamp: true });
+  };
+
+  const cleanupOldSnapshots = async (retentionDays = 30) => {
+    const rows = (await withTimeout(sql`
+      delete from raffle_snapshots
+      where created_at < now() - interval '${retentionDays} days'
+      returning id;
+    `)) as Array<{ id: string }>;
+    return rows.length;
   };
 
   const undo = async () => {
@@ -271,5 +285,6 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
     undo,
     redo,
     setDisplayUrl,
+    cleanupOldSnapshots,
   };
 };
