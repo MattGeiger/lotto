@@ -214,7 +214,7 @@ const LoginForm = () => {
                       key={idx}
                       index={idx}
                       value={otpCode[idx] ?? ""}
-                      onChange={(val) => updateOtpAt(idx, val)}
+                      onChange={(val) => updateOtpAt(idx, typeof val === "string" ? val : "")}
                       aria-label={`Digit ${idx + 1}`}
                     />
                   ))}
