@@ -93,6 +93,15 @@ const LoginForm = () => {
     }
   };
 
+  const updateOtpAt = (index: number, val: string) => {
+    const digit = (val ?? "").replace(/\D/g, "").slice(0, 1);
+    setOtpCode((prev) => {
+      const chars = Array.from({ length: 6 }, (_, idx) => prev[idx] ?? "");
+      chars[index] = digit;
+      return chars.join("").slice(0, 6);
+    });
+  };
+
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-4">
       {hasVerificationError && (
@@ -197,14 +206,18 @@ const LoginForm = () => {
                 value={otpCode}
                 onChange={(value) => setOtpCode(value)}
                 maxLength={6}
+                className={otpStatus === "verifying" ? "opacity-75" : ""}
               >
                 <InputOTPGroup className="gap-2.5 *:data-[slot=input-otp-slot]:rounded-md *:data-[slot=input-otp-slot]:border">
-                  <InputOTPSlot index={0} value={otpCode[0] ?? ""} onChange={(val) => setOtpCode((prev) => (val + prev.slice(1)).slice(0, 6))} />
-                  <InputOTPSlot index={1} value={otpCode[1] ?? ""} onChange={(val) => setOtpCode((prev) => (prev[0] ?? "") + val + prev.slice(2)).slice(0, 6))} />
-                  <InputOTPSlot index={2} value={otpCode[2] ?? ""} onChange={(val) => setOtpCode((prev) => prev.slice(0, 2) + val + prev.slice(3)).slice(0, 6))} />
-                  <InputOTPSlot index={3} value={otpCode[3] ?? ""} onChange={(val) => setOtpCode((prev) => prev.slice(0, 3) + val + prev.slice(4)).slice(0, 6))} />
-                  <InputOTPSlot index={4} value={otpCode[4] ?? ""} onChange={(val) => setOtpCode((prev) => prev.slice(0, 4) + val + prev.slice(5)).slice(0, 6))} />
-                  <InputOTPSlot index={5} value={otpCode[5] ?? ""} onChange={(val) => setOtpCode((prev) => prev.slice(0, 5) + val).slice(0, 6))} />
+                  {[0, 1, 2, 3, 4, 5].map((idx) => (
+                    <InputOTPSlot
+                      key={idx}
+                      index={idx}
+                      value={otpCode[idx] ?? ""}
+                      onChange={(val) => updateOtpAt(idx, val)}
+                      aria-label={`Digit ${idx + 1}`}
+                    />
+                  ))}
                 </InputOTPGroup>
               </InputOTP>
             </div>
