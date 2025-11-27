@@ -204,7 +204,7 @@ const LoginForm = () => {
               </label>
               <InputOTP
                 value={otpCode}
-                onChange={(value) => setOtpCode(value)}
+                onChange={(value) => setOtpCode(typeof value === "string" ? value : "")}
                 maxLength={6}
                 className={otpStatus === "verifying" ? "opacity-75" : ""}
               >
