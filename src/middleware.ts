@@ -3,6 +3,11 @@ import { NextResponse } from "next/server";
 
 import { auth } from "@/lib/auth";
 
+export const config = {
+  matcher: ["/admin/:path*", "/api/state", "/api/state/:path*"],
+  runtime: "nodejs",
+};
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isAdmin = pathname.startsWith("/admin");
@@ -25,7 +30,3 @@ export async function middleware(request: NextRequest) {
 
   return NextResponse.next();
 }
-
-export const config = {
-  matcher: ["/admin/:path*", "/api/state", "/api/state/:path*"],
-};
