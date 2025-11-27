@@ -305,6 +305,10 @@ if (isProduction && !databaseUrl) {
   );
 }
 
+if (!databaseUrl && !isProduction) {
+  console.warn("[State] DATABASE_URL is not set; using file-based storage for development.");
+}
+
 export const stateManager = databaseUrl ? createDbStateManager(databaseUrl) : createStateManager();
 
 export const storageMode = databaseUrl ? "database" : "file";

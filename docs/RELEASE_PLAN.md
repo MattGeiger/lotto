@@ -897,7 +897,7 @@ chore: add Neon database schema file
 ```
 
 #### 6.2 Test Database State Manager in Docker
-- [ ] Update `.env.local` with `USE_DATABASE=true`
+- [ ] Ensure `.env.local` has `DATABASE_URL` set for Postgres
 - [ ] Add local Postgres connection in Docker
 - [ ] Test all state operations work
 - [ ] Verify snapshots persist
@@ -1001,7 +1001,6 @@ EMAIL_FROM=noreply@williamtemple.app
 ADMIN_EMAIL_DOMAIN=williamtemple.org
 
 # Configuration
-USE_DATABASE=true
 AUTH_TRUST_HOST=true
 NODE_ENV=production
 ```
@@ -1076,8 +1075,8 @@ chore: pre-deployment checklist completed
 - [ ] Set RESEND_API_KEY
 - [ ] Set EMAIL_FROM
 - [ ] Set ADMIN_EMAIL_DOMAIN=williamtemple.org
-- [ ] Set USE_DATABASE=true
 - [ ] Set AUTH_TRUST_HOST=true
+- [ ] Set AUTH_BYPASS=false
 
 **Verification:**
 - [ ] Screenshot of Vercel env vars (redacted)

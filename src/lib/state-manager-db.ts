@@ -25,6 +25,22 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
   }
 
   const sql = neon(databaseUrl);
+  const withTimeout = async <T>(promise: Promise<T>) => {
+    const timeoutMs = Number(process.env.DATABASE_TIMEOUT_MS ?? "5000");
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      timer = setTimeout(
+        () => reject(new Error(`Database request timed out after ${timeoutMs}ms.`)),
+        timeoutMs,
+      );
+    });
+
+    return Promise.race([promise, timeoutPromise]).finally(() => {
+      if (timer) {
+        clearTimeout(timer);
+      }
+    });
+  };
   let lastRedoSnapshot: { id: string; timestamp: number } | null = null;
   let lastPersistTs = 0;
 
@@ -68,30 +84,32 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
 
     const payload = JSON.stringify(timestamped);
 
-    await sql.transaction((tx) => {
-      const statements = [];
-      if (!options?.skipBackup) {
-        statements.push(tx`
+    await withTimeout(
+      sql.transaction((tx) => {
+        const statements = [];
+        if (!options?.skipBackup) {
+          statements.push(tx`
           insert into raffle_snapshots (id, payload)
           values (${snapshotId}, ${payload}::jsonb)
           on conflict (id) do nothing;
         `);
-      }
-      statements.push(tx`
+        }
+        statements.push(tx`
         insert into raffle_state (id, payload, updated_at)
         values ('singleton', ${payload}::jsonb, now())
         on conflict (id) do update set payload = excluded.payload, updated_at = excluded.updated_at;
       `);
-      return statements;
-    });
+        return statements;
+      }),
+    );
 
     return timestamped;
   };
 
   const safeReadState = async (): Promise<RaffleState> => {
-    const rows = (await sql`
+    const rows = (await withTimeout(sql`
       select payload from raffle_state where id = 'singleton' limit 1;
-    `) as Array<{ payload: RaffleState }>;
+    `)) as Array<{ payload: RaffleState }>;
     if (rows.length === 0) {
       return persist(defaultState);
     }
@@ -193,9 +211,9 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
   const resetState = async () => persist(defaultState);
 
   const listSnapshots = async () => {
-    const rows = (await sql`
+    const rows = (await withTimeout(sql`
       select id, created_at, payload from raffle_snapshots order by created_at desc, id desc;
-    `) as Array<{ id: string; created_at: string; payload: RaffleState }>;
+    `)) as Array<{ id: string; created_at: string; payload: RaffleState }>;
     return rows.map((row) => ({
       id: row.id,
       timestamp: row.created_at ? new Date(row.created_at).getTime() : Date.now(),
@@ -204,9 +222,9 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
   };
 
   const restoreSnapshot = async (id: string) => {
-    const rows = (await sql`
+    const rows = (await withTimeout(sql`
       select payload from raffle_snapshots where id = ${id} limit 1;
-    `) as Array<{ payload: RaffleState }>;
+    `)) as Array<{ payload: RaffleState }>;
     const snapshot = rows[0];
     if (!snapshot) {
       throw new Error("Snapshot not found.");

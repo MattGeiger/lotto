@@ -64,7 +64,7 @@ Next.js (App Router) app with ShadCN-inspired UI, JSON persistence, and atomic b
   ```
 - Plan a retention policy (e.g., trim to last N snapshots or last N days) to stay within ~512 MB free storage.
   - SDK: prefer `@neondatabase/serverless` (actively maintained). If upgrading from legacy `@vercel/postgres`, use `@neondatabase/vercel-postgres-compat` as a drop-in during transition.
-  - Env toggles: `DATABASE_URL` enables Postgres; set `USE_DATABASE=false` locally to force the file-based manager when you want to test the legacy path.
+  - Env: `DATABASE_URL` is required for production and preferred locally; file-based state storage is only used when `DATABASE_URL` is absent in development.
 
 2) Configure auth (magic links, domain-locked)
 - Use NextAuth Email provider with Resend free tier for mail delivery.
@@ -114,7 +114,6 @@ Next.js (App Router) app with ShadCN-inspired UI, JSON persistence, and atomic b
 - `docker-compose` runs the app, Postgres, and MailDev (SMTP + web UI). Default `.env.local` uses `DATABASE_URL=postgresql://postgres:postgres@db:5432/neondb?sslmode=disable`, `EMAIL_SERVER_HOST=maildev`, `EMAIL_SERVER_PORT=1025`.
 - Fully offline: leave `RESEND_API_KEY` unset, keep `EMAIL_FROM=login@localhost`, and optionally set `AUTH_BYPASS=true` to skip auth.
 - To exercise the full email flow locally, keep `AUTH_BYPASS=false`, start docker, and open magic links from MailDev at `http://localhost:1080`.
-- Prefer file-based state? Set `USE_DATABASE=false` (still works with `AUTH_BYPASS=true` if you want to skip auth).
 
 ## Environment Setup
 
@@ -130,7 +129,7 @@ Next.js (App Router) app with ShadCN-inspired UI, JSON persistence, and atomic b
    ```
 3. Fill `.env.local` with required values:
    - `AUTH_SECRET` (required) and `AUTH_TRUST_HOST=true`
-   - `USE_DATABASE=true` and `DATABASE_URL=postgresql://postgres:postgres@db:5432/neondb?sslmode=disable`
+   - `DATABASE_URL=postgresql://postgres:postgres@db:5432/neondb?sslmode=disable`
    - `EMAIL_FROM=login@localhost`, `EMAIL_SERVER_HOST=maildev`, `EMAIL_SERVER_PORT=1025`
    - `ADMIN_EMAIL_DOMAIN` (optional; restrict sign-ins)
    - Optional: `RESEND_API_KEY` + production `EMAIL_FROM` when testing Resend instead of MailDev
@@ -149,8 +148,8 @@ See `.env.example` for the full list. Critical vars:
 - `ADMIN_EMAIL_DOMAIN` — restricts login to your domain
 
 Local options:
-- Set `USE_DATABASE=false` and `AUTH_BYPASS=true` to skip auth.
-- Set `USE_DATABASE=true` with Neon to test the full auth flow.
+- Set `AUTH_BYPASS=true` to bypass login during UI work (still requires `DATABASE_URL` for server start).
+- Add `RESEND_API_KEY` and a production `EMAIL_FROM` to test Resend instead of MailDev.
 
 ## Run in Docker
 - Build and start locally (includes a bind mount for persistent `data/`):

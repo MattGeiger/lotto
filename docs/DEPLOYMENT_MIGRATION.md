@@ -12,7 +12,6 @@ Goal: run the same stack locally and on Vercel using Neon Postgres, NextAuth v5 
 2) Update env for local (Docker reads `.env.local` via `env_file`)
    - Add/edit `.env.local`:
      ```
-     USE_DATABASE=true
      DATABASE_URL=postgresql://postgres:postgres@db:5432/neondb?sslmode=disable
      EMAIL_FROM=login@localhost
      EMAIL_SERVER_HOST=maildev
@@ -31,8 +30,8 @@ Goal: run the same stack locally and on Vercel using Neon Postgres, NextAuth v5 
 
 4) Code changes (auth)
    - `src/lib/auth.ts`:
-     - Uses `DATABASE_URL` exclusively for the adapter; throws if missing when `USE_DATABASE` is enabled.
-     - Resend only when `RESEND_API_KEY` is set; otherwise defaults to MailDev settings above.
+     - Uses `DATABASE_URL` exclusively for the adapter; fails fast when missing (production required).
+     - Resend only when `RESEND_API_KEY` is set; otherwise defaults to MailDev settings above for local.
      - Domain allowlist enforced; `trustHost` true.
 
 5) Docker config
@@ -53,7 +52,7 @@ Goal: run the same stack locally and on Vercel using Neon Postgres, NextAuth v5 
    - `/admin` accessible post-login; non-allowed domains rejected.
 
 7) Vercel notes
-   - Set envs in Vercel: `DATABASE_URL`, `AUTH_SECRET`, `AUTH_TRUST_HOST=true`, `RESEND_API_KEY`, `EMAIL_FROM`, `ADMIN_EMAIL_DOMAIN`, `USE_DATABASE=true`.
+   - Set envs in Vercel: `DATABASE_URL`, `AUTH_SECRET`, `AUTH_TRUST_HOST=true`, `RESEND_API_KEY`, `EMAIL_FROM`, `ADMIN_EMAIL_DOMAIN`.
    - Same auth config works on Vercel; Neon free tier is sufficient. Production will fail fast without `DATABASE_URL`.
 
 ### Status

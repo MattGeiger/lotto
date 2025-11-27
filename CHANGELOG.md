@@ -16,8 +16,8 @@
 ### Changed
 - Generate button disabled with tooltip when order locked
 - Reset requires explicit confirmation to prevent accidents
-- Authentication now uses `DATABASE_URL` exclusively and fails fast when missing while `USE_DATABASE` is enabled.
-- State manager requires `DATABASE_URL` in production; file storage is development-only.
+- Authentication now requires `DATABASE_URL` and fails fast when missing to avoid accidental file-backed auth in production.
+- State manager requires `DATABASE_URL` in production; file storage is limited to development/tests.
 
 - Locked raffle order after initial generation by adding `orderLocked` state, guarding regenerate attempts, and throwing a descriptive error to prevent position changes.
 - Fixed append behavior so new tickets shuffle within their batch only and always append to the end, preserving all existing client positions; added tests to enforce this.
@@ -111,7 +111,7 @@
 - Documented Vercel hobby/free deployment intent and the need to move persistence off local files to Neon-backed storage.
 - Added a concrete Vercel/Neon deploy runbook covering Postgres schema, magic-link auth setup, env vars, snapshot retention, and migration notes.
 - Documented routing plan for production domain `williamtemple.app` (root = read-only board, `/login` for magic links, `/admin` for staff).
-- Added a Neon/Postgres-backed state manager option gated by `DATABASE_URL` (file storage remains for local dev/tests); noted `USE_DATABASE` override in docs.
+- Added a Neon/Postgres-backed state manager option gated by `DATABASE_URL` (file storage remains for local dev/tests); documented selection rules without extra toggles.
 - Added NextAuth email-based magic link auth (Resend + domain allowlist), protected `/admin` and write APIs via middleware, and introduced a `/login` page.
 - Added `AUTH_BYPASS` flag so localhost dev can skip auth and Neon; noted local dev guidance in README.
 - Fixed build issues by removing duplicate imports, adding nodemailer dependency, and making snapshot timestamps monotonic for stable undo/redo ordering.

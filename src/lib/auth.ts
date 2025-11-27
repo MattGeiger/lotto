@@ -24,18 +24,28 @@ const emailServer = {
 export const { handlers: authHandlers, auth } = NextAuth(() => {
   const bypassAuth = process.env.AUTH_BYPASS === "true";
   const isProduction = process.env.NODE_ENV === "production";
-  const useResend = isProduction && !!resend;
   const databaseUrl = process.env.DATABASE_URL;
-  const useDatabase = process.env.USE_DATABASE !== "false";
+  const useResend = Boolean(resend && resendApiKey);
 
-  if (useDatabase && !databaseUrl) {
+  if (!databaseUrl) {
     throw new Error(
-      "DATABASE_URL is required for authentication. Set this environment variable to your Neon connection string.",
+      isProduction
+        ? "DATABASE_URL is required for authentication in production. Set this to your Neon connection string."
+        : "DATABASE_URL is required for NextAuth email login. Set this to your local Postgres connection string.",
     );
   }
 
+  if (isProduction && (!fromAddress || !useResend)) {
+    throw new Error(
+      "Production requires RESEND_API_KEY and EMAIL_FROM for magic link delivery. Configure these env vars.",
+    );
+  }
+
+  if (!useResend) {
+    console.warn("[Auth] RESEND_API_KEY not set; falling back to SMTP/MailDev configuration.");
+  }
+
   console.log("[Auth] Initializing with:", {
-    useDatabase,
     hasDbUrl: !!databaseUrl,
     hasResendKey: !!resendApiKey,
     useResend,
@@ -47,17 +57,14 @@ export const { handlers: authHandlers, auth } = NextAuth(() => {
     fromAddress,
   });
 
-  const adapter =
-    databaseUrl && useDatabase ? PostgresAdapter(new Pool({ connectionString: databaseUrl })) : undefined;
+  const adapter = PostgresAdapter(
+    new Pool({
+      connectionString: databaseUrl,
+      connectionTimeoutMillis: 5000,
+    }),
+  );
 
-  if (!adapter) {
-    console.error("[Auth] No database adapter configured!", {
-      useDatabase,
-      hasDbUrl: !!databaseUrl,
-    });
-  } else {
-    console.log("[Auth] Adapter initialized successfully");
-  }
+  console.log("[Auth] Adapter initialized successfully");
 
   const config: NextAuthConfig = {
     adapter,
@@ -135,7 +142,7 @@ export const { handlers: authHandlers, auth } = NextAuth(() => {
     },
     session: { strategy: "jwt" },
     trustHost: true,
-    debug: true,
+    debug: process.env.NODE_ENV === "development",
   };
 
   return config;
