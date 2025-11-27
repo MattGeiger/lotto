@@ -29,6 +29,9 @@ export async function POST(request: Request) {
     });
 
     const ensureOtpFailuresTable = async () => {
+      if (!pool) {
+        throw new Error("Database connection not available.");
+      }
       await pool.query(`
         create table if not exists otp_failures (
           email text primary key,
