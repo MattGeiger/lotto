@@ -17,9 +17,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid retention days" }, { status: 400 });
     }
 
-    if ("cleanupOldSnapshots" in stateManager) {
-      // @ts-expect-error conditional availability based on storage backend
-      const deleted = await stateManager.cleanupOldSnapshots(parsed.data.retentionDays);
+  if ("cleanupOldSnapshots" in stateManager) {
+    const manager = stateManager as typeof stateManager & {
+      cleanupOldSnapshots?: (days?: number) => Promise<number>;
+    };
+    if (typeof manager.cleanupOldSnapshots === "function") {
+      const deleted = await manager.cleanupOldSnapshots(parsed.data.retentionDays);
       return NextResponse.json({
         success: true,
         deletedCount: deleted,
@@ -27,11 +30,16 @@ export async function POST(request: Request) {
         message: `Deleted ${deleted} snapshots older than ${parsed.data.retentionDays} days`,
       });
     }
+    return NextResponse.json({
+      success: false,
+      message: "Cleanup not available in file storage mode",
+    }, { status: 400 });
+  }
 
-    return NextResponse.json(
-      { success: false, message: "Cleanup not available in file storage mode" },
-      { status: 400 },
-    );
+  return NextResponse.json(
+    { success: false, message: "Cleanup not available in file storage mode" },
+    { status: 400 },
+  );
   } catch (error) {
     return NextResponse.json(
       { error: "Cleanup failed", details: String(error) },
