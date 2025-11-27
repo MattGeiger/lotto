@@ -938,6 +938,13 @@ const AdminPage = () => {
             <CardContent className="space-y-2">
               <div className="space-y-2">
                 <Label>Cleanup old snapshots</Label>
+                {cleanupMessage && (
+                  <Alert className="flex items-start gap-2 border-status-success-border bg-status-success-bg">
+                    <AlertDescription className="text-status-success-text">
+                      {cleanupMessage}
+                    </AlertDescription>
+                  </Alert>
+                )}
                 <div className="flex flex-wrap gap-2">
                   <Button
                     variant="outline"

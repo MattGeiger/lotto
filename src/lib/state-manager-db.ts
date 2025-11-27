@@ -240,7 +240,7 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
   const cleanupOldSnapshots = async (retentionDays = 30) => {
     const rows = (await withTimeout(sql`
       delete from raffle_snapshots
-      where created_at < now() - interval '${retentionDays} days'
+      where created_at < now() - make_interval(days => ${retentionDays})
       returning id;
     `)) as Array<{ id: string }>;
     return rows.length;
