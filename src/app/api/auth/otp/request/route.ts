@@ -4,8 +4,10 @@ import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { z } from "zod";
 import nodemailer from "nodemailer";
+import { render } from "@react-email/components";
 
 import { getPool } from "@/lib/db";
+import { OtpCode } from "@/emails/otp-code";
 
 export const runtime = "nodejs";
 
@@ -88,17 +90,15 @@ export async function POST(request: Request) {
       [email, now.toISOString()],
     );
 
+    const htmlContent = await render(<OtpCode code={code} />);
+
     if (resendApiKey) {
       const resend = new Resend(resendApiKey);
       const { error } = await resend.emails.send({
         from: fromAddress,
         to: [email],
         subject: "Your William Temple House login code",
-        html: `
-          <p>Use this one-time code to sign in:</p>
-          <p style="font-size: 24px; font-weight: bold; letter-spacing: 2px;">${code}</p>
-          <p>This code expires in 10 minutes. If you did not request it, you can ignore this email.</p>
-        `,
+        html: htmlContent,
       });
       if (error) {
         console.error("[OTP] Resend error:", error);
@@ -123,11 +123,7 @@ export async function POST(request: Request) {
         from: fromAddress,
         to: email,
         subject: "Your William Temple House login code",
-        html: `
-          <p>Use this one-time code to sign in:</p>
-          <p style="font-size: 24px; font-weight: bold; letter-spacing: 2px;">${code}</p>
-          <p>This code expires in 10 minutes. If you did not request it, you can ignore this email.</p>
-        `,
+        html: htmlContent,
       });
     }
 

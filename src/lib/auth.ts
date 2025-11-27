@@ -9,7 +9,7 @@ import { createHash } from "node:crypto";
 import { getPool } from "./db";
 
 const allowedDomain = process.env.ADMIN_EMAIL_DOMAIN?.toLowerCase();
-const fromAddress = process.env.EMAIL_FROM ?? "login@localhost";
+const fromAddress = process.env.EMAIL_FROM ?? "login@williamtemple.app";
 const resendApiKey = process.env.RESEND_API_KEY;
 
 const emailServer = {
