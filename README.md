@@ -184,7 +184,7 @@ Local options:
 - Vitest + Testing Library.
 
 ## Version History
-- 1.0.0 — Production release with magic link + OTP auth, Neon/Resend, custom domain.
+- 1.0.0 (2025-11-27) — Production release with magic link + OTP auth, Neon/Resend, snapshot cleanup, Speed Insights, custom domain.
 - 0.9.0 — Initial Vercel deployment and custom domain setup.
 
 ## Theme / design tokens

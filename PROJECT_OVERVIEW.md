@@ -1,263 +1,294 @@
-# **Technical Specification Document**
-## **William Temple House — Digital Raffle & Queue Management Web App**
-### **Prepared for: Agentic AI Development**
-### **Tech Stack Preference: Next.js + ShadCN UI + Global CSS + JSON Persistence**
+# William Temple House — Digital Raffle System
+## Project Overview & Architecture Documentation
+
+**Status:** Production (v1.0.0)  
+**Deployment:** https://williamtemple.app  
+**Repository:** Zero-shot build by AI agent team
 
 ---
 
-## **1. Purpose & Problem Context**
+## 1. Executive Summary
 
-William Temple House (WTH) operates a food pantry serving ~150 clients per day. Only ~75 clients are able to shop in the pantry directly; the rest receive pre-packaged food or shopping lists. Historically, clients would line up early, leading to:
+The William Temple House Digital Raffle system successfully replaced a manual paper-and-coffee-can raffle with a production-grade web application. Built through collaborative AI agent development, the system now serves ~150 daily pantry clients with:
 
-- Line-cutting disputes  
-- Crowd surges when gates open  
-- Perceived unfairness  
-- Stress for clients and staff
+- **Fair, transparent queue management** via randomized ticket drawing
+- **Multi-device access** (wall screens + mobile via QR codes)  
+- **Staff-friendly administration** with undo/redo and snapshot history
+- **Enterprise-grade security** (magic link + OTP authentication, domain-restricted)
+- **Automated data hygiene** (snapshot cleanup, retention policies)
 
-To improve fairness, WTH adopted a *raffle ticket* system: randomized drawing of ticket numbers using a whiteboard, paper tickets, and a coffee can. While fair, this approach:
-
-- Requires multiple volunteers  
-- Is slow to update  
-- Is difficult to see from a distance  
-- Cannot be viewed remotely  
-- Does not retain data if disrupted  
-
-The proposed solution: **a small web app that digitizes this randomized selection process**, preserves fairness, and reduces operational friction.
+**Tech Stack:** Next.js 16, React 19, Neon Postgres, Resend email, Vercel hosting
 
 ---
 
-## **2. Project Goals**
+## 2. Problem Solved
 
-The app must:
+### Original Pain Points
+- Morning line disputes and crowd surges at 8am gate opening
+- Manual whiteboard updates requiring multiple volunteers
+- No remote visibility for clients
+- Data loss on system disruption
+- Labor-intensive analog process
 
-1. **Generate a randomized sequence of raffle ticket numbers**  
-2. **Display that sequence in a clean, airport-style departures/arrivals grid**  
-3. **Allow clients to view the board on a large screen *and* on their phones via QR code**  
-4. **Allow staff to manage ranges, append new tickets, toggle random/sequential mode, and update “now serving” info**  
-5. **Retain randomized data even after refresh, crash, or page navigation**  
-6. **Be extremely simple to use for front-end volunteers with minimal technical knowledge**
+### Solution Delivered
+- Automated randomized drawing with transparent display
+- Real-time updates via polling (public board) and admin controls
+- QR code sharing for mobile access
+- Durable Postgres storage with atomic writes
+- Single-volunteer operation capability
 
 ---
 
-## **3. High-Level System Architecture**
+## 3. System Architecture
 
-### **3.1 Front-End**
-- **Next.js (App Router)**  
-- **ShadCN UI components** for clean, accessible styling  
-- **Global CSS** for consistency  
-- **Client view without background polling** to avoid clobbering in-progress form input on `/admin`
-- **Built-in read-only board** at `/` that polls `/api/state` for wall screens, plus an optional standalone server (`npm run readonly`) for edge/legacy hosting
+### 3.1 Frontend (Next.js 16 App Router)
+- **Public Display** (`/`) — High-contrast wall-screen UI, auto-polling every 4s
+- **Staff Dashboard** (`/admin`) — Range management, append, mode toggle, undo/redo
+- **Authentication** (`/login`) — Magic link + OTP fallback
+- **Staff Landing** (`/staff`) — Welcome page with dashboard link
 
-### **3.2 Back-End**
-- Hosted inside Next.js API routes  
-- JSON file–based “mini datastore” for durability  
-- Simple, fast read/write operations using Node FS  
-- Disaster-safe behavior (writes create temporary files + atomic rename)
+### 3.2 Backend (Next.js API Routes)
+- `/api/state` — CRUD operations for raffle state (generate, append, update serving)
+- `/api/state/cleanup` — Snapshot retention management (7/30-day policies)
+- `/api/auth/[...nextauth]` — NextAuth v5 handlers (magic link, OTP, session)
+- `/api/auth/otp/request` — Rate-limited OTP generation with email delivery
 
-### **3.3 Persistence**
-- **JSON storage**, not CSV  
-- Advantages:  
-  - Natively handled by JavaScript  
-  - No parsing overhead  
-  - Flexible schema for additional fields  
-- Stored state includes:
-  ```json
-  {
-    "startNumber": 640,
-    "endNumber": 690,
-    "mode": "random" | "sequential",
-    "generatedOrder": [689, 650, 677, ...],
-    "timestamp": 1710459345,
-    "currentlyServing": 17
-  }
+### 3.3 Data Layer (Neon Postgres)
+- **raffle_state** — Current lottery state (singleton record, JSONB payload)
+- **raffle_snapshots** — Timestamped backups for undo/redo (retention policies)
+- **users/accounts/sessions** — NextAuth authentication tables
+- **verification_token** — Magic link tokens (10-min expiry, hashed)
+- **otp_failures** — Rate limiting and lockout tracking (5 attempts, 5-min lockout; 1/minute request throttle)
 
+**Connection Pool:** Shared singleton pool (`@neondatabase/serverless`) to prevent auth/OTP connection exhaustion
 
-⸻
+### 3.4 Email Delivery (Resend)
+- **Sender:** `login@williamtemple.app` (verified domain)
+- **Templates:** React Email components (branded OTP; magic link uses NextAuth default template)
+- **Fallback:** Local MailDev SMTP for Docker development
 
-4. Core User Roles
+### 3.5 Deployment (Vercel)
+- **Production:** `williamtemple.app` (custom domain, Vercel DNS)
+- **Runtime:** Node.js (proxy.ts, API routes)
+- **Monitoring:** Vercel Speed Insights, build logs
+- **CI/CD:** GitHub main branch auto-deploy
 
-4.1 Front-End (Clients)
-	•	View-only
-	•	Access via web browser or QR code
-	•	See:
-	•	Total tickets issued
-	•	Randomized (or sequential) ticket order
-	•	Highlighted “Now Serving” indicator
-	•	Auto-updating information available via the read-only board at `/`
+---
 
-4.2 Back-End (Staff & Volunteers)
+## 4. Core Features (Implemented)
 
-Functionality includes:
-	•	Enter start number
-	•	Enter end number
-	•	Append additional tickets to the range
-	•	Choose sort mode:
-	•	Randomized
-	•	Sequential (first-come-first-serve)
-	•	Re-randomize (with modal confirmation)
-	•	Update “now serving” field
-	•	Reset system (protected by multi-step confirmation modal)
-	•	Persist all state changes automatically
-	•	Restore previous state if page refreshes or browser closes
+### 4.1 Raffle Generation
+- **Random mode:** Fisher-Yates shuffle for initial range; new tickets are batch-shuffled and appended to the end.
+- **Sequential mode:** First-come-first-serve order; new tickets append to the end.
+- **Mode protection:** Switching modes requires confirmation, preserves existing order.
 
-⸻
+### 4.2 Queue Management
+- **"Now Serving" control:** Step through draw positions with prev/next arrows
+- **Ordinal display:** "1st", "2nd", "3rd" draw position labels
+- **Clear position:** Reset to start (requires confirmation)
 
-5. Feature Requirements
+### 4.3 History & Recovery
+- **Undo/Redo:** Navigate snapshot history (ordered by timestamp)
+- **Snapshot restore:** Select and restore from dropdown
+- **Automatic backups:** Created on every state change
+- **Retention policies:** 7-day or 30-day cleanup via admin UI (auto-runs on reset)
 
-5.1 Display Grid (Client-Facing)
-	•	Airport-style departures grid layout
-	•	Responsive design for mobile & large monitors
-	•	Numbers displayed in a clean, high-contrast grid
-	•	Ability to highlight:
-	•	Current number
-	•	Upcoming numbers
-	•	Optional animation (flipboard-style number transitions)
+### 4.4 Security & Access Control
+- **Domain restriction:** Only `@williamtemple.org` emails allowed
+- **Dual authentication:** Magic link (primary) + OTP fallback (rate-limited)
+- **Route protection:** `/admin` and write APIs require session (proxy.ts middleware)
+- **Token security:** Hashed verification tokens, 10-minute expiry
+- **Rate limiting:** 1 OTP request/minute, 5 attempts before 10-minute lockout
 
-5.2 Staff Interface
-	•	Form fields:
-	•	Start number
-	•	End number
-	•	Additional tickets to append
-	•	Buttons:
-	•	Generate / re-generate random order
-	•	Toggle random vs sequential
-	•	Update “Now Serving”
-	•	Reset system
+### 4.5 Data Hygiene
+- **Snapshot cleanup:** Keep last 7 or 30 days via admin UI; auto-cleanup (30 days) runs on reset.
+- **Storage capacity:** ~1.9 MB for 30-day retention, ~440 KB for 7-day.
+- **Neon free tier:** 512 MB limit with ample runway under retention policies.
 
-All button actions require modal confirmations for safety.
+### 4.6 Display & Sharing
+- **QR code generation:** Admin-configurable URL (defaults to production domain)
+- **High-contrast UI:** Gold/blue gradients, 8rem "NOW SERVING" headline
+- **Responsive grid:** Served tickets highlighted, upcoming muted
+- **Empty state:** Welcoming message when no tickets issued
 
-5.3 Data Retention
-	•	A JSON file should store:
-	•	Current range
-	•	Generated order
-	•	Next ticket to serve
-	•	Timestamp of last update
-	•	On load:
-	•	If the file exists → load it
-	•	If not → create new file with default empty state
+---
 
-5.4 Reliability & Fail-Safes
-	•	Atomic write operations
-	•	Backups created on each write (state-YYYYMMDDHHMM.json)
-	•	Warnings within UI if JSON is malformed
-	•	UI lockout indicators during write operations
-	•	Soft error handling (system never crashes in public view)
+## 5. Data Model
 
-⸻
-
-6. Data Model
-
-6.1 Ticket Range
-
-startNumber: Integer
-endNumber: Integer
-
-6.2 Modes
-
-mode: "random" | "sequential"
-
-6.3 Generated Order
-
-generatedOrder: Array<Integer>
-
-6.4 Operational State
-
-currentlyServing: Integer
-timestamp: UnixEpochInteger
-
-6.5 Full Schema
-
+### 5.1 Raffle State (JSONB in raffle_state table)
+```json
 {
-  "startNumber": 0,
-  "endNumber": 0,
+  "startNumber": 640,
+  "endNumber": 690,
   "mode": "random",
-  "generatedOrder": [],
-  "currentlyServing": null,
-  "timestamp": null
+  "generatedOrder": [689, 650, 677, ...],
+  "currentlyServing": 689,
+  "orderLocked": true,
+  "timestamp": 1732723847123,
+  "displayUrl": "https://williamtemple.app/"
 }
+```
 
+### 5.2 Snapshots (raffle_snapshots table)
+- **id:** UUID primary key
+- **payload:** JSONB (full raffle state)
+- **created_at:** Timestamp (indexed DESC for undo/redo ordering)
 
-⸻
+### 5.3 Authentication Tables
+- **users:** Email (unique), emailVerified timestamp
+- **verification_token:** Hashed identifier, hashed token, 10-min expires
+- **otp_failures:** Email, failed attempts, locked until timestamp
+- **sessions:** sessionToken, userId, expires
 
-7. Logical Behavior
+---
 
-7.1 Generate Randomized Order
-	1.	Build array [startNumber → endNumber]
-	2.	Shuffle using Fisher–Yates algorithm
-	3.	Store result in JSON
+## 6. Operational Behavior
 
-7.2 Sequential Mode
-	•	Simply display numbers [start → end] in order
-	•	Updates automatically when end increases
-	•	Does not reshuffle previous values
+### 6.1 Daily Workflow
+1. Staff logs in via magic link (`/login` → email → click → `/staff` landing)
+2. Navigate to `/admin`, enter ticket range (e.g., 640-690), choose mode (random)
+3. Click "Generate order" → randomized sequence created, snapshot saved
+4. Display QR code on wall screen, clients scan to view on phones
+5. Step through "Now Serving" with arrows as clients approach counter
+6. Append additional tickets mid-day if queue grows (new tickets randomized within order)
+7. End of day: Click "Reset for New Day" (requires "RESET" confirmation, auto-cleanups 30-day snapshots)
 
-7.3 Append Tickets
-	•	Extend only the upper range
-	•	If in random mode:
-	•	Only shuffle newly added numbers
-	•	Insert them into the existing array in randomized positions
-	•	If in sequential mode:
-	•	Append numbers sequentially
+### 6.2 Append Logic
+- **Random mode:** New tickets are shuffled as a batch and appended to the end.
+- **Sequential mode:** New tickets appended to end in order.
+- **Order preservation:** Existing tickets never re-shuffled.
 
-7.4 Reset
+### 6.3 Mode Toggle
+- **Confirmation required:** Modal warns existing order stays intact
+- **Future tickets only:** Mode switch affects append behavior, not current draw
 
-Requires:
-	•	“Are you sure?” modal
-	•	“Type RESET to confirm” safety measure
-	•	Backups automatically archived
+### 6.4 Cleanup Automation
+- **Manual triggers:** "Keep last 7 days" or "Keep last 30 days" buttons with destructive confirmations.
+- **Auto-cleanup:** Runs on reset (30-day retention).
+- **Success feedback:** Alert shows deletion count.
 
-⸻
+---
 
-8. QR Code Support
-	•	QR code generated client-side
-	•	Links to the public board at `/`
-	•	Updated automatically with each new state change
-	•	Helpful for clients away from the board
+## 7. Security Considerations
 
-⸻
+### 7.1 Authentication
+- **No personal data:** Only ticket numbers (anonymous)
+- **Domain allowlist:** `@williamtemple.org` enforced in sign-in callback
+- **Token security:** SHA-256 hashed, 10-minute expiry, single-use
+- **OTP lockout:** 5 failed attempts → 5-minute cooldown; 1 request per minute throttle
 
-9. Security Considerations
-	•	No personally identifiable data is stored
-	•	Only ticket numbers (anonymous)
-	•	Admin page protected with a simple passphrase or pin
-	•	No external login system required
-	•	State files write-protected and sanitized
+### 7.2 Infrastructure
+- **Connection pooling:** Shared Neon pool prevents auth/OTP exhaustion
+- **Atomic writes:** Postgres UPSERT for raffle_state, INSERT for snapshots
+- **Environment isolation:** `AUTH_BYPASS=false` in production, local Docker for dev
 
-⸻
+### 7.3 CSRF & Session Security
+- **NextAuth CSRF protection:** Built-in token validation
+- **Session cookies:** HTTP-only, secure in production
+- **Middleware guards:** `/admin` and write APIs check session before execution
 
-10. Stretch & Optional Features
-	•	Live WebSocket updates (if desired)
-	•	“Estimated wait time” indicator
-	•	Flipboard-style number animations
-	•	“Accessibility mode” (high contrast, dyslexia-friendly font)
-	•	Multilingual dropdown
-	•	Public-facing “What this system is” explanation page
+---
 
-⸻
+## 8. Deployment & Operations
 
-11. Summary
+### 8.1 Production Environment
+- **Hosting:** Vercel (Node.js runtime, serverless functions)
+- **Database:** Neon Postgres (512 MB free tier, shared pool)
+- **Email:** Resend (100 emails/day free tier)
+- **Domain:** `williamtemple.app` (Vercel DNS, custom domain)
+- **Monitoring:** Vercel Speed Insights, build logs
 
-This app replaces a labor-intensive, analog raffle system with a streamlined, fair, digital queue management tool. It:
-	•	Enhances fairness
-	•	Reduces tension in morning lines
-	•	Lets clients view updates from any device
-	•	Lightens staff workload
-	•	Remains simple and reliable
-	•	Avoids heavy infrastructure by using lightweight JSON persistence
+### 8.2 Local Development
+- **Docker Compose:** App + Postgres + MailDev (SMTP UI at localhost:1080)
+- **Auth bypass:** `AUTH_BYPASS=true` for UI work (still requires `DATABASE_URL`)
+- **File storage:** Falls back to `data/state.json` when `DATABASE_URL` absent
 
-The result is a pragmatic, low-overhead system designed for real-world social-service operations.
+### 8.3 CI/CD Pipeline
+1. Push to GitHub `main` branch
+2. Vercel auto-builds (Next.js 16, Turbopack)
+3. Environment variables injected from Vercel dashboard
+4. Deploy to production (`williamtemple.app`)
+5. Verify Speed Insights collecting data
 
-⸻
+---
 
-12. Next Steps for Agentic AI
-	1.	Scaffold Next.js project
-	2.	Build JSON state manager module
-	3.	Build staff dashboard
-	4.	Build public display UI
-	5.	Implement QR code generator
-	6.	Implement data persistence and recovery
-	7.	Implement safe modal confirmations
-	8.	Add styling + accessibility polish
-	9.	Perform test runs simulating real WTH operations
+## 9. Lessons Learned
 
-⸻
+### 9.1 Technical Decisions
+- **Postgres over JSON files:** Vercel filesystem is ephemeral, Neon free tier sufficient
+- **Shared connection pool:** Critical for preventing auth/OTP connection exhaustion
+- **Magic link + OTP:** Email scanner issues required fallback (IT email scanning breaks magic links)
+- **Proxy.ts migration:** Next.js 16 breaking change, runtime cannot be configured
+- **Snapshot cleanup:** Essential for staying within Neon 512 MB free tier
+
+### 9.2 Development Workflow
+- **Three-person team:** Geiger (lead), Claude (supervisor), Codex (implementer)
+- **Zero-shot build:** AI agent collaboration from spec to production
+- **Incremental deployment:** Phase-by-phase verification (local → Vercel preview → custom domain → full auth)
+- **Compliance audits:** Systematic file inspection for Vercel 2025 standards
+
+### 9.3 Production Surprises
+- **IT email scanning:** Magic links opened by security scanners, requiring OTP fallback
+- **Neon pooling:** Separate pools per auth/OTP call caused exhaustion, needed singleton
+- **SQL syntax:** Neon parameterized queries require `make_interval()`, not string interpolation
+- **Next.js 16 changes:** Middleware → proxy.ts, runtime declarations forbidden in proxy files
+
+---
+
+## 10. Future Enhancements (Optional)
+
+### 10.1 Observability
+- **Error tracking:** Sentry free tier or Neon `errors` table (avoid PII)
+- **Health checks:** `/api/health` endpoint for uptime monitoring
+- **Snapshot metrics:** Dashboard showing cleanup stats, storage usage
+
+### 10.2 User Experience
+- **WebSocket updates:** Replace polling with real-time push (Socket.IO or Pusher)
+- **Flipboard animations:** CSS transitions for "Now Serving" changes
+- **Multilingual support:** Spanish translations for client-facing UI
+- **Accessibility mode:** High contrast, dyslexia-friendly fonts
+
+### 10.3 Operations
+- **Automated retention:** Vercel Cron job (2 free on Hobby) for daily snapshot cleanup
+- **DMARC/SPF/DKIM:** Complete DNS records for `williamtemple.app` email domain
+- **Backup strategy:** Periodic Neon database snapshots, external archival
+
+---
+
+## 11. Project Artifacts
+
+### 11.1 Documentation
+- `README.md` — Setup, scripts, deployment runbook
+- `CHANGELOG.md` — Version history, feature timeline
+- `PROJECT_OVERVIEW.md` — This document (architecture, design decisions)
+- `docs/UI_DESIGN.md` — Theme system, design tokens
+
+### 11.2 Key Files
+- `/src/proxy.ts` — Authentication middleware (Next.js 16)
+- `/src/lib/state-manager-db.ts` — Postgres-backed state manager
+- `/src/lib/auth.ts` — NextAuth v5 configuration
+- `/src/app/api/state/route.ts` — Core raffle API
+- `/src/app/api/auth/otp/request/route.ts` — Rate-limited OTP generation
+
+### 11.3 Configuration
+- `.env.example` — Environment variable template
+- `docker-compose.yml` — Local development stack
+- `next.config.ts` — Next.js 16 config (Turbopack, React 19)
+- `tailwind.config.ts` — Tailwind v4, design tokens
+
+---
+
+## 12. Acknowledgments
+
+Built through collaborative AI agent development:
+- **Geiger:** Project lead, requirements, decision-making
+- **Claude:** Technical supervisor, architecture, debugging
+- **Codex:** Code implementer, testing, commits
+
+Zero-shot build from specification to production-ready deployment. Full commit history preserved for transparency and maintainability.
+
+---
+
+**Version:** 1.0.0  
+**Last Updated:** November 27, 2025  
+**Status:** Production, serving William Temple House food pantry operations
