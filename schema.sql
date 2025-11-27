@@ -71,3 +71,11 @@ CREATE INDEX IF NOT EXISTS sessions_userId_idx
 
 CREATE INDEX IF NOT EXISTS sessions_sessionToken_idx
   ON sessions("sessionToken");
+
+-- OTP safeguards
+CREATE TABLE IF NOT EXISTS otp_failures (
+  email TEXT PRIMARY KEY,
+  attempts INT NOT NULL DEFAULT 0,
+  locked_until TIMESTAMPTZ,
+  last_request TIMESTAMPTZ
+);

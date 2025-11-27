@@ -56,6 +56,32 @@ export const { handlers: authHandlers, auth } = NextAuth(() => {
 
   console.log("[Auth] Adapter initialized successfully");
 
+  const ensureOtpFailuresTable = async () => {
+    await pool.query(`
+      create table if not exists otp_failures (
+        email text primary key,
+        attempts int not null default 0,
+        locked_until timestamptz,
+        last_request timestamptz
+      );
+    `);
+  };
+
+  const upsertUser = async (email: string) => {
+    const existing = await pool.query<{ id: string }>(
+      "select id from users where email = $1 limit 1",
+      [email],
+    );
+    if (existing.rows[0]) {
+      return existing.rows[0].id;
+    }
+    const inserted = await pool.query<{ id: string }>(
+      'insert into users (email, name, "emailVerified") values ($1, $2, $3) returning id',
+      [email, null, new Date().toISOString()],
+    );
+    return inserted.rows[0].id;
+  };
+
   const config: NextAuthConfig = {
     adapter,
     providers: [
@@ -80,6 +106,7 @@ export const { handlers: authHandlers, auth } = NextAuth(() => {
           code: { label: "Code", type: "text" },
         },
         async authorize(credentials) {
+          await ensureOtpFailuresTable();
           const email = credentials?.email?.toLowerCase();
           const code = credentials?.code?.trim();
           if (!email || !code) {
@@ -88,15 +115,52 @@ export const { handlers: authHandlers, auth } = NextAuth(() => {
           if (allowedDomain && !email.endsWith(`@${allowedDomain}`)) {
             throw new Error("Email domain is not allowed.");
           }
+          const now = new Date();
+          const failureRow = await pool.query<{
+            attempts: number;
+            locked_until: string | null;
+          }>("select attempts, locked_until from otp_failures where email = $1 limit 1", [email]);
+          const lockedUntil = failureRow.rows[0]?.locked_until
+            ? new Date(failureRow.rows[0].locked_until)
+            : null;
+          if (lockedUntil && lockedUntil > now) {
+            throw new Error("Account temporarily locked. Try again later.");
+          }
+
           const hashed = hashToken(code);
           const result = await pool.query(
             "delete from verification_token where identifier = $1 and token = $2 and expires > now() returning identifier",
             [email, hashed],
           );
           if (result.rowCount === 0) {
-            throw new Error("Invalid or expired code.");
+            const attempts = (failureRow.rows[0]?.attempts ?? 0) + 1;
+            const lockUntil = attempts >= 5 ? new Date(now.getTime() + 5 * 60 * 1000) : null;
+            await pool.query(
+              `
+                insert into otp_failures (email, attempts, locked_until, last_request)
+                values ($1, $2, $3, $4)
+                on conflict (email) do update
+                set attempts = $2, locked_until = $3, last_request = $4
+              `,
+              [email, attempts, lockUntil?.toISOString() ?? null, now.toISOString()],
+            );
+            throw new Error(
+              lockUntil
+                ? "Too many attempts. Account temporarily locked."
+                : "Invalid or expired code.",
+            );
           }
-          return { id: email, email };
+          const userId = await upsertUser(email);
+          await pool.query(
+            `
+              insert into otp_failures (email, attempts, locked_until, last_request)
+              values ($1, 0, null, $2)
+              on conflict (email) do update
+              set attempts = 0, locked_until = null, last_request = excluded.last_request
+            `,
+            [email, now.toISOString()],
+          );
+          return { id: userId, email };
         },
       }),
     ],
