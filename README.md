@@ -15,6 +15,25 @@ Next.js (App Router) app with ShadCN-inspired UI, JSON persistence, and atomic b
 - Login: http://localhost:3000/login
 - Staff intro: http://localhost:3000/staff
 
+## Production Deployment
+- Live: https://williamtemple.app (Vercel, custom domain)
+- Auth: Magic link + OTP fallback; restricted to `@williamtemple.org`
+- Email: Resend sender `login@williamtemple.app` (add DMARC/SPF/DKIM in DNS)
+- Database: Neon Postgres (serverless) with shared connection pool
+- Hosting: Next.js 16 on Vercel (proxy.ts middleware, serverless runtime)
+
+### Production environment variables
+```
+AUTH_BYPASS=false
+AUTH_SECRET=<generated>
+AUTH_TRUST_HOST=true
+DATABASE_URL=postgresql://...sslmode=require
+EMAIL_FROM=login@williamtemple.app
+RESEND_API_KEY=re_...
+ADMIN_EMAIL_DOMAIN=williamtemple.org
+NODE_ENV=production
+```
+
 ## Scripts
 - `npm run dev` — start the Next.js dev server.
 - `npm run build` — production build.
@@ -142,9 +161,9 @@ Next.js (App Router) app with ShadCN-inspired UI, JSON persistence, and atomic b
 
 See `.env.example` for the full list. Critical vars:
 - `AUTH_SECRET` — required for JWT encryption (generate with openssl)
-- `DATABASE_URL` — required for magic-link storage
-- `RESEND_API_KEY` — required to send magic-link emails
-- `EMAIL_FROM` — must be verified in Resend
+- `DATABASE_URL` — required for magic-link/OTP storage
+- `RESEND_API_KEY` — required to send emails via Resend
+- `EMAIL_FROM` — must be verified in Resend (production default `login@williamtemple.app`)
 - `ADMIN_EMAIL_DOMAIN` — restricts login to your domain
 
 Local options:
@@ -163,6 +182,10 @@ Local options:
 - Next.js 16 (App Router) + Tailwind CSS.
 - ShadCN-style UI components (Radix + cva).
 - Vitest + Testing Library.
+
+## Version History
+- 1.0.0 — Production release with magic link + OTP auth, Neon/Resend, custom domain.
+- 0.9.0 — Initial Vercel deployment and custom domain setup.
 
 ## Theme / design tokens
 - Global palette and design tokens live in `src/app/globals.css` (`--color-primary`, surfaces, borders, focus, status colors).

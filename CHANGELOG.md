@@ -1,27 +1,22 @@
 # Changelog
 
 ## [Unreleased]
+
+## [1.0.0] - 2025-11-27
 ### Added
-- Lock status indicator in admin UI
-- Reset confirmation dialog with strong warnings
-- Mode selector explanation text
-- Disabled state for Generate button when locked
-- Undo button for immediate error recovery
-- Redo button for reversing undo actions
-- Visual feedback for undo/redo availability
-- SCRAM-button safety mechanism for human error recovery
-- Added Neon/Postgres schema file (`schema.sql`) capturing state, snapshots, and NextAuth tables.
-- Added `.env.production.example` with required Vercel/Neon environment variables.
+- Production-ready deployment on Vercel at `williamtemple.app` using Neon Postgres, Resend magic links, and OTP fallback.
+- Branded OTP email template (React Email, Lato) and shared Neon pool for auth/OTP to avoid connection exhaustion.
+- Dual authentication paths (magic link + OTP) with @williamtemple.org domain restriction and rate limiting/lockouts.
+- Phase-specific env templates and production env defaults set to `login@williamtemple.app`.
 
 ### Changed
-- Generate button disabled with tooltip when order locked
-- Reset requires explicit confirmation to prevent accidents
-- Authentication now requires `DATABASE_URL` and fails fast when missing to avoid accidental file-backed auth in production.
-- State manager requires `DATABASE_URL` in production; file storage is limited to development/tests.
+- Default sender updated from `noreply@williamtemple.app` to `login@williamtemple.app` for better deliverability.
+- Middleware migrated to `proxy` for Next.js 16; build-time `DATABASE_URL` enforcement and node runtime declarations retained.
+- Login UX rebuilt with shadcn Tabs and InputOTP for clearer flows; admin “Clear” draw position requires confirmation.
 
-- Locked raffle order after initial generation by adding `orderLocked` state, guarding regenerate attempts, and throwing a descriptive error to prevent position changes.
-- Fixed append behavior so new tickets shuffle within their batch only and always append to the end, preserving all existing client positions; added tests to enforce this.
-- Removed the rerandomize operation across state managers, API, and admin UI to prevent post-publication reshuffling of client positions.
+### Security
+- OTP/magic link tokens hashed, 10-minute expiry, 5-attempt lockout with cooldown, and 1/minute request throttling.
+- Auth restricted to `@williamtemple.org`; file storage disabled in production; shared DB pool to prevent connection churn.
 
 ## [0.9.0] - 2025-11-26
 ### Added
