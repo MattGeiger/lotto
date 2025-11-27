@@ -1,11 +1,12 @@
 import NextAuth from "next-auth";
 import type { NextAuthConfig } from "next-auth";
 import PostgresAdapter from "@auth/pg-adapter";
-import { Pool } from "@neondatabase/serverless";
 import CredentialsProvider from "next-auth/providers/credentials";
 import EmailProvider from "next-auth/providers/email";
 import ResendProvider from "next-auth/providers/resend";
 import { createHash } from "node:crypto";
+
+import { getPool } from "./db";
 
 const allowedDomain = process.env.ADMIN_EMAIL_DOMAIN?.toLowerCase();
 const fromAddress = process.env.EMAIL_FROM ?? "login@localhost";
@@ -46,10 +47,7 @@ export const { handlers: authHandlers, auth } = NextAuth(() => {
     console.warn("[Auth] RESEND_API_KEY not set; falling back to SMTP/MailDev configuration.");
   }
 
-  const pool = new Pool({
-    connectionString: databaseUrl,
-    connectionTimeoutMillis: 5000,
-  });
+  const pool = getPool();
   const hashToken = (value: string) => createHash("sha256").update(value).digest("hex");
 
   const adapter = PostgresAdapter(pool);
@@ -147,8 +145,8 @@ export const { handlers: authHandlers, auth } = NextAuth(() => {
             );
             throw new Error(
               lockUntil
-                ? "Too many attempts. Account temporarily locked."
-                : "Invalid or expired code.",
+                ? "Unable to verify code. Please request a new one shortly."
+                : "Unable to verify code. Please request a new one.",
             );
           }
           const userId = await upsertUser(email);

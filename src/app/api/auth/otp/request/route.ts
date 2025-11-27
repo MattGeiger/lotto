@@ -1,10 +1,11 @@
 import { createHash, randomInt } from "node:crypto";
 
-import { Pool } from "@neondatabase/serverless";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { z } from "zod";
 import nodemailer from "nodemailer";
+
+import { getPool } from "@/lib/db";
 
 export const runtime = "nodejs";
 
@@ -16,22 +17,9 @@ const hashToken = (value: string) => createHash("sha256").update(value).digest("
 const generateCode = () => String(randomInt(100000, 1000000));
 
 export async function POST(request: Request) {
-  let pool: Pool | null = null;
+  const pool = getPool();
   try {
-    const databaseUrl = process.env.DATABASE_URL;
-    if (!databaseUrl) {
-      return NextResponse.json({ error: "DATABASE_URL is not configured." }, { status: 500 });
-    }
-
-    pool = new Pool({
-      connectionString: databaseUrl,
-      connectionTimeoutMillis: 5000,
-    });
-
     const ensureOtpFailuresTable = async () => {
-      if (!pool) {
-        throw new Error("Database connection not available.");
-      }
       await pool.query(`
         create table if not exists otp_failures (
           email text primary key,

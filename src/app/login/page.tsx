@@ -239,7 +239,7 @@ const LoginForm = () => {
 
 const LoginPage = () => {
   return (
-    <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-6 px-6 py-12">
+    <main className="mx-auto flex min-h-screen max-w-4xl flex-col items-center justify-center gap-6 px-6 py-12">
       <div className="flex justify-center">
         <Image
           src="/wth-logo-horizontal.png"
