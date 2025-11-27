@@ -54,7 +54,8 @@ Goal: run the same stack locally and on Vercel using Neon Postgres, NextAuth v5 
 7) Vercel notes
    - Set envs in Vercel: `DATABASE_URL`, `AUTH_SECRET`, `AUTH_TRUST_HOST=true`, `RESEND_API_KEY`, `EMAIL_FROM`, `ADMIN_EMAIL_DOMAIN`.
    - Same auth config works on Vercel; Neon free tier is sufficient. Production will fail fast without `DATABASE_URL`.
-   - Middleware is pinned to the Node.js runtime (not Edge) because NextAuth `auth()` relies on Node streams; `runtime: "nodejs"` is set in `src/middleware.ts`.
+   - Middleware/proxy is pinned to the Node.js runtime (not Edge) because NextAuth `auth()` relies on Node streams; `runtime: "nodejs"` is set in `src/proxy.ts`.
+   - Next.js 16 renamed `middleware` → `proxy`; file lives at `src/proxy.ts` with the same matcher guarding `/admin` and `/api/state`.
 
 ### Status
 - Schema captured in `schema.sql`; adapter uses `DATABASE_URL` exclusively.

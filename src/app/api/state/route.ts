@@ -3,6 +3,8 @@ import { z } from "zod";
 
 import { stateManager, type Mode } from "@/lib/state-manager";
 
+export const runtime = "nodejs";
+
 const actionSchema = z.discriminatedUnion("action", [
   z.object({
     action: z.literal("generate"),

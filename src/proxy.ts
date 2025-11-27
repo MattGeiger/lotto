@@ -8,7 +8,7 @@ export const config = {
   runtime: "nodejs",
 };
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isAdmin = pathname.startsWith("/admin");
   const isApiState = pathname.startsWith("/api/state");
