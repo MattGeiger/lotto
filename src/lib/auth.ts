@@ -103,12 +103,13 @@ export const { handlers: authHandlers, auth } = NextAuth(() => {
         name: "One-Time Passcode",
         credentials: {
           email: { label: "Email", type: "email" },
-          code: { label: "Code", type: "text" },
+        code: { label: "Code", type: "text" },
         },
         async authorize(credentials) {
           await ensureOtpFailuresTable();
-          const email = credentials?.email?.toLowerCase();
-          const code = credentials?.code?.trim();
+          const email =
+            typeof credentials?.email === "string" ? credentials.email.toLowerCase().trim() : "";
+          const code = typeof credentials?.code === "string" ? credentials.code.trim() : "";
           if (!email || !code) {
             throw new Error("Email and code are required.");
           }
