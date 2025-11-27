@@ -154,7 +154,7 @@ const LoginForm = () => {
           </TabsContent>
 
           <TabsContent value="otp" className="mt-4 space-y-4">
-            {otpStatus !== "sent" ? (
+            {otpStatus === "idle" || otpStatus === "requesting" || otpStatus === "error" ? (
               <div className="space-y-3">
                 <div className="space-y-2">
                   <label htmlFor="email-otp" className="text-sm font-medium">
