@@ -154,7 +154,7 @@ const LoginForm = () => {
           </TabsContent>
 
           <TabsContent value="otp" className="mt-4 space-y-4">
-            {otpStatus === "idle" || otpStatus === "requesting" || otpStatus === "error" ? (
+            {otpStatus === "idle" || otpStatus === "requesting" ? (
               <div className="space-y-3">
                 <div className="space-y-2">
                   <label htmlFor="email-otp" className="text-sm font-medium">
@@ -184,54 +184,56 @@ const LoginForm = () => {
                 )}
               </div>
             ) : (
-              <form onSubmit={handleVerifyOTP} className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Enter code</label>
-                  <InputOTP
-                    maxLength={6}
-                    value={otpCode}
-                    onChange={(value) => setOtpCode(value)}
-                    className="w-full"
-                  >
-                    <InputOTPGroup className="gap-2.5">
-                      {[0, 1, 2, 3, 4, 5].map((idx) => (
-                        <InputOTPSlot
-                          key={idx}
-                          index={idx}
-                          className="data-[active]:border-primary"
-                        />
-                      ))}
-                    </InputOTPGroup>
-                  </InputOTP>
-                  <p className="text-xs text-muted-foreground">Code sent to {email}</p>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      setOtpStatus("idle");
-                      setOtpCode("");
-                      setOtpError(null);
-                    }}
-                    className="flex-1"
-                  >
-                    Change email
-                  </Button>
-                  <Button
-                    type="submit"
-                    className="flex-1"
-                    disabled={otpStatus === "verifying" || otpCode.length !== 6}
-                  >
-                    {otpStatus === "verifying" ? "Verifying..." : "Verify"}
-                  </Button>
-                </div>
+              <>
+                <form onSubmit={handleVerifyOTP} className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Enter code</label>
+                    <InputOTP
+                      maxLength={6}
+                      value={otpCode}
+                      onChange={(value) => setOtpCode(value)}
+                      className="w-full"
+                    >
+                      <InputOTPGroup className="gap-2.5">
+                        {[0, 1, 2, 3, 4, 5].map((idx) => (
+                          <InputOTPSlot
+                            key={idx}
+                            index={idx}
+                            className="data-[active]:border-primary"
+                          />
+                        ))}
+                      </InputOTPGroup>
+                    </InputOTP>
+                    <p className="text-xs text-muted-foreground">Code sent to {email}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setOtpStatus("idle");
+                        setOtpCode("");
+                        setOtpError(null);
+                      }}
+                      className="flex-1"
+                    >
+                      Change email
+                    </Button>
+                    <Button
+                      type="submit"
+                      className="flex-1"
+                      disabled={otpStatus === "verifying" || otpCode.length !== 6}
+                    >
+                      {otpStatus === "verifying" ? "Verifying..." : "Verify"}
+                    </Button>
+                  </div>
+                </form>
                 {otpStatus === "error" && otpError && (
                   <Alert variant="destructive">
                     <AlertDescription>{otpError}</AlertDescription>
                   </Alert>
                 )}
-              </form>
+              </>
             )}
           </TabsContent>
         </Tabs>
