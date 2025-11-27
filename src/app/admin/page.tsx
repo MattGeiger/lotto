@@ -757,17 +757,18 @@ const AdminPage = () => {
                 >
                   <ChevronRight className="size-4" />
                 </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setServingByIndex(null)}
-                    disabled={loading || !state || currentIndex === -1}
-                  >
-                    Clear
-                  </Button>
-                </div>
+                <ConfirmAction
+                  triggerLabel="Clear"
+                  actionLabel="Clear position"
+                  title="Clear draw position"
+                  description="This will reset the “Now Serving” display back to the beginning. Clients will no longer see an active position. You can undo this action."
+                  onConfirm={() => setServingByIndex(null)}
+                  disabled={loading || !state || currentIndex === -1}
+                  variant="ghost"
+                  size="sm"
+                />
               </div>
+            </div>
 
             </CardContent>
           </Card>
