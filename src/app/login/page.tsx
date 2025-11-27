@@ -1,78 +1,76 @@
 "use client";
 
 import React, { Suspense } from "react";
+import Image from "next/image";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
-import { Mail } from "lucide-react";
-import Image from "next/image";
+import { KeyRound, Mail } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const LoginForm = () => {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/admin";
+
   const [email, setEmail] = React.useState("");
-  const [status, setStatus] = React.useState<"idle" | "pending" | "sent" | "error">("idle");
-  const [error, setError] = React.useState<string | null>(null);
+  const [magicStatus, setMagicStatus] = React.useState<"idle" | "sending" | "sent" | "error">(
+    "idle",
+  );
+  const [magicError, setMagicError] = React.useState<string | null>(null);
+
   const [otpCode, setOtpCode] = React.useState("");
   const [otpStatus, setOtpStatus] = React.useState<
-    "idle" | "sending" | "sent" | "verifying" | "error"
+    "idle" | "requesting" | "sent" | "verifying" | "error"
   >("idle");
   const [otpError, setOtpError] = React.useState<string | null>(null);
+
   const hasVerificationError = searchParams.get("error") === "Verification";
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setError(null);
-    setStatus("pending");
-    const attemptSignIn = async (provider: "resend" | "email") =>
-      signIn(provider, {
-        email,
-        callbackUrl,
-        redirect: false,
-      });
-
-    const primary = await attemptSignIn("resend");
-    if (primary?.error) {
-      const fallback = await attemptSignIn("email");
-      if (fallback?.error) {
-        setError(fallback.error);
-        setStatus("error");
-        return;
-      }
+  const handleMagicLink = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setMagicError(null);
+    setMagicStatus("sending");
+    const result = await signIn("resend", {
+      email,
+      callbackUrl,
+      redirect: false,
+    });
+    if (result?.error) {
+      setMagicError(result.error);
+      setMagicStatus("error");
+      return;
     }
-    setStatus("sent");
+    setMagicStatus("sent");
   };
 
-  const handleRequestOtp = async () => {
+  const handleRequestOTP = async () => {
     setOtpError(null);
-    setOtpStatus("sending");
+    setOtpCode("");
+    setOtpStatus("requesting");
     try {
       const response = await fetch("/api/auth/otp/request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
-      const payload = await response.json();
       if (!response.ok) {
-        setOtpError(payload?.error ?? "Unable to send code. Please try again.");
-        setOtpStatus("error");
-        return;
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data?.error || "Unable to send code. Please try again.");
       }
       setOtpStatus("sent");
     } catch (err) {
-      setOtpError("Unable to send code. Please try again.");
+      setOtpError(err instanceof Error ? err.message : "Unable to send code. Please try again.");
       setOtpStatus("error");
     }
   };
 
-  const handleVerifyOtp = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleVerifyOTP = async (e: React.FormEvent) => {
+    e.preventDefault();
     setOtpError(null);
     setOtpStatus("verifying");
     const result = await signIn("otp", {
@@ -88,167 +86,157 @@ const LoginForm = () => {
     }
     if (result?.url) {
       window.location.href = result.url;
-    } else {
-      setOtpStatus("sent");
     }
   };
 
-  const updateOtpAt = (index: number, val: string) => {
-    const digit = (val ?? "").replace(/\D/g, "").slice(0, 1);
-    setOtpCode((prev) => {
-      const chars = Array.from({ length: 6 }, (_, idx) => prev[idx] ?? "");
-      chars[index] = digit;
-      return chars.join("").slice(0, 6);
-    });
-  };
-
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-4">
+    <Card className="w-full max-w-md">
       {hasVerificationError && (
-        <Alert variant="destructive" className="border-destructive/60 bg-destructive/10">
-          <AlertTitle>Magic link verification failed</AlertTitle>
+        <Alert variant="destructive" className="mb-4">
+          <AlertTitle>Verification failed</AlertTitle>
           <AlertDescription>
-            The one-time link could not be verified. Please request a new link or use the OTP code
-            option below to sign in.
+            The magic link could not be verified. Try requesting a new link or use the OTP code
+            instead.
           </AlertDescription>
         </Alert>
       )}
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Mail className="size-4 text-primary" />
-            Magic link login
-          </CardTitle>
-          <CardDescription>
-            Enter your work email to receive a one-time sign-in link. Access is limited to approved
-            domains.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <form className="space-y-3" onSubmit={handleSubmit}>
-            <div className="space-y-1">
-              <label htmlFor="email" className="text-sm font-medium text-foreground">
-                Work email
-              </label>
-              <Input
-                id="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@williamtemple.org"
-                autoComplete="email"
-              />
-            </div>
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={status === "pending" || email.trim().length === 0}
-            >
-              {status === "pending" ? "Sending link..." : "Send magic link"}
-            </Button>
-          </form>
-          {status === "sent" && (
-            <Badge variant="success" className="w-full justify-center">
-              Check your email for the sign-in link.
-            </Badge>
-          )}
-          {status === "error" && error && (
-            <Badge variant="destructive" className="w-full justify-center">
-              {error}
-            </Badge>
-          )}
-          <p className="text-xs text-muted-foreground">
-            After signing in, you will be redirected to the staff dashboard or your requested page.
-          </p>
-        </CardContent>
-      </Card>
 
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>One-time passcode (OTP)</CardTitle>
-          <CardDescription>
-            If magic links are blocked, request a 6-digit code instead and enter it here to sign in.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <div className="space-y-1">
-              <label htmlFor="otp-email" className="text-sm font-medium text-foreground">
-                Work email
-              </label>
-              <Input
-                id="otp-email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@williamtemple.org"
-                autoComplete="email"
-              />
-            </div>
-            <Button
-              type="button"
-              variant="default"
-              className="w-full"
-              onClick={handleRequestOtp}
-              disabled={otpStatus === "sending" || email.trim().length === 0}
-            >
-              {otpStatus === "sending" ? "Sending code..." : "Send code"}
-            </Button>
-          </div>
-          <form className="space-y-3" onSubmit={handleVerifyOtp}>
-            <div className="space-y-1">
-              <label htmlFor="otp-code" className="text-sm font-medium text-foreground">
-                6-digit code
-              </label>
-              <InputOTP
-                value={otpCode}
-                onChange={(value) => setOtpCode(typeof value === "string" ? value : "")}
-                maxLength={6}
-                className={otpStatus === "verifying" ? "opacity-75" : ""}
-              >
-                <InputOTPGroup className="gap-2.5 *:data-[slot=input-otp-slot]:rounded-md *:data-[slot=input-otp-slot]:border">
-                  {[0, 1, 2, 3, 4, 5].map((idx) => (
-                    <InputOTPSlot
-                      key={idx}
-                      index={idx}
-                      value={otpCode[idx] ?? ""}
-                      onChange={(val) => updateOtpAt(idx, typeof val === "string" ? val : "")}
-                      aria-label={`Digit ${idx + 1}`}
-                    />
-                  ))}
-                </InputOTPGroup>
-              </InputOTP>
-            </div>
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={
-                otpStatus === "verifying" ||
-                otpCode.trim().length !== 6 ||
-                email.trim().length === 0
-              }
-            >
-              {otpStatus === "verifying" ? "Verifying..." : "Sign in with code"}
-            </Button>
-          </form>
-          {otpStatus === "sent" && (
-            <Badge variant="success" className="w-full justify-center">
-              Code sent. Check your email and enter it above.
-            </Badge>
-          )}
-          {otpStatus === "error" && otpError && (
-            <Badge variant="destructive" className="w-full justify-center">
-              {otpError}
-            </Badge>
-          )}
-          <p className="text-xs text-muted-foreground">
-            Codes expire in 10 minutes. You can request a new code at any time.
-          </p>
-        </CardContent>
-      </Card>
-    </div>
+      <CardHeader>
+        <CardTitle>Sign in to William Temple House</CardTitle>
+        <CardDescription>Staff access only — use your @williamtemple.org email.</CardDescription>
+      </CardHeader>
+
+      <CardContent>
+        <Tabs defaultValue="magic" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="magic" className="flex items-center gap-2">
+              <Mail className="size-4" />
+              Magic Link
+            </TabsTrigger>
+            <TabsTrigger value="otp" className="flex items-center gap-2">
+              <KeyRound className="size-4" />
+              OTP Code
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="magic" className="mt-4 space-y-4">
+            <form onSubmit={handleMagicLink} className="space-y-3">
+              <div className="space-y-2">
+                <label htmlFor="email-magic" className="text-sm font-medium">
+                  Work email
+                </label>
+                <Input
+                  id="email-magic"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@williamtemple.org"
+                  required
+                />
+              </div>
+              <Button type="submit" className="w-full" disabled={magicStatus === "sending"}>
+                {magicStatus === "sending" ? "Sending..." : "Send magic link"}
+              </Button>
+            </form>
+
+            {magicStatus === "sent" && (
+              <Alert>
+                <AlertDescription>
+                  Check your email for the sign-in link. It expires in 10 minutes.
+                </AlertDescription>
+              </Alert>
+            )}
+            {magicStatus === "error" && magicError && (
+              <Alert variant="destructive">
+                <AlertDescription>{magicError}</AlertDescription>
+              </Alert>
+            )}
+          </TabsContent>
+
+          <TabsContent value="otp" className="mt-4 space-y-4">
+            {otpStatus !== "sent" ? (
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <label htmlFor="email-otp" className="text-sm font-medium">
+                    Work email
+                  </label>
+                  <Input
+                    id="email-otp"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@williamtemple.org"
+                    required
+                  />
+                </div>
+                <Button
+                  type="button"
+                  onClick={handleRequestOTP}
+                  className="w-full"
+                  disabled={otpStatus === "requesting" || email.trim().length === 0}
+                >
+                  {otpStatus === "requesting" ? "Sending..." : "Send 6-digit code"}
+                </Button>
+                {otpStatus === "error" && otpError && (
+                  <Alert variant="destructive">
+                    <AlertDescription>{otpError}</AlertDescription>
+                  </Alert>
+                )}
+              </div>
+            ) : (
+              <form onSubmit={handleVerifyOTP} className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Enter code</label>
+                  <InputOTP
+                    maxLength={6}
+                    value={otpCode}
+                    onChange={(value) => setOtpCode(value)}
+                    className="w-full"
+                  >
+                    <InputOTPGroup className="gap-2.5">
+                      {[0, 1, 2, 3, 4, 5].map((idx) => (
+                        <InputOTPSlot
+                          key={idx}
+                          index={idx}
+                          className="data-[active]:border-primary"
+                        />
+                      ))}
+                    </InputOTPGroup>
+                  </InputOTP>
+                  <p className="text-xs text-muted-foreground">Code sent to {email}</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setOtpStatus("idle");
+                      setOtpCode("");
+                      setOtpError(null);
+                    }}
+                    className="flex-1"
+                  >
+                    Change email
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="flex-1"
+                    disabled={otpStatus === "verifying" || otpCode.length !== 6}
+                  >
+                    {otpStatus === "verifying" ? "Verifying..." : "Verify"}
+                  </Button>
+                </div>
+                {otpStatus === "error" && otpError && (
+                  <Alert variant="destructive">
+                    <AlertDescription>{otpError}</AlertDescription>
+                  </Alert>
+                )}
+              </form>
+            )}
+          </TabsContent>
+        </Tabs>
+      </CardContent>
+    </Card>
   );
 };
 
@@ -273,15 +261,7 @@ const LoginPage = () => {
           priority
         />
       </div>
-      <Suspense
-        fallback={
-          <Card className="mx-auto w-full max-w-xl">
-            <CardContent className="p-6 text-sm text-muted-foreground">
-              Loading login...
-            </CardContent>
-          </Card>
-        }
-      >
+      <Suspense fallback={<div className="text-sm text-muted-foreground">Loading login...</div>}>
         <LoginForm />
       </Suspense>
     </main>
