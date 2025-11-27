@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 
 import { auth } from "@/lib/auth";
 
+export const runtime = "nodejs";
+
 export const config = {
   matcher: ["/admin/:path*", "/api/state", "/api/state/:path*"],
 };
