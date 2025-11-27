@@ -179,7 +179,7 @@ const LoginForm = () => {
             </div>
             <Button
               type="button"
-              variant="outline"
+              variant="default"
               className="w-full"
               onClick={handleRequestOtp}
               disabled={otpStatus === "sending" || email.trim().length === 0}
