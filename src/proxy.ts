@@ -5,7 +5,6 @@ import { auth } from "@/lib/auth";
 
 export const config = {
   matcher: ["/admin/:path*", "/api/state", "/api/state/:path*"],
-  runtime: "nodejs",
 };
 
 export async function proxy(request: NextRequest) {
