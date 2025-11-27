@@ -139,9 +139,5 @@ export async function POST(request: Request) {
       { error: "Unable to issue code. Please try again." },
       { status: 500 },
     );
-  } finally {
-    if (pool) {
-      await pool.end();
-    }
   }
 }
