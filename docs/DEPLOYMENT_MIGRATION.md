@@ -58,5 +58,6 @@ Goal: run the same stack locally and on Vercel using Neon Postgres, NextAuth v5 
 
 ### Status
 - Schema captured in `schema.sql`; adapter uses `DATABASE_URL` exclusively.
+- Vercel production deployed on `williamtemple.app` with Neon Postgres, Resend magic links, and admin routes protected (auth bypass off).
 - Populate `.env.local` / `.env.production` before deployment. Local MailDev remains the default mailer without RESEND.
-- Pending: run `docker compose up --build` and validate magic-link flow end-to-end.
+- Production env on Vercel uses: `DATABASE_URL` (Neon), `AUTH_SECRET`, `AUTH_TRUST_HOST=true`, `RESEND_API_KEY`, `EMAIL_FROM=noreply@williamtemple.app`, `ADMIN_EMAIL_DOMAIN=williamtemple.org`, `AUTH_BYPASS=false`, `NODE_ENV=production`.

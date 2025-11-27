@@ -5,8 +5,10 @@
 **Goal:** Implement safety hardening and database migration for William Temple House raffle system.
 
 **Timeline:** 6 phases over 3-4 weeks  
-**Current Version:** 0.1.0 (pre-hardening)  
+**Current Version:** 0.9.0 (production-ready on Vercel with Neon + Resend magic links)  
 **Target Version:** 1.0.0 (production-ready)
+
+**Deployment status:** Vercel production deployed on `williamtemple.app` using Neon Postgres and Resend magic links; auth bypass disabled and admin/state routes protected.
 
 ---
 

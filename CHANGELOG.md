@@ -23,6 +23,16 @@
 - Fixed append behavior so new tickets shuffle within their batch only and always append to the end, preserving all existing client positions; added tests to enforce this.
 - Removed the rerandomize operation across state managers, API, and admin UI to prevent post-publication reshuffling of client positions.
 
+## [0.9.0] - 2025-11-26
+### Added
+- Production-ready deployment on Vercel using Neon Postgres and Resend magic links; custom domain `williamtemple.app` configured.
+- Phase-specific env templates for Vercel (preview, custom domain no-auth, full auth).
+
+### Changed
+- NextAuth switched to the official Resend provider with email/SMPP fallback for local dev; login form now targets the Resend provider.
+- Middleware migrated to `proxy` for Next.js 16, with explicit node runtime in API routes and build-time `DATABASE_URL` enforcement (Turbopack enabled).
+- Admin “Clear” draw position now requires confirmation to avoid accidental taps.
+
 ## 2025-11-28
 - Made display QR rendering robust: added API `getDisplayUrl`, persisted `displayUrl` in state, and switched the display page QR to canvas (`qrcode`) to avoid SVG cropping for long URLs; display now respects admin-configured URLs.
 - Reinitialized Shadcn UI primitives (button, input, badge, card, label, separator, switch, dropdown, tooltip, alert-dialog) and aligned them to the generator OKLCH palette with proper `@theme inline` mapping.
