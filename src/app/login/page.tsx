@@ -22,17 +22,23 @@ const LoginForm = () => {
     event.preventDefault();
     setError(null);
     setStatus("pending");
-    const result = await signIn("email", {
-      email,
-      callbackUrl,
-      redirect: false,
-    });
-    if (result?.error) {
-      setError(result.error);
-      setStatus("error");
-    } else {
-      setStatus("sent");
+    const attemptSignIn = async (provider: "resend" | "email") =>
+      signIn(provider, {
+        email,
+        callbackUrl,
+        redirect: false,
+      });
+
+    const primary = await attemptSignIn("resend");
+    if (primary?.error) {
+      const fallback = await attemptSignIn("email");
+      if (fallback?.error) {
+        setError(fallback.error);
+        setStatus("error");
+        return;
+      }
     }
+    setStatus("sent");
   };
 
   return (
