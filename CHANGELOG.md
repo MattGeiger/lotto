@@ -1,7 +1,5 @@
 # Changelog
 
-## [Unreleased]
-
 ## [1.0.0] - 2025-11-27
 ### Added
 - Production-ready deployment on Vercel at `williamtemple.app` using Neon Postgres, Resend magic links, and OTP fallback.
