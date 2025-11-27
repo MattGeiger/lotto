@@ -1,6 +1,7 @@
 import { createHash, randomInt } from "node:crypto";
 
 import { NextResponse } from "next/server";
+import React from "react";
 import { Resend } from "resend";
 import { z } from "zod";
 import nodemailer from "nodemailer";
@@ -90,7 +91,7 @@ export async function POST(request: Request) {
       [email, now.toISOString()],
     );
 
-    const htmlContent = await render(<OtpCode code={code} />);
+    const htmlContent = await render(React.createElement(OtpCode, { code }));
 
     if (resendApiKey) {
       const resend = new Resend(resendApiKey);
