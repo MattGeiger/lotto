@@ -70,11 +70,22 @@ export default function Home() {
                 <QrCode className="size-4 text-icon-emerald" />
                 Client-friendly display
               </CardTitle>
-            <CardDescription>
-              Mobile-friendly access, with QR code linking to the live board and ticket number lookup for estimated wait times
-            </CardDescription>
-          </CardHeader>
+              <CardDescription>
+                Mobile-friendly access, with QR code linking to the live board and ticket number lookup for estimated wait times
+              </CardDescription>
+            </CardHeader>
           </Card>
+        </div>
+        <div className="space-y-1 text-xs text-muted-foreground">
+          <p className="font-semibold text-foreground">v1.0.0</p>
+          <p>
+            Created by{" "}
+            <Link href="https://github.com/MattGeiger" className="underline underline-offset-4">
+              Matt Geiger, Temple Consulting, LLC.
+            </Link>{" "}
+            2025.
+          </p>
+          <p>Made with Claude and Codex.</p>
         </div>
       </div>
     </main>
