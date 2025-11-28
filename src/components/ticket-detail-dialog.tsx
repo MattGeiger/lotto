@@ -34,7 +34,7 @@ export function TicketDetailDialog({
             {t("ticket")} #{ticketNumber}
           </DialogTitle>
         </DialogHeader>
-        <DialogClose className="absolute right-4 top-4 rounded-full p-1 text-muted-foreground transition hover:bg-muted/40">
+        <DialogClose className="absolute end-4 top-4 rounded-full p-1 text-muted-foreground transition hover:bg-muted/40">
           <X className="h-4 w-4" />
           <span className="sr-only">{t("close")}</span>
         </DialogClose>
