@@ -819,23 +819,25 @@ const AdminPage = () => {
             <CardContent className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1 rounded-lg border border-border bg-gradient-card-accent p-3">
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">Range</p>
-                <p className="text-lg font-semibold text-foreground">
+                <p className="text-lg font-semibold text-status-success-text">
                   {state?.startNumber || "—"} – {state?.endNumber || "—"}
                 </p>
               </div>
               <div className="space-y-1 rounded-lg border border-border bg-gradient-card-accent p-3">
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">Tickets issued</p>
-                <p className="text-lg font-semibold text-foreground">
+                <p className="text-lg font-semibold text-status-success-text">
                   {state ? state.endNumber - state.startNumber + 1 : "—"}
                 </p>
               </div>
               <div className="space-y-1 rounded-lg border border-border bg-gradient-card-accent p-3">
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">Current mode</p>
-                <p className="text-lg font-semibold text-foreground capitalize">{state?.mode}</p>
+                <p className="text-lg font-semibold text-status-success-text capitalize">
+                  {state?.mode}
+                </p>
               </div>
               <div className="space-y-1 rounded-lg border border-border bg-gradient-card-accent p-3">
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">Now serving</p>
-                <p className="text-lg font-semibold text-foreground">
+                <p className="text-lg font-semibold text-status-success-text">
                   {state?.currentlyServing ?? "—"}
                 </p>
               </div>
