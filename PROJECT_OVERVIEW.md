@@ -15,6 +15,7 @@ The William Temple House Digital Raffle system replaces a manual coffee-can raff
 - **Staff-friendly administration** with undo/redo and snapshot history
 - **Enterprise-grade security** (magic link + OTP authentication, domain-restricted)
 - **Automated data hygiene** (snapshot cleanup, retention policies)
+- **Multilingual public display** with language switcher (English, 中文, Español, Русский, Українська, Tiếng Việt, فارسی, العربية) and RTL support for Arabic/Farsi
 
 **Tech Stack:** Next.js 16, React 19, Neon Postgres, Resend email, Vercel hosting
 

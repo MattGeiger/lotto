@@ -1,5 +1,14 @@
 # Changelog
 
+## 2025-11-29
+### Added
+- Added Vietnamese, Farsi, and Arabic translations (raffle-appropriate terminology) to the public display and language switcher.
+- Introduced RTL awareness for Arabic/Farsi via `DocumentDirection` (dynamic `dir`/`lang` on `<html>`), reusable RTL utility, and logical text alignment on the display card.
+
+### Changed
+- Extended time/date locale formatting to cover all languages and documented RTL requirements in `docs/LANGUAGES.md`.
+- Updated README and PROJECT_OVERVIEW feature summaries to list all supported languages and RTL coverage.
+
 ## [1.0.0] - 2025-11-27
 ### Added
 - Production-ready deployment on Vercel at `williamtemple.app` using Neon Postgres, Resend magic links, and OTP fallback.

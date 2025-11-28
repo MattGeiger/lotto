@@ -5,6 +5,7 @@ Next.js (App Router) app with ShadCN-inspired UI, JSON persistence, and atomic b
 ## Features
 - Staff dashboard (`/admin`) to set ranges, toggle random vs sequential, append tickets, re-randomize, update “now serving,” and reset with confirmations.
 - Public display (`/`) with airport-style grid and QR code sharing, auto-polling `/api/state` every 4s.
+- Multilingual display UI with language switcher (English, 中文, Español, Русский, Українська, Tiếng Việt, فارسی, العربية) and automatic RTL direction for Farsi/Arabic.
 - Built-in read-only board in Next.js plus an optional standalone server (`npm run readonly`) on its own port for edge/legacy hosting.
 - File-based datastore with atomic writes, timestamped backups, and append logic that preserves prior random order.
 - Tests written with Vitest + Testing Library for the state manager and grid highlighting.
