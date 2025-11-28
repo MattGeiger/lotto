@@ -6,6 +6,9 @@ const localeMap: Record<Language, string> = {
   es: "es-ES",
   ru: "ru-RU",
   uk: "uk-UA",
+  vi: "vi-VN",
+  fa: "fa-IR",
+  ar: "ar",
 };
 
 export function formatDate(language: Language): string {
