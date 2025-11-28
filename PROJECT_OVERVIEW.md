@@ -3,13 +3,12 @@
 
 **Status:** Production (v1.0.0)  
 **Deployment:** https://williamtemple.app  
-**Repository:** Zero-shot build by AI agent team
 
 ---
 
 ## 1. Executive Summary
 
-The William Temple House Digital Raffle system successfully replaced a manual paper-and-coffee-can raffle with a production-grade web application. Built through collaborative AI agent development, the system now serves ~150 daily pantry clients with:
+The William Temple House Digital Raffle system replaces a manual coffee-can raffle with a production-grade web application. Built through collaborative AI agent development, the system is designed to serve ~150 daily pantry clients with:
 
 - **Fair, transparent queue management** via randomized ticket drawing
 - **Multi-device access** (wall screens + mobile via QR codes)  
@@ -24,10 +23,9 @@ The William Temple House Digital Raffle system successfully replaced a manual pa
 ## 2. Problem Solved
 
 ### Original Pain Points
-- Morning line disputes and crowd surges at 8am gate opening
-- Manual whiteboard updates requiring multiple volunteers
+- Morning line disputes and crowd surges at gate opening
+- Manual whiteboard updates
 - No remote visibility for clients
-- Data loss on system disruption
 - Labor-intensive analog process
 
 ### Solution Delivered
@@ -35,7 +33,7 @@ The William Temple House Digital Raffle system successfully replaced a manual pa
 - Real-time updates via polling (public board) and admin controls
 - QR code sharing for mobile access
 - Durable Postgres storage with atomic writes
-- Single-volunteer operation capability
+- Single or multiple staff/volunteer operation capability
 
 ---
 
@@ -282,10 +280,8 @@ The William Temple House Digital Raffle system successfully replaced a manual pa
 
 Built through collaborative AI agent development:
 - **Geiger:** Project lead, requirements, decision-making
-- **Claude:** Technical supervisor, architecture, debugging
-- **Codex:** Code implementer, testing, commits
-
-Zero-shot build from specification to production-ready deployment. Full commit history preserved for transparency and maintainability.
+- **Claude Sonnet 4.5:** Technical supervisor, architecture, debugging
+- **Codex 5.1:** Code implementer, testing, commits
 
 ---
 
