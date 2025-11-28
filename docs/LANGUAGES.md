@@ -9,16 +9,16 @@ Add language selection for display page with support for: English, Mandarin Chin
 
 | Key | English | 中文 (Mandarin) | Español | Русский | Українська |
 |-----|---------|----------------|---------|---------|-----------|
-| `nowServing` | Now Serving | 现在服务 | Ahora Sirviendo | Сейчас обслуживается | Зараз обслуговується |
-| `waiting` | Waiting | 等待中 | Esperando | Ожидание | Очікування |
-| `foodPantryServiceFor` | Food Pantry Service For | 食品储藏室服务日期 | Servicio de Despensa de Alimentos Para | Обслуживание продовольственной кладовой на | Обслуговування продовольчої комори на |
-| `ticketsIssuedToday` | Tickets Issued Today | 今日发放的票号 | Boletos Emitidos Hoy | Билеты выданы сегодня | Квитки видані сьогодні |
-| `totalTicketsIssued` | Total Tickets Issued | 发放票号总数 | Total de Boletos Emitidos | Всего выдано билетов | Всього видано квитків |
-| `drawingOrder` | Drawing Order | 抽签顺序 | Orden de Sorteo | Порядок розыгрыша | Порядок розіграшу |
+| `nowServing` | Now Serving | 正在叫号 | Turno Actual | Вызывается номер | Викликається номер |
+| `waiting` | Waiting | 请等候 | En espera | Ожидайте | Очікуйте |
+| `foodPantryServiceFor` | Food Pantry Service For | 食品发放服务 | Servicio del Banco de Alimentos | Раздача продуктов | Роздача продуктів |
+| `ticketsIssuedToday` | Tickets Issued Today | 今日号码范围 | Turnos emitidos hoy | Выданные сегодня номера | Видані сьогодні номери |
+| `totalTicketsIssued` | Total Tickets Issued | 已发号码总数 | Total de turnos emitidos | Всего выдано талонов | Всього видано талонів |
+| `drawingOrder` | Drawing Order | 叫号顺序 | Orden de llamado | Порядок вызова | Порядок виклику |
 | `updated` | Updated | 更新时间 | Actualizado | Обновлено | Оновлено |
-| `welcome` | Welcome! | 欢迎！ | ¡Bienvenido! | Добро пожаловать! | Ласкаво просимо! |
+| `welcome` | Welcome! | 欢迎！ | ¡Bienvenidos! | Добро пожаловать! | Ласкаво просимо! |
 | `raffleNotStarted` | The raffle has not yet started. | 抽签尚未开始。 | El sorteo aún no ha comenzado. | Розыгрыш еще не начался. | Розіграш ще не розпочався. |
-| `checkBackSoon` | Check back soon for updates. | 请稍后再查看更新。 | Vuelva pronto para ver actualizaciones. | Проверьте обновления позже. | Перевірте оновлення пізніше. |
+| `checkBackSoon` | Check back soon for updates. | 请稍后再查看更新。 | Vuelva pronto para ver actualizaciones. | Загляните позже. | Завітайте пізніше. |
 
 ### Status Messages
 
@@ -34,9 +34,9 @@ Add language selection for display page with support for: English, Mandarin Chin
 
 | Key | English | 中文 (Mandarin) | Español | Русский | Українська |
 |-----|---------|----------------|---------|---------|-----------|
-| `ticket` | Ticket | 票号 | Boleto | Билет | Квиток |
-| `queuePosition` | Queue Position | 队列位置 | Posición en la Fila | Позиция в очереди | Позиція в черзі |
-| `ticketsAhead` | Tickets Ahead | 前面的票号 | Boletos Adelante | Билетов впереди | Квитків попереду |
+| `ticket` | Ticket | 号码 | Turno | Талон | Талон |
+| `queuePosition` | Queue Position | 排队位置 | Posición en la Fila | Место в очереди | Місце в черзі |
+| `ticketsAhead` | Tickets Ahead | 前面等待人数 | Personas delante | Человек впереди | Людей попереду |
 | `estimatedWait` | Estimated Wait | 预计等待时间 | Espera Estimada | Ориентировочное время ожидания | Орієнтовний час очікування |
 | `close` | Close | 关闭 | Cerrar | Закрыть | Закрити |
 
@@ -137,12 +137,12 @@ const translations: Record<Language, Record<string, string>> = {
     close: "Close",
   },
   zh: {
-    nowServing: "现在服务",
-    waiting: "等待中",
-    foodPantryServiceFor: "食品储藏室服务日期",
-    ticketsIssuedToday: "今日发放的票号",
-    totalTicketsIssued: "发放票号总数",
-    drawingOrder: "抽签顺序",
+    nowServing: "正在叫号",
+    waiting: "请等候",
+    foodPantryServiceFor: "食品发放服务",
+    ticketsIssuedToday: "今日号码范围",
+    totalTicketsIssued: "已发号码总数",
+    drawingOrder: "叫号顺序",
     updated: "更新时间",
     welcome: "欢迎！",
     raffleNotStarted: "抽签尚未开始。",
@@ -152,21 +152,21 @@ const translations: Record<Language, Record<string, string>> = {
     lastChecked: "最后检查时间",
     errorLoadingState: "加载状态错误",
     unknownError: "未知错误",
-    ticket: "票号",
-    queuePosition: "队列位置",
-    ticketsAhead: "前面的票号",
+    ticket: "号码",
+    queuePosition: "排队位置",
+    ticketsAhead: "前面等待人数",
     estimatedWait: "预计等待时间",
     close: "关闭",
   },
   es: {
-    nowServing: "Ahora Sirviendo",
-    waiting: "Esperando",
-    foodPantryServiceFor: "Servicio de Despensa de Alimentos Para",
-    ticketsIssuedToday: "Boletos Emitidos Hoy",
-    totalTicketsIssued: "Total de Boletos Emitidos",
-    drawingOrder: "Orden de Sorteo",
+    nowServing: "Turno Actual",
+    waiting: "En espera",
+    foodPantryServiceFor: "Servicio del Banco de Alimentos",
+    ticketsIssuedToday: "Turnos emitidos hoy",
+    totalTicketsIssued: "Total de turnos emitidos",
+    drawingOrder: "Orden de llamado",
     updated: "Actualizado",
-    welcome: "¡Bienvenido!",
+    welcome: "¡Bienvenidos!",
     raffleNotStarted: "El sorteo aún no ha comenzado.",
     checkBackSoon: "Vuelva pronto para ver actualizaciones.",
     pollingState: "Consultando el estado más reciente…",
@@ -174,53 +174,53 @@ const translations: Record<Language, Record<string, string>> = {
     lastChecked: "Última verificación",
     errorLoadingState: "Error al cargar el estado",
     unknownError: "Error desconocido",
-    ticket: "Boleto",
+    ticket: "Turno",
     queuePosition: "Posición en la Fila",
-    ticketsAhead: "Boletos Adelante",
+    ticketsAhead: "Personas delante",
     estimatedWait: "Espera Estimada",
     close: "Cerrar",
   },
   ru: {
-    nowServing: "Сейчас обслуживается",
-    waiting: "Ожидание",
-    foodPantryServiceFor: "Обслуживание продовольственной кладовой на",
-    ticketsIssuedToday: "Билеты выданы сегодня",
-    totalTicketsIssued: "Всего выдано билетов",
-    drawingOrder: "Порядок розыгрыша",
+    nowServing: "Вызывается номер",
+    waiting: "Ожидайте",
+    foodPantryServiceFor: "Раздача продуктов",
+    ticketsIssuedToday: "Выданные сегодня номера",
+    totalTicketsIssued: "Всего выдано талонов",
+    drawingOrder: "Порядок вызова",
     updated: "Обновлено",
     welcome: "Добро пожаловать!",
     raffleNotStarted: "Розыгрыш еще не начался.",
-    checkBackSoon: "Проверьте обновления позже.",
+    checkBackSoon: "Загляните позже.",
     pollingState: "Опрос последнего состояния…",
     refreshing: "Обновление…",
     lastChecked: "Последняя проверка",
     errorLoadingState: "Ошибка загрузки состояния",
     unknownError: "Неизвестная ошибка",
-    ticket: "Билет",
-    queuePosition: "Позиция в очереди",
-    ticketsAhead: "Билетов впереди",
+    ticket: "Талон",
+    queuePosition: "Место в очереди",
+    ticketsAhead: "Человек впереди",
     estimatedWait: "Ориентировочное время ожидания",
     close: "Закрыть",
   },
   uk: {
-    nowServing: "Зараз обслуговується",
-    waiting: "Очікування",
-    foodPantryServiceFor: "Обслуговування продовольчої комори на",
-    ticketsIssuedToday: "Квитки видані сьогодні",
-    totalTicketsIssued: "Всього видано квитків",
-    drawingOrder: "Порядок розіграшу",
+    nowServing: "Викликається номер",
+    waiting: "Очікуйте",
+    foodPantryServiceFor: "Роздача продуктів",
+    ticketsIssuedToday: "Видані сьогодні номери",
+    totalTicketsIssued: "Всього видано талонів",
+    drawingOrder: "Порядок виклику",
     updated: "Оновлено",
     welcome: "Ласкаво просимо!",
     raffleNotStarted: "Розіграш ще не розпочався.",
-    checkBackSoon: "Перевірте оновлення пізніше.",
+    checkBackSoon: "Завітайте пізніше.",
     pollingState: "Опитування останнього стану…",
     refreshing: "Оновлення…",
     lastChecked: "Остання перевірка",
     errorLoadingState: "Помилка завантаження стану",
     unknownError: "Невідома помилка",
-    ticket: "Квиток",
-    queuePosition: "Позиція в черзі",
-    ticketsAhead: "Квитків попереду",
+    ticket: "Талон",
+    queuePosition: "Місце в черзі",
+    ticketsAhead: "Людей попереду",
     estimatedWait: "Орієнтовний час очікування",
     close: "Закрити",
   },
