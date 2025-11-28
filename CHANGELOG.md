@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.0.1] 2025-11-29
+## [1.0.1] - 2025-11-28
 ### Added
 - Added Vietnamese, Farsi, and Arabic translations (raffle-appropriate terminology) to the public display and language switcher.
 - Introduced RTL awareness for Arabic/Farsi via `DocumentDirection` (dynamic `dir`/`lang` on `<html>`), reusable RTL utility, and logical text alignment on the display card.
@@ -10,6 +10,7 @@
 - Updated README and PROJECT_OVERVIEW feature summaries to list all supported languages and RTL coverage.
 - Adjusted ticket detail dialog close button to use logical positioning (`end-4`) for RTL layouts.
 - Localized display timestamps to the selected language (including RTL locales) on the public board.
+- Scoped RTL handling to the public display so staff/admin pages remain LTR and unaffected by display language choices.
 
 ## [1.0.0] - 2025-11-27
 ### Added

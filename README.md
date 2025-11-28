@@ -185,6 +185,7 @@ Local options:
 - Vitest + Testing Library.
 
 ## Version History
+- 1.0.1 (2025-11-28) — Added Vietnamese/Farsi/Arabic translations, RTL-aware public display (scoped to display only), and per-language timestamp localization.
 - 1.0.0 (2025-11-27) — Production release with magic link + OTP auth, Neon/Resend, snapshot cleanup, Speed Insights, custom domain.
 - 0.9.0 — Initial Vercel deployment and custom domain setup.
 
