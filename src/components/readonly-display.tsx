@@ -154,7 +154,7 @@ export const ReadOnlyDisplay = () => {
         </div>
 
         <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-3 sm:gap-4">
-          <Card className="border-border/80 bg-card/80 text-left">
+          <Card className="border-border/80 bg-card/80 text-start">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between gap-2">
               <CardTitle className="text-lg uppercase tracking-[0.14em] text-muted-foreground">

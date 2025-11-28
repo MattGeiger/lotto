@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist_Mono, Lato } from "next/font/google";
 import "./globals.css";
+import { DocumentDirection } from "@/components/document-direction";
 import { ThemeProvider } from "@/components/theme-provider";
 import { LanguageProvider } from "@/contexts/language-context";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -30,7 +31,10 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${lato.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider>
-          <LanguageProvider>{children}</LanguageProvider>
+          <LanguageProvider>
+            <DocumentDirection />
+            {children}
+          </LanguageProvider>
         </ThemeProvider>
         <SpeedInsights />
       </body>
