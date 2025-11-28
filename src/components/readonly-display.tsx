@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TicketDetailDialog } from "@/components/ticket-detail-dialog";
 import { useLanguage } from "@/contexts/language-context";
 import { formatDate } from "@/lib/date-format";
+import { isRTL } from "@/lib/rtl-utils";
 import { formatWaitTime } from "@/lib/time-format";
 import type { RaffleState } from "@/lib/state-types";
 
@@ -109,7 +110,11 @@ export const ReadOnlyDisplay = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-gradient-display px-2 py-8 text-foreground sm:px-4 lg:px-6">
+    <div
+      dir={isRTL(language) ? "rtl" : "ltr"}
+      lang={language}
+      className="min-h-screen w-full bg-gradient-display px-2 py-8 text-foreground sm:px-4 lg:px-6"
+    >
       <div className="mx-auto flex w-full flex-col gap-4">
         {/* Logo + Now Serving Row */}
         <div className="mt-10 grid grid-cols-1 gap-4 sm:mt-12 sm:grid-cols-[minmax(280px,320px)_1fr_minmax(280px,320px)] sm:items-center sm:gap-6">

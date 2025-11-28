@@ -5,6 +5,7 @@ import { Clock, ListOrdered, Users, X } from "lucide-react";
 import { useLanguage, type Language } from "@/contexts/language-context";
 import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { formatWaitTime } from "@/lib/time-format";
+import { isRTL } from "@/lib/rtl-utils";
 
 type TicketDetailDialogProps = {
   open: boolean;
@@ -28,7 +29,11 @@ export function TicketDetailDialog({
   const { t } = useLanguage();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent
+        className="sm:max-w-md"
+        dir={isRTL(language) ? "rtl" : "ltr"}
+        lang={language}
+      >
         <DialogHeader>
           <DialogTitle className="text-center text-3xl font-bold">
             {t("ticket")} #{ticketNumber}
