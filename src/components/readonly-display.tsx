@@ -6,16 +6,28 @@ import QRCode from "qrcode";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TicketDetailDialog } from "@/components/ticket-detail-dialog";
-import { useLanguage } from "@/contexts/language-context";
+import { useLanguage, type Language } from "@/contexts/language-context";
 import { formatDate } from "@/lib/date-format";
 import { isRTL } from "@/lib/rtl-utils";
 import { formatWaitTime } from "@/lib/time-format";
 import type { RaffleState } from "@/lib/state-types";
 
-const formatTime = (input?: Date | number | null) => {
+const TIME_LOCALES: Record<Language, string> = {
+  en: "en-US",
+  zh: "zh-CN",
+  es: "es-ES",
+  ru: "ru-RU",
+  uk: "uk-UA",
+  vi: "vi-VN",
+  fa: "fa-IR",
+  ar: "ar",
+};
+
+const formatTime = (input?: Date | number | null, language: Language = "en") => {
   if (!input && input !== 0) return "—";
   const date = input instanceof Date ? input : new Date(input);
-  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const locale = TIME_LOCALES[language] ?? "en-US";
+  return date.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
 };
 
 export const ReadOnlyDisplay = () => {
@@ -39,13 +51,13 @@ export const ReadOnlyDisplay = () => {
       }
       const payload = (await response.json()) as RaffleState;
       setState(payload);
-      setStatus(`${t("lastChecked")}: ${formatTime(new Date())}`);
+      setStatus(`${t("lastChecked")}: ${formatTime(new Date(), language)}`);
     } catch (error) {
       const message = error instanceof Error ? error.message : t("unknownError");
       setStatus(`${t("errorLoadingState")}: ${message}`);
       setHasError(true);
     }
-  }, [t]);
+  }, [language, t]);
 
   React.useEffect(() => {
     fetchState();
@@ -94,7 +106,7 @@ export const ReadOnlyDisplay = () => {
   const currentIndex =
     generatedOrder && currentlyServing !== null ? generatedOrder.indexOf(currentlyServing) : -1;
   const hasTickets = generatedOrder.length > 0;
-  const updatedTime = formatTime(state?.timestamp ?? null);
+  const updatedTime = formatTime(state?.timestamp ?? null, language);
 
   const getTicketDetails = (ticketNumber: number) => {
     if (!state?.generatedOrder?.length) return null;

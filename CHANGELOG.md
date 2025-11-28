@@ -9,6 +9,7 @@
 - Extended time/date locale formatting to cover all languages and documented RTL requirements in `docs/LANGUAGES.md`.
 - Updated README and PROJECT_OVERVIEW feature summaries to list all supported languages and RTL coverage.
 - Adjusted ticket detail dialog close button to use logical positioning (`end-4`) for RTL layouts.
+- Localized display timestamps to the selected language (including RTL locales) on the public board.
 
 ## [1.0.0] - 2025-11-27
 ### Added
