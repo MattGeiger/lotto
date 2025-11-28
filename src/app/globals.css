@@ -254,18 +254,18 @@
   /* Status colors */
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
-  --status-success-bg: var(--status-success-bg);
-  --status-success-border: var(--status-success-border);
-  --status-success-text: var(--status-success-text);
-  --status-warning-bg: var(--status-warning-bg);
-  --status-warning-border: var(--status-warning-border);
-  --status-warning-text: var(--status-warning-text);
-  --status-danger-bg: var(--status-danger-bg);
-  --status-danger-border: var(--status-danger-border);
-  --status-danger-text: var(--status-danger-text);
-  --status-neutral-bg: var(--status-neutral-bg);
-  --status-neutral-border: var(--status-neutral-border);
-  --status-neutral-text: var(--status-neutral-text);
+  --color-status-success-bg: var(--status-success-bg);
+  --color-status-success-border: var(--status-success-border);
+  --color-status-success-text: var(--status-success-text);
+  --color-status-warning-bg: var(--status-warning-bg);
+  --color-status-warning-border: var(--status-warning-border);
+  --color-status-warning-text: var(--status-warning-text);
+  --color-status-danger-bg: var(--status-danger-bg);
+  --color-status-danger-border: var(--status-danger-border);
+  --color-status-danger-text: var(--status-danger-text);
+  --color-status-neutral-bg: var(--status-neutral-bg);
+  --color-status-neutral-border: var(--status-neutral-border);
+  --color-status-neutral-text: var(--status-neutral-text);
 
   /* Radius system */
   --radius-sm: calc(var(--radius) - 4px);
