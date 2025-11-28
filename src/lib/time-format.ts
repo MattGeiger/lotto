@@ -19,12 +19,18 @@ function formatMinutes(n: number, lang: Language): string {
   switch (lang) {
     case "zh":
       return `${n}分钟`;
+    case "vi":
+      return `${n} phút`;
     case "es":
       return `${n} ${n === 1 ? "minuto" : "minutos"}`;
     case "ru":
       return `${n} ${getRussianMinutePlural(n)}`;
     case "uk":
       return `${n} ${getUkrainianMinutePlural(n)}`;
+    case "fa":
+      return `${n} دقیقه`;
+    case "ar":
+      return `${n} ${n === 1 ? "دقيقة" : "دقائق"}`;
     default:
       return `${n} minute${n === 1 ? "" : "s"}`;
   }
@@ -34,12 +40,18 @@ function formatHours(n: number, lang: Language): string {
   switch (lang) {
     case "zh":
       return `${n}小时`;
+    case "vi":
+      return `${n} giờ`;
     case "es":
       return `${n} ${n === 1 ? "hora" : "horas"}`;
     case "ru":
       return `${n} ${getRussianHourPlural(n)}`;
     case "uk":
       return `${n} ${getUkrainianHourPlural(n)}`;
+    case "fa":
+      return `${n} ساعت`;
+    case "ar":
+      return `${n} ${n === 1 ? "ساعة" : "ساعات"}`;
     default:
       return `${n} hour${n === 1 ? "" : "s"}`;
   }

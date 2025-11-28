@@ -19,6 +19,9 @@ const languageNames: Record<Language, string> = {
   es: "Español",
   ru: "Русский",
   uk: "Українська",
+  vi: "Tiếng Việt",
+  fa: "فارسی",
+  ar: "العربية",
 };
 
 export function LanguageSwitcher() {

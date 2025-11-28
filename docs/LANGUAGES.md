@@ -1,51 +1,51 @@
 # Multi-Language Support Implementation Plan
 
 ## Overview
-Add language selection for display page with support for: English, Mandarin Chinese (简体中文), Spanish (Español), Russian (Русский), and Ukrainian (Українська).
+Add language selection for display page with support for: English, Mandarin Chinese (简体中文), Spanish (Español), Russian (Русский), Ukrainian (Українська), Vietnamese (Tiếng Việt), Farsi (فارسی), and Arabic (العربية).
 
 ## Translation Dictionary
 
 ### Display Page Main Content
 
-| Key | English | 中文 (Mandarin) | Español | Русский | Українська |
-|-----|---------|----------------|---------|---------|-----------|
-| `nowServing` | Now Serving | 正在叫号 | Turno Actual | Вызывается номер | Викликається номер |
-| `waiting` | Waiting | 请等候 | En espera | Ожидайте | Очікуйте |
-| `foodPantryServiceFor` | Food Pantry Service For | 食品发放服务 | Servicio del Banco de Alimentos | Раздача продуктов | Роздача продуктів |
-| `ticketsIssuedToday` | Tickets Issued Today | 今日号码范围 | Turnos emitidos hoy | Выданные сегодня номера | Видані сьогодні номери |
-| `totalTicketsIssued` | Total Tickets Issued | 已发号码总数 | Total de turnos emitidos | Всего выдано талонов | Всього видано талонів |
-| `drawingOrder` | Drawing Order | 叫号顺序 | Orden de llamado | Порядок вызова | Порядок виклику |
-| `updated` | Updated | 更新时间 | Actualizado | Обновлено | Оновлено |
-| `welcome` | Welcome! | 欢迎！ | ¡Bienvenidos! | Добро пожаловать! | Ласкаво просимо! |
-| `raffleNotStarted` | The raffle has not yet started. | 抽签尚未开始。 | El sorteo aún no ha comenzado. | Розыгрыш еще не начался. | Розіграш ще не розпочався. |
-| `checkBackSoon` | Check back soon for updates. | 请稍后再查看更新。 | Vuelva pronto para ver actualizaciones. | Загляните позже. | Завітайте пізніше. |
+| Key | English | 中文 (Mandarin) | Español | Русский | Українська | Tiếng Việt | فارسی | العربية |
+|-----|---------|----------------|---------|---------|-----------|------------|-------|---------|
+| `nowServing` | Now Serving | 正在叫号 | Turno Actual | Вызывается номер | Викликається номер | Đang gọi số | در حال فراخوانی شماره | الرقم الحالي |
+| `waiting` | Waiting | 请等候 | En espera | Ожидайте | Очікуйте | Vui lòng chờ | لطفاً صبر کنید | يرجى الانتظار |
+| `foodPantryServiceFor` | Food Pantry Service For | 食品发放服务 | Servicio del Banco de Alimentos | Раздача продуктов | Роздача продуктів | Phát thực phẩm ngày | توزیع مواد غذایی برای | توزيع المواد الغذائية ليوم |
+| `ticketsIssuedToday` | Tickets Issued Today | 今日号码范围 | Boletos emitidos hoy | Выданные сегодня номера | Видані сьогодні номери | Số vé phát hôm nay | بلیط‌های صادر شده امروز | التذاكر الصادرة اليوم |
+| `totalTicketsIssued` | Total Tickets Issued | 已发号码总数 | Total de boletos emitidos | Всего выдано билетов | Всього видано квитків | Tổng số vé đã phát | مجموع بلیط‌های صادر شده | إجمالي التذاكر الصادرة |
+| `drawingOrder` | Drawing Order | 叫号顺序 | Orden de llamado | Порядок вызова | Порядок виклику | Thứ tự bốc thăm | ترتیب قرعه‌کشی | ترتيب السحب |
+| `updated` | Updated | 更新时间 | Actualizado | Обновлено | Оновлено | Cập nhật | به‌روزرسانی | تم التحديث |
+| `welcome` | Welcome! | 欢迎！ | ¡Bienvenidos! | Добро пожаловать! | Ласкаво просимо! | Chào mừng! | خوش آمدید! | أهلاً وسهلاً! |
+| `raffleNotStarted` | The raffle has not yet started. | 抽签尚未开始。 | El sorteo aún no ha comenzado. | Розыгрыш еще не начался. | Розіграш ще не розпочався. | Chưa bắt đầu bốc thăm. | قرعه‌کشی هنوز شروع نشده است. | لم تبدأ القرعة بعد. |
+| `checkBackSoon` | Check back soon for updates. | 请稍后再查看更新。 | Vuelva pronto para ver actualizaciones. | Загляните позже. | Завітайте пізніше. | Vui lòng quay lại sau. | لطفاً بعداً مراجعه کنید. | يرجى العودة لاحقاً. |
 
 ### Status Messages
 
-| Key | English | 中文 (Mandarin) | Español | Русский | Українська |
-|-----|---------|----------------|---------|---------|-----------|
-| `pollingState` | Polling for latest state… | 正在获取最新状态… | Consultando el estado más reciente… | Опрос последнего состояния… | Опитування останнього стану… |
-| `refreshing` | Refreshing… | 刷新中… | Actualizando… | Обновление… | Оновлення… |
-| `lastChecked` | Last checked | 最后检查时间 | Última verificación | Последняя проверка | Остання перевірка |
-| `errorLoadingState` | Error loading state | 加载状态错误 | Error al cargar el estado | Ошибка загрузки состояния | Помилка завантаження стану |
-| `unknownError` | Unknown error | 未知错误 | Error desconocido | Неизвестная ошибка | Невідома помилка |
+| Key | English | 中文 (Mandarin) | Español | Русский | Українська | Tiếng Việt | فارسی | العربية |
+|-----|---------|----------------|---------|---------|-----------|------------|-------|---------|
+| `pollingState` | Polling for latest state… | 正在获取最新状态… | Consultando el estado más reciente… | Опрос последнего состояния… | Опитування останнього стану… | Đang tải trạng thái mới nhất… | در حال دریافت آخرین وضعیت… | جارٍ تحميل أحدث البيانات… |
+| `refreshing` | Refreshing… | 刷新中… | Actualizando… | Обновление… | Оновлення… | Đang làm mới… | در حال به‌روزرسانی… | جارٍ التحديث… |
+| `lastChecked` | Last checked | 最后检查时间 | Última verificación | Последняя проверка | Остання перевірка | Kiểm tra lần cuối | آخرین بررسی | آخر فحص |
+| `errorLoadingState` | Error loading state | 加载状态错误 | Error al cargar el estado | Ошибка загрузки состояния | Помилка завантаження стану | Lỗi tải trạng thái | خطا در بارگذاری وضعیت | خطأ في تحميل الحالة |
+| `unknownError` | Unknown error | 未知错误 | Error desconocido | Неизвестная ошибка | Невідома помилка | Lỗi không xác định | خطای ناشناخته | خطأ غير معروف |
 
 ### Ticket Detail Dialog
 
-| Key | English | 中文 (Mandarin) | Español | Русский | Українська |
-|-----|---------|----------------|---------|---------|-----------|
-| `ticket` | Ticket | 号码 | Turno | Талон | Талон |
-| `queuePosition` | Queue Position | 排队位置 | Posición en la Fila | Место в очереди | Місце в черзі |
-| `ticketsAhead` | Tickets Ahead | 前面等待人数 | Personas delante | Человек впереди | Людей попереду |
-| `estimatedWait` | Estimated Wait | 预计等待时间 | Espera Estimada | Ориентировочное время ожидания | Орієнтовний час очікування |
-| `close` | Close | 关闭 | Cerrar | Закрыть | Закрити |
+| Key | English | 中文 (Mandarin) | Español | Русский | Українська | Tiếng Việt | فارسی | العربية |
+|-----|---------|----------------|---------|---------|-----------|------------|-------|---------|
+| `ticket` | Ticket | 号码 | Boleto | Билет | Квиток | Vé | بلیط | تذكرة |
+| `queuePosition` | Queue Position | 排队位置 | Posición en la Fila | Место в очереди | Місце в черзі | Vị trí trong hàng | جایگاه در صف | الموقع في الطابور |
+| `ticketsAhead` | Tickets Ahead | 前面等待人数 | Personas delante | Человек впереди | Людей попереду | Số người phía trước | نفر جلوتر | أشخاص أمامك |
+| `estimatedWait` | Estimated Wait | 预计等待时间 | Espera Estimada | Ориентировочное время ожидания | Орієнтовний час очікування | Thời gian chờ dự kiến | زمان انتظار تقریبی | وقت الانتظار المتوقع |
+| `close` | Close | 关闭 | Cerrar | Закрыть | Закрити | Đóng | بستن | إغلاق |
 
 ### Time Units
 
-| Key | English (singular) | English (plural) | 中文 | Español (singular) | Español (plural) | Русский (singular) | Русский (2-4) | Русский (5+) | Українська (singular) | Українська (2-4) | Українська (5+) |
-|-----|-------------------|------------------|------|-------------------|------------------|-------------------|---------------|-------------|---------------------|-----------------|---------------|
-| `minute` | minute | minutes | 分钟 | minuto | minutos | минута | минуты | минут | хвилина | хвилини | хвилин |
-| `hour` | hour | hours | 小时 | hora | horas | час | часа | часов | година | години | годин |
+| Key | English (singular) | English (plural) | 中文 | Español (singular) | Español (plural) | Русский (singular) | Русский (2-4) | Русский (5+) | Українська (singular) | Українська (2-4) | Українська (5+) | Tiếng Việt | فارسی | العربية (singular) | العربية (plural) |
+|-----|-------------------|------------------|------|-------------------|------------------|-------------------|---------------|-------------|---------------------|-----------------|---------------|------------|-------|---------------------|-------------------|
+| `minute` | minute | minutes | 分钟 | minuto | minutos | минута | минуты | минут | хвилина | хвилини | хвилин | phút | دقیقه | دقيقة | دقائق |
+| `hour` | hour | hours | 小时 | hora | horas | час | часа | часов | година | години | годин | giờ | ساعت | ساعة | ساعات |
 
 ### Date Formatting
 
@@ -55,6 +55,13 @@ Date locales to use with `toLocaleString`:
 - **Español**: `es-ES`
 - **Русский**: `ru-RU`
 - **Українська**: `uk-UA`
+- **Tiếng Việt**: `vi-VN`
+- **فارسی**: `fa-IR`
+- **العربية**: `ar`
+
+### RTL Note
+
+Arabic (`ar`) and Farsi (`fa`) are right-to-left languages. For correct display, set `dir="rtl"` and appropriate `lang` attributes when these languages are active, and verify layout alignment (grids, text alignment, padding/margins) in the UI.
 
 ## Implementation Architecture
 
@@ -67,7 +74,7 @@ Date locales to use with `toLocaleString`:
 
 import React from "react"
 
-export type Language = "en" | "zh" | "es" | "ru" | "uk"
+export type Language = "en" | "zh" | "es" | "ru" | "uk" | "vi" | "fa" | "ar"
 
 type LanguageContextType = {
   language: Language
@@ -82,15 +89,17 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   React.useEffect(() => {
     // Load from localStorage on mount
-    const stored = localStorage.getItem("display-language")
-    if (stored && ["en", "zh", "es", "ru", "uk"].includes(stored)) {
+    const stored = typeof window !== "undefined" ? localStorage.getItem("display-language") : null
+    if (stored && ["en", "zh", "es", "ru", "uk", "vi", "fa", "ar"].includes(stored)) {
       setLanguageState(stored as Language)
     }
   }, [])
 
   const setLanguage = React.useCallback((lang: Language) => {
     setLanguageState(lang)
-    localStorage.setItem("display-language", lang)
+    if (typeof window !== "undefined") {
+      localStorage.setItem("display-language", lang)
+    }
   }, [])
 
   const t = React.useCallback((key: string) => {
@@ -162,8 +171,8 @@ const translations: Record<Language, Record<string, string>> = {
     nowServing: "Turno Actual",
     waiting: "En espera",
     foodPantryServiceFor: "Servicio del Banco de Alimentos",
-    ticketsIssuedToday: "Turnos emitidos hoy",
-    totalTicketsIssued: "Total de turnos emitidos",
+    ticketsIssuedToday: "Boletos emitidos hoy",
+    totalTicketsIssued: "Total de boletos emitidos",
     drawingOrder: "Orden de llamado",
     updated: "Actualizado",
     welcome: "¡Bienvenidos!",
@@ -174,7 +183,7 @@ const translations: Record<Language, Record<string, string>> = {
     lastChecked: "Última verificación",
     errorLoadingState: "Error al cargar el estado",
     unknownError: "Error desconocido",
-    ticket: "Turno",
+    ticket: "Boleto",
     queuePosition: "Posición en la Fila",
     ticketsAhead: "Personas delante",
     estimatedWait: "Espera Estimada",
@@ -185,7 +194,7 @@ const translations: Record<Language, Record<string, string>> = {
     waiting: "Ожидайте",
     foodPantryServiceFor: "Раздача продуктов",
     ticketsIssuedToday: "Выданные сегодня номера",
-    totalTicketsIssued: "Всего выдано талонов",
+    totalTicketsIssued: "Всего выдано билетов",
     drawingOrder: "Порядок вызова",
     updated: "Обновлено",
     welcome: "Добро пожаловать!",
@@ -196,7 +205,7 @@ const translations: Record<Language, Record<string, string>> = {
     lastChecked: "Последняя проверка",
     errorLoadingState: "Ошибка загрузки состояния",
     unknownError: "Неизвестная ошибка",
-    ticket: "Талон",
+    ticket: "Билет",
     queuePosition: "Место в очереди",
     ticketsAhead: "Человек впереди",
     estimatedWait: "Ориентировочное время ожидания",
@@ -207,7 +216,7 @@ const translations: Record<Language, Record<string, string>> = {
     waiting: "Очікуйте",
     foodPantryServiceFor: "Роздача продуктів",
     ticketsIssuedToday: "Видані сьогодні номери",
-    totalTicketsIssued: "Всього видано талонів",
+    totalTicketsIssued: "Всього видано квитків",
     drawingOrder: "Порядок виклику",
     updated: "Оновлено",
     welcome: "Ласкаво просимо!",
@@ -218,11 +227,77 @@ const translations: Record<Language, Record<string, string>> = {
     lastChecked: "Остання перевірка",
     errorLoadingState: "Помилка завантаження стану",
     unknownError: "Невідома помилка",
-    ticket: "Талон",
+    ticket: "Квиток",
     queuePosition: "Місце в черзі",
     ticketsAhead: "Людей попереду",
     estimatedWait: "Орієнтовний час очікування",
     close: "Закрити",
+  },
+  vi: {
+    nowServing: "Đang gọi số",
+    waiting: "Vui lòng chờ",
+    foodPantryServiceFor: "Phát thực phẩm ngày",
+    ticketsIssuedToday: "Số vé phát hôm nay",
+    totalTicketsIssued: "Tổng số vé đã phát",
+    drawingOrder: "Thứ tự bốc thăm",
+    updated: "Cập nhật",
+    welcome: "Chào mừng!",
+    raffleNotStarted: "Chưa bắt đầu bốc thăm.",
+    checkBackSoon: "Vui lòng quay lại sau.",
+    pollingState: "Đang tải trạng thái mới nhất…",
+    refreshing: "Đang làm mới…",
+    lastChecked: "Kiểm tra lần cuối",
+    errorLoadingState: "Lỗi tải trạng thái",
+    unknownError: "Lỗi không xác định",
+    ticket: "Vé",
+    queuePosition: "Vị trí trong hàng",
+    ticketsAhead: "Số người phía trước",
+    estimatedWait: "Thời gian chờ dự kiến",
+    close: "Đóng",
+  },
+  fa: {
+    nowServing: "در حال فراخوانی شماره",
+    waiting: "لطفاً صبر کنید",
+    foodPantryServiceFor: "توزیع مواد غذایی برای",
+    ticketsIssuedToday: "بلیط‌های صادر شده امروز",
+    totalTicketsIssued: "مجموع بلیط‌های صادر شده",
+    drawingOrder: "ترتیب قرعه‌کشی",
+    updated: "به‌روزرسانی",
+    welcome: "خوش آمدید!",
+    raffleNotStarted: "قرعه‌کشی هنوز شروع نشده است.",
+    checkBackSoon: "لطفاً بعداً مراجعه کنید.",
+    pollingState: "در حال دریافت آخرین وضعیت…",
+    refreshing: "در حال به‌روزرسانی…",
+    lastChecked: "آخرین بررسی",
+    errorLoadingState: "خطا در بارگذاری وضعیت",
+    unknownError: "خطای ناشناخته",
+    ticket: "بلیط",
+    queuePosition: "جایگاه در صف",
+    ticketsAhead: "نفر جلوتر",
+    estimatedWait: "زمان انتظار تقریبی",
+    close: "بستن",
+  },
+  ar: {
+    nowServing: "الرقم الحالي",
+    waiting: "يرجى الانتظار",
+    foodPantryServiceFor: "توزيع المواد الغذائية ليوم",
+    ticketsIssuedToday: "التذاكر الصادرة اليوم",
+    totalTicketsIssued: "إجمالي التذاكر الصادرة",
+    drawingOrder: "ترتيب السحب",
+    updated: "تم التحديث",
+    welcome: "أهلاً وسهلاً!",
+    raffleNotStarted: "لم تبدأ القرعة بعد.",
+    checkBackSoon: "يرجى العودة لاحقاً.",
+    pollingState: "جارٍ تحميل أحدث البيانات…",
+    refreshing: "جارٍ التحديث…",
+    lastChecked: "آخر فحص",
+    errorLoadingState: "خطأ في تحميل الحالة",
+    unknownError: "خطأ غير معروف",
+    ticket: "تذكرة",
+    queuePosition: "الموقع في الطابور",
+    ticketsAhead: "أشخاص أمامك",
+    estimatedWait: "وقت الانتظار المتوقع",
+    close: "إغلاق",
   },
 }
 ```
@@ -253,6 +328,9 @@ const languageNames: Record<Language, string> = {
   es: "Español",
   ru: "Русский",
   uk: "Українська",
+  vi: "Tiếng Việt",
+  fa: "فارسی",
+  ar: "العربية",
 }
 
 export function LanguageSwitcher() {
@@ -306,12 +384,18 @@ function formatMinutes(n: number, lang: Language): string {
   switch (lang) {
     case "zh":
       return `${n}分钟`
+    case "vi":
+      return `${n} phút`
     case "es":
       return `${n} ${n === 1 ? "minuto" : "minutos"}`
     case "ru":
       return `${n} ${getRussianMinutePlural(n)}`
     case "uk":
       return `${n} ${getUkrainianMinutePlural(n)}`
+    case "fa":
+      return `${n} دقیقه`
+    case "ar":
+      return `${n} ${n === 1 ? "دقيقة" : "دقائق"}`
     default:
       return `${n} minute${n === 1 ? "" : "s"}`
   }
@@ -321,12 +405,18 @@ function formatHours(n: number, lang: Language): string {
   switch (lang) {
     case "zh":
       return `${n}小时`
+    case "vi":
+      return `${n} giờ`
     case "es":
       return `${n} ${n === 1 ? "hora" : "horas"}`
     case "ru":
       return `${n} ${getRussianHourPlural(n)}`
     case "uk":
       return `${n} ${getUkrainianHourPlural(n)}`
+    case "fa":
+      return `${n} ساعت`
+    case "ar":
+      return `${n} ${n === 1 ? "ساعة" : "ساعات"}`
     default:
       return `${n} hour${n === 1 ? "" : "s"}`
   }
@@ -380,6 +470,9 @@ const localeMap: Record<Language, string> = {
   es: "es-ES",
   ru: "ru-RU",
   uk: "uk-UA",
+  vi: "vi-VN",
+  fa: "fa-IR",
+  ar: "ar",
 }
 
 export function formatDate(language: Language): string {

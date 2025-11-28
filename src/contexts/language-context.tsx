@@ -2,7 +2,7 @@
 
 import React from "react";
 
-export type Language = "en" | "zh" | "es" | "ru" | "uk";
+export type Language = "en" | "zh" | "es" | "ru" | "uk" | "vi" | "fa" | "ar";
 
 type LanguageContextType = {
   language: Language;
@@ -17,7 +17,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   React.useEffect(() => {
     const stored = typeof window !== "undefined" ? localStorage.getItem("display-language") : null;
-    if (stored && ["en", "zh", "es", "ru", "uk"].includes(stored)) {
+    if (stored && ["en", "zh", "es", "ru", "uk", "vi", "fa", "ar"].includes(stored)) {
       setLanguageState(stored as Language);
     }
   }, []);
@@ -94,8 +94,8 @@ const translations: Record<Language, Record<string, string>> = {
     nowServing: "Turno Actual",
     waiting: "En espera",
     foodPantryServiceFor: "Servicio del Banco de Alimentos",
-    ticketsIssuedToday: "Turnos emitidos hoy",
-    totalTicketsIssued: "Total de turnos emitidos",
+    ticketsIssuedToday: "Boletos emitidos hoy",
+    totalTicketsIssued: "Total de boletos emitidos",
     drawingOrder: "Orden de llamado",
     updated: "Actualizado",
     welcome: "¡Bienvenidos!",
@@ -106,7 +106,7 @@ const translations: Record<Language, Record<string, string>> = {
     lastChecked: "Última verificación",
     errorLoadingState: "Error al cargar el estado",
     unknownError: "Error desconocido",
-    ticket: "Turno",
+    ticket: "Boleto",
     queuePosition: "Posición en la Fila",
     ticketsAhead: "Personas delante",
     estimatedWait: "Espera Estimada",
@@ -117,7 +117,7 @@ const translations: Record<Language, Record<string, string>> = {
     waiting: "Ожидайте",
     foodPantryServiceFor: "Раздача продуктов",
     ticketsIssuedToday: "Выданные сегодня номера",
-    totalTicketsIssued: "Всего выдано талонов",
+    totalTicketsIssued: "Всего выдано билетов",
     drawingOrder: "Порядок вызова",
     updated: "Обновлено",
     welcome: "Добро пожаловать!",
@@ -128,7 +128,7 @@ const translations: Record<Language, Record<string, string>> = {
     lastChecked: "Последняя проверка",
     errorLoadingState: "Ошибка загрузки состояния",
     unknownError: "Неизвестная ошибка",
-    ticket: "Талон",
+    ticket: "Билет",
     queuePosition: "Место в очереди",
     ticketsAhead: "Человек впереди",
     estimatedWait: "Ориентировочное время ожидания",
@@ -139,7 +139,7 @@ const translations: Record<Language, Record<string, string>> = {
     waiting: "Очікуйте",
     foodPantryServiceFor: "Роздача продуктів",
     ticketsIssuedToday: "Видані сьогодні номери",
-    totalTicketsIssued: "Всього видано талонів",
+    totalTicketsIssued: "Всього видано квитків",
     drawingOrder: "Порядок виклику",
     updated: "Оновлено",
     welcome: "Ласкаво просимо!",
@@ -150,10 +150,76 @@ const translations: Record<Language, Record<string, string>> = {
     lastChecked: "Остання перевірка",
     errorLoadingState: "Помилка завантаження стану",
     unknownError: "Невідома помилка",
-    ticket: "Талон",
+    ticket: "Квиток",
     queuePosition: "Місце в черзі",
     ticketsAhead: "Людей попереду",
     estimatedWait: "Орієнтовний час очікування",
     close: "Закрити",
+  },
+  vi: {
+    nowServing: "Đang gọi số",
+    waiting: "Vui lòng chờ",
+    foodPantryServiceFor: "Phát thực phẩm ngày",
+    ticketsIssuedToday: "Số vé phát hôm nay",
+    totalTicketsIssued: "Tổng số vé đã phát",
+    drawingOrder: "Thứ tự bốc thăm",
+    updated: "Cập nhật",
+    welcome: "Chào mừng!",
+    raffleNotStarted: "Chưa bắt đầu bốc thăm.",
+    checkBackSoon: "Vui lòng quay lại sau.",
+    pollingState: "Đang tải trạng thái mới nhất…",
+    refreshing: "Đang làm mới…",
+    lastChecked: "Kiểm tra lần cuối",
+    errorLoadingState: "Lỗi tải trạng thái",
+    unknownError: "Lỗi không xác định",
+    ticket: "Vé",
+    queuePosition: "Vị trí trong hàng",
+    ticketsAhead: "Số người phía trước",
+    estimatedWait: "Thời gian chờ dự kiến",
+    close: "Đóng",
+  },
+  fa: {
+    nowServing: "در حال فراخوانی شماره",
+    waiting: "لطفاً صبر کنید",
+    foodPantryServiceFor: "توزیع مواد غذایی برای",
+    ticketsIssuedToday: "بلیط‌های صادر شده امروز",
+    totalTicketsIssued: "مجموع بلیط‌های صادر شده",
+    drawingOrder: "ترتیب قرعه‌کشی",
+    updated: "به‌روزرسانی",
+    welcome: "خوش آمدید!",
+    raffleNotStarted: "قرعه‌کشی هنوز شروع نشده است.",
+    checkBackSoon: "لطفاً بعداً مراجعه کنید.",
+    pollingState: "در حال دریافت آخرین وضعیت…",
+    refreshing: "در حال به‌روزرسانی…",
+    lastChecked: "آخرین بررسی",
+    errorLoadingState: "خطا در بارگذاری وضعیت",
+    unknownError: "خطای ناشناخته",
+    ticket: "بلیط",
+    queuePosition: "جایگاه در صف",
+    ticketsAhead: "نفر جلوتر",
+    estimatedWait: "زمان انتظار تقریبی",
+    close: "بستن",
+  },
+  ar: {
+    nowServing: "الرقم الحالي",
+    waiting: "يرجى الانتظار",
+    foodPantryServiceFor: "توزيع المواد الغذائية ليوم",
+    ticketsIssuedToday: "التذاكر الصادرة اليوم",
+    totalTicketsIssued: "إجمالي التذاكر الصادرة",
+    drawingOrder: "ترتيب السحب",
+    updated: "تم التحديث",
+    welcome: "أهلاً وسهلاً!",
+    raffleNotStarted: "لم تبدأ القرعة بعد.",
+    checkBackSoon: "يرجى العودة لاحقاً.",
+    pollingState: "جارٍ تحميل أحدث البيانات…",
+    refreshing: "جارٍ التحديث…",
+    lastChecked: "آخر فحص",
+    errorLoadingState: "خطأ في تحميل الحالة",
+    unknownError: "خطأ غير معروف",
+    ticket: "تذكرة",
+    queuePosition: "الموقع في الطابور",
+    ticketsAhead: "أشخاص أمامك",
+    estimatedWait: "وقت الانتظار المتوقع",
+    close: "إغلاق",
   },
 };
