@@ -43,16 +43,16 @@
   /* Radius */
   --radius: 0.5rem;
 
-  /* Shadows - OKLCH format */
-  --shadow-color: oklch(0 0 0);
-  --shadow-2xs: 1px 2px 5.5px 0.5px color-mix(in oklch, var(--shadow-color), transparent 93%);
-  --shadow-xs: 1px 2px 5.5px 0.5px color-mix(in oklch, var(--shadow-color), transparent 93%);
-  --shadow-sm: 1px 2px 5.5px 0.5px color-mix(in oklch, var(--shadow-color), transparent 85%), 1px 1px 2px -0.5px color-mix(in oklch, var(--shadow-color), transparent 85%);
-  --shadow: 1px 2px 5.5px 0.5px color-mix(in oklch, var(--shadow-color), transparent 85%), 1px 1px 2px -0.5px color-mix(in oklch, var(--shadow-color), transparent 85%);
-  --shadow-md: 1px 2px 5.5px 0.5px color-mix(in oklch, var(--shadow-color), transparent 85%), 1px 2px 4px -0.5px color-mix(in oklch, var(--shadow-color), transparent 85%);
-  --shadow-lg: 1px 2px 5.5px 0.5px color-mix(in oklch, var(--shadow-color), transparent 85%), 1px 4px 6px -0.5px color-mix(in oklch, var(--shadow-color), transparent 85%);
-  --shadow-xl: 1px 2px 5.5px 0.5px color-mix(in oklch, var(--shadow-color), transparent 85%), 1px 8px 10px -0.5px color-mix(in oklch, var(--shadow-color), transparent 85%);
-  --shadow-2xl: 1px 2px 5.5px 0.5px color-mix(in oklch, var(--shadow-color), transparent 62%);
+  /* Shadow values - OKLCH format */
+  --base-shadow-color: oklch(0 0 0);
+  --base-shadow-2xs: 1px 2px 5.5px 0.5px color-mix(in oklch, var(--base-shadow-color), transparent 93%);
+  --base-shadow-xs: 1px 2px 5.5px 0.5px color-mix(in oklch, var(--base-shadow-color), transparent 93%);
+  --base-shadow-sm: 1px 2px 5.5px 0.5px color-mix(in oklch, var(--base-shadow-color), transparent 85%), 1px 1px 2px -0.5px color-mix(in oklch, var(--base-shadow-color), transparent 85%);
+  --base-shadow: 1px 2px 5.5px 0.5px color-mix(in oklch, var(--base-shadow-color), transparent 85%), 1px 1px 2px -0.5px color-mix(in oklch, var(--base-shadow-color), transparent 85%);
+  --base-shadow-md: 1px 2px 5.5px 0.5px color-mix(in oklch, var(--base-shadow-color), transparent 85%), 1px 2px 4px -0.5px color-mix(in oklch, var(--base-shadow-color), transparent 85%);
+  --base-shadow-lg: 1px 2px 5.5px 0.5px color-mix(in oklch, var(--base-shadow-color), transparent 85%), 1px 4px 6px -0.5px color-mix(in oklch, var(--base-shadow-color), transparent 85%);
+  --base-shadow-xl: 1px 2px 5.5px 0.5px color-mix(in oklch, var(--base-shadow-color), transparent 85%), 1px 8px 10px -0.5px color-mix(in oklch, var(--base-shadow-color), transparent 85%);
+  --base-shadow-2xl: 1px 2px 5.5px 0.5px color-mix(in oklch, var(--base-shadow-color), transparent 62%);
 
   /* WTH Custom: Status colors */
   --success: oklch(0.7 0.16 152);
@@ -150,16 +150,16 @@
   /* Radius */
   --radius: 0.5rem;
 
-  /* Shadows - dark mode OKLCH */
-  --shadow-color: oklch(0 0 0);
-  --shadow-2xs: 1px 2px 5.5px 0.5px color-mix(in oklch, var(--shadow-color), transparent 93%);
-  --shadow-xs: 1px 2px 5.5px 0.5px color-mix(in oklch, var(--shadow-color), transparent 93%);
-  --shadow-sm: 1px 2px 5.5px 0.5px color-mix(in oklch, var(--shadow-color), transparent 85%), 1px 1px 2px -0.5px color-mix(in oklch, var(--shadow-color), transparent 85%);
-  --shadow: 1px 2px 5.5px 0.5px color-mix(in oklch, var(--shadow-color), transparent 85%), 1px 1px 2px -0.5px color-mix(in oklch, var(--shadow-color), transparent 85%);
-  --shadow-md: 1px 2px 5.5px 0.5px color-mix(in oklch, var(--shadow-color), transparent 85%), 1px 2px 4px -0.5px color-mix(in oklch, var(--shadow-color), transparent 85%);
-  --shadow-lg: 1px 2px 5.5px 0.5px color-mix(in oklch, var(--shadow-color), transparent 85%), 1px 4px 6px -0.5px color-mix(in oklch, var(--shadow-color), transparent 85%);
-  --shadow-xl: 1px 2px 5.5px 0.5px color-mix(in oklch, var(--shadow-color), transparent 85%), 1px 8px 10px -0.5px color-mix(in oklch, var(--shadow-color), transparent 85%);
-  --shadow-2xl: 1px 2px 5.5px 0.5px color-mix(in oklch, var(--shadow-color), transparent 62%);
+  /* Shadow values - dark mode OKLCH */
+  --base-shadow-color: oklch(0 0 0);
+  --base-shadow-2xs: 1px 2px 5.5px 0.5px color-mix(in oklch, var(--base-shadow-color), transparent 93%);
+  --base-shadow-xs: 1px 2px 5.5px 0.5px color-mix(in oklch, var(--base-shadow-color), transparent 93%);
+  --base-shadow-sm: 1px 2px 5.5px 0.5px color-mix(in oklch, var(--base-shadow-color), transparent 85%), 1px 1px 2px -0.5px color-mix(in oklch, var(--base-shadow-color), transparent 85%);
+  --base-shadow: 1px 2px 5.5px 0.5px color-mix(in oklch, var(--base-shadow-color), transparent 85%), 1px 1px 2px -0.5px color-mix(in oklch, var(--base-shadow-color), transparent 85%);
+  --base-shadow-md: 1px 2px 5.5px 0.5px color-mix(in oklch, var(--base-shadow-color), transparent 85%), 1px 2px 4px -0.5px color-mix(in oklch, var(--base-shadow-color), transparent 85%);
+  --base-shadow-lg: 1px 2px 5.5px 0.5px color-mix(in oklch, var(--base-shadow-color), transparent 85%), 1px 4px 6px -0.5px color-mix(in oklch, var(--base-shadow-color), transparent 85%);
+  --base-shadow-xl: 1px 2px 5.5px 0.5px color-mix(in oklch, var(--base-shadow-color), transparent 85%), 1px 8px 10px -0.5px color-mix(in oklch, var(--base-shadow-color), transparent 85%);
+  --base-shadow-2xl: 1px 2px 5.5px 0.5px color-mix(in oklch, var(--base-shadow-color), transparent 62%);
 
   /* WTH Custom: Status colors (dark) */
   --status-success-bg: oklch(0.22 0.04 152);
@@ -273,15 +273,15 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 
-  /* Box shadows for Tailwind utilities */
-  --box-shadow-2xs: var(--shadow-2xs);
-  --box-shadow-xs: var(--shadow-xs);
-  --box-shadow-sm: var(--shadow-sm);
-  --box-shadow: var(--shadow);
-  --box-shadow-md: var(--shadow-md);
-  --box-shadow-lg: var(--shadow-lg);
-  --box-shadow-xl: var(--shadow-xl);
-  --box-shadow-2xl: var(--shadow-2xl);
+  /* Shadows for Tailwind utilities */
+  --shadow-2xs: var(--base-shadow-2xs);
+  --shadow-xs: var(--base-shadow-xs);
+  --shadow-sm: var(--base-shadow-sm);
+  --shadow: var(--base-shadow);
+  --shadow-md: var(--base-shadow-md);
+  --shadow-lg: var(--base-shadow-lg);
+  --shadow-xl: var(--base-shadow-xl);
+  --shadow-2xl: var(--base-shadow-2xl);
 
   /* Fonts */
   --font-sans: var(--font-sans);
