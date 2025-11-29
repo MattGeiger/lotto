@@ -20,7 +20,7 @@
   --destructive: oklch(0.5771 0.2152 27.3250);
   --destructive-foreground: oklch(1.0000 0 0);
   --border: oklch(0.9276 0.0058 264.5313);
-  --input: oklch(0.9670 0.0029 264.5419);
+  --input: oklch(0.869 0.022 252.894);
   --ring: oklch(0.5078 0.1369 257.6669);
 
   /* Chart colors */
@@ -127,7 +127,7 @@
   --destructive: oklch(0.6370 0.2370 25.3310);
   --destructive-foreground: oklch(1.0000 0 0);
   --border: oklch(0.3729 0.0306 259.7328);
-  --input: oklch(0.3351 0.0331 260.9120);
+  --input: oklch(0.588 0.158 241.966);
   --ring: oklch(0.5078 0.1369 257.6669);
 
   /* Chart colors (dark) */
