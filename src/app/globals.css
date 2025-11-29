@@ -44,6 +44,11 @@
   --radius: 0.5rem;
 
   /* Shadows - OKLCH format */
+  --shadow-x: 0.5px;
+  --shadow-y: 3.5px;
+  --shadow-blur: 11.5px;
+  --shadow-spread: -3.5px;
+  --shadow-opacity: 0.5;
   --shadow-color: oklch(0 0 0);
   --shadow-2xs: 0.5px 2.5px 5px 0.5px color-mix(in oklch, var(--shadow-color), transparent 87%);
   --shadow-xs: 0.5px 2.5px 5px 0.5px color-mix(in oklch, var(--shadow-color), transparent 87%);
@@ -151,6 +156,11 @@
   --radius: 0.5rem;
 
   /* Shadows - dark mode OKLCH */
+  --shadow-x: 0.5px;
+  --shadow-y: 3.5px;
+  --shadow-blur: 11.5px;
+  --shadow-spread: -3.5px;
+  --shadow-opacity: 0.5;
   --shadow-color: oklch(0.685 0.169 237.323);
   --shadow-2xs: 0.5px 2.5px 5px 0.5px color-mix(in oklch, var(--shadow-color), transparent 87%);
   --shadow-xs: 0.5px 2.5px 5px 0.5px color-mix(in oklch, var(--shadow-color), transparent 87%);
