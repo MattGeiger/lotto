@@ -27,7 +27,7 @@ const formatTime = (input?: Date | number | null, language: Language = "en") => 
   if (!input && input !== 0) return "—";
   const date = input instanceof Date ? input : new Date(input);
   const locale = TIME_LOCALES[language] ?? "en-US";
-  return date.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
+  return date.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit", calendar: "gregory" });
 };
 
 export const ReadOnlyDisplay = () => {

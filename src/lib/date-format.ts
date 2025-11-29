@@ -15,9 +15,9 @@ export function formatDate(language: Language): string {
   const now = new Date();
   const locale = localeMap[language];
 
-  const weekday = now.toLocaleString(locale, { weekday: "long" });
+  const weekday = now.toLocaleString(locale, { weekday: "long", calendar: "gregory" });
   const day = now.getDate();
-  const month = now.toLocaleString(locale, { month: "long" });
+  const month = now.toLocaleString(locale, { month: "long", calendar: "gregory" });
   const year = now.getFullYear();
 
   if (language === "en") {

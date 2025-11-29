@@ -3,6 +3,7 @@
 ## [1.0.2] - 2025-11-28
 ### Changed
 - Refined global shadow tokens in `globals.css` (OKLCH base shadow mixes, adjusted transparency) and added `shadow-sm` to default/secondary buttons for clearer elevation.
+- Forced Gregorian calendar for all locales in date/time formatting to avoid Solar Hijri display in Farsi/Arabic locales on the public board.
 
 ## [1.0.1] - 2025-11-28
 ### Added
