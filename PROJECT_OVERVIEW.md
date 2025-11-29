@@ -280,12 +280,12 @@ The William Temple House Digital Raffle system replaces a manual coffee-can raff
 ## 12. Acknowledgments
 
 Built through collaborative AI agent development:
-- **Geiger:** Project lead, requirements, decision-making
+- **Geiger:** Project lead, UX and interaction design requirements, decision-making
 - **Claude Sonnet 4.5:** Technical supervisor, architecture, debugging
 - **Codex 5.1:** Code implementer, testing, commits
 
 ---
 
-**Version:** 1.0.0  
-**Last Updated:** November 27, 2025  
+**Version:** 1.0.2 
+**Last Updated:** November 28, 2025  
 **Status:** Production, serving William Temple House food pantry operations

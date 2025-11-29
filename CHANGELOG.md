@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [1.0.2] - 2025-11-28
 ### Changed
 - Refined global shadow tokens in `globals.css` (OKLCH base shadow mixes, adjusted transparency) and added `shadow-sm` to default/secondary buttons for clearer elevation.
 
