@@ -87,6 +87,11 @@ We use the generator OKLCH palette and map it with `@theme inline` so Tailwind u
 
 Custom WTH tokens (status, ticket gradients, display/admin gradients) live alongside these core tokens.
 
+### Shadows (Refined November 2025)
+- Shadow tokens were refactored to use `--base-shadow-*` variables (OKLCH color-mix) for both light/dark themes; Tailwind utilities map to `--shadow-*` aliases.
+- Transparency levels were tuned (lighter 2xs/xs, stronger sm–xl) for more consistent depth across surfaces.
+- Buttons: default and secondary variants now include `shadow-sm` for clearer elevation; outline/ghost retain existing shadow treatments.
+
 ### Display/QR Styling
 - Display background and serving text gradients are exposed as utilities (`bg-gradient-display`, `bg-gradient-serving-text`) instead of inline styles.
 - Ticket states use utility classes mapped to tokens (`ticket-serving`, `ticket-served`, `ticket-upcoming`) with dedicated text/border/background tokens (including `--ticket-served-text`).
