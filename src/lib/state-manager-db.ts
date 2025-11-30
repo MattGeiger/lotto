@@ -1,6 +1,12 @@
 import { neon } from "@neondatabase/serverless";
 
-import { defaultState, formatTimestamp, type Mode, type RaffleState } from "./state-types";
+import {
+  defaultState,
+  formatTimestamp,
+  type Mode,
+  type OperatingHours,
+  type RaffleState,
+} from "./state-types";
 
 const buildRange = (start: number, end: number) =>
   Array.from({ length: end - start + 1 }, (_, index) => start + index);
@@ -147,6 +153,8 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
       orderLocked: true,
       timestamp: null,
       displayUrl: current.displayUrl ?? null,
+      operatingHours: current.operatingHours ?? defaultState.operatingHours,
+      timezone: current.timezone ?? defaultState.timezone,
     });
   };
 
@@ -209,10 +217,15 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
   };
 
   const resetState = async () => {
+    const current = await safeReadState();
     cleanupOldSnapshots(30).catch((error) => {
       console.warn("[State] Snapshot cleanup failed:", error);
     });
-    return persist(defaultState);
+    return persist({
+      ...defaultState,
+      operatingHours: current.operatingHours ?? defaultState.operatingHours,
+      timezone: current.timezone ?? defaultState.timezone,
+    });
   };
 
   const listSnapshots = async () => {
@@ -273,6 +286,11 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
     return persist({ ...current, displayUrl: url });
   };
 
+  const setOperatingHours = async (hours: OperatingHours, timezone: string) => {
+    const current = await safeReadState();
+    return persist({ ...current, operatingHours: hours, timezone });
+  };
+
   return {
     loadState,
     generateState,
@@ -285,6 +303,7 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
     undo,
     redo,
     setDisplayUrl,
+    setOperatingHours,
     cleanupOldSnapshots,
   };
 };

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { stateManager, type Mode } from "@/lib/state-manager";
+import { stateManager, type Mode, type OperatingHours } from "@/lib/state-manager";
 
 export const runtime = "nodejs";
 
@@ -46,6 +46,11 @@ const actionSchema = z.discriminatedUnion("action", [
   }),
   z.object({
     action: z.literal("getDisplayUrl"),
+  }),
+  z.object({
+    action: z.literal("setOperatingHours"),
+    hours: z.custom<OperatingHours>((value) => Boolean(value)),
+    timezone: z.string(),
   }),
 ]);
 
@@ -105,6 +110,8 @@ export async function POST(request: Request) {
         const state = await stateManager.loadState();
         return NextResponse.json({ displayUrl: state.displayUrl || null });
       }
+      case "setOperatingHours":
+        return NextResponse.json(await stateManager.setOperatingHours(payload.hours, payload.timezone));
       default:
         return NextResponse.json({ error: "Unsupported action" }, { status: 400 });
     }

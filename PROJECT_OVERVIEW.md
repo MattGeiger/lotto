@@ -1,7 +1,7 @@
 # William Temple House — Digital Raffle System
 ## Project Overview & Architecture Documentation
 
-**Status:** Production (v1.0.1)  
+**Status:** Production (v1.0.3)  
 **Deployment:** https://williamtemple.app  
 
 ---

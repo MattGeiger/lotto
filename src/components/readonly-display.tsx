@@ -10,7 +10,7 @@ import { useLanguage, type Language } from "@/contexts/language-context";
 import { formatDate } from "@/lib/date-format";
 import { isRTL } from "@/lib/rtl-utils";
 import { formatWaitTime } from "@/lib/time-format";
-import type { RaffleState } from "@/lib/state-types";
+import type { DayOfWeek, OperatingHours, RaffleState } from "@/lib/state-types";
 
 const TIME_LOCALES: Record<Language, string> = {
   en: "en-US",
@@ -28,6 +28,52 @@ const formatTime = (input?: Date | number | null, language: Language = "en") => 
   const date = input instanceof Date ? input : new Date(input);
   const locale = TIME_LOCALES[language] ?? "en-US";
   return date.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit", calendar: "gregory" });
+};
+
+const formatDisplayTime = (time24: string): string => {
+  const [hoursStr, minutes] = time24.split(":");
+  const hours = Number(hoursStr);
+  const period = hours >= 12 ? "PM" : "AM";
+  const displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+  return `${displayHours}${minutes ? `:${minutes}` : ""} ${period}`;
+};
+
+const formatTimeRange = (openTime: string, closeTime: string): string =>
+  `${formatDisplayTime(openTime)} - ${formatDisplayTime(closeTime)}`;
+
+const DAYS: DayOfWeek[] = [
+  "sunday",
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+];
+
+const getCurrentDayOfWeek = (): DayOfWeek => DAYS[new Date().getDay()];
+
+const isCurrentlyOpen = (hours: OperatingHours | null): boolean => {
+  if (!hours) return true;
+  const today = getCurrentDayOfWeek();
+  const config = hours[today];
+  if (!config?.isOpen) return false;
+  const now = new Date();
+  const current = now.toTimeString().slice(0, 8);
+  return current >= config.openTime && current <= config.closeTime;
+};
+
+const getNextOpenDay = (hours: OperatingHours | null): string | null => {
+  if (!hours) return null;
+  const todayIndex = new Date().getDay();
+  for (let i = 1; i <= 7; i += 1) {
+    const idx = (todayIndex + i) % 7;
+    const day = DAYS[idx];
+    if (hours[day]?.isOpen) {
+      return day.charAt(0).toUpperCase() + day.slice(1);
+    }
+  }
+  return null;
 };
 
 export const ReadOnlyDisplay = () => {
@@ -107,6 +153,8 @@ export const ReadOnlyDisplay = () => {
     generatedOrder && currentlyServing !== null ? generatedOrder.indexOf(currentlyServing) : -1;
   const hasTickets = generatedOrder.length > 0;
   const updatedTime = formatTime(state?.timestamp ?? null, language);
+  const isPantryOpen = isCurrentlyOpen(state?.operatingHours ?? null);
+  const nextOpenDay = !isPantryOpen ? getNextOpenDay(state?.operatingHours ?? null) : null;
 
   const getTicketDetails = (ticketNumber: number) => {
     if (!state?.generatedOrder?.length) return null;
@@ -225,10 +273,57 @@ export const ReadOnlyDisplay = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             {!hasTickets && (
-              <div className="flex flex-col items-center gap-1 rounded-xl bg-muted/20 px-4 py-6 text-center text-3xl font-extrabold leading-snug text-foreground">
-                <span className="block w-full">{t("welcome")}</span>
-                <span className="block w-full">{t("raffleNotStarted")}</span>
-                <span className="block w-full">{t("checkBackSoon")}</span>
+              <div className="flex flex-col items-center gap-4 rounded-xl bg-muted/20 px-4 py-6">
+                {!isPantryOpen ? (
+                  <>
+                    <span className="block w-full text-center text-3xl font-extrabold leading-snug text-foreground">
+                      {t("pantryClosed")}
+                    </span>
+                    {nextOpenDay && (
+                      <span className="block w-full text-center text-xl font-semibold text-foreground">
+                        {t("nextOpenDay")}: {nextOpenDay}
+                      </span>
+                    )}
+                    {state?.operatingHours && (
+                      <div className="mt-2 w-full max-w-md space-y-2">
+                        <p className="text-center text-lg font-semibold text-foreground">
+                          {t("pantryHours")}
+                        </p>
+                        <div className="space-y-1">
+                          {DAYS.map((day) => {
+                            const config = state.operatingHours![day];
+                            const dayLabel = day.charAt(0).toUpperCase() + day.slice(1);
+                            return (
+                              <div
+                                key={day}
+                                className="grid grid-cols-[1fr_auto] gap-4 rounded-md border border-border/60 bg-card/40 px-3 py-2"
+                              >
+                                <span className="text-sm font-medium text-foreground">{dayLabel}</span>
+                                <span className="text-sm text-muted-foreground">
+                                  {config.isOpen
+                                    ? formatTimeRange(config.openTime, config.closeTime)
+                                    : "CLOSED"}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <span className="block w-full text-center text-3xl font-extrabold leading-snug text-foreground">
+                      {t("welcome")}
+                    </span>
+                    <span className="block w-full text-center text-3xl font-extrabold leading-snug text-foreground">
+                      {t("raffleNotStarted")}
+                    </span>
+                    <span className="block w-full text-center text-3xl font-extrabold leading-snug text-foreground">
+                      {t("checkBackSoon")}
+                    </span>
+                  </>
+                )}
               </div>
             )}
 

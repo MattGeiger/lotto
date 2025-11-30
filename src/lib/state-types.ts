@@ -1,5 +1,22 @@
 export type Mode = "random" | "sequential";
 
+export type DayOfWeek =
+  | "sunday"
+  | "monday"
+  | "tuesday"
+  | "wednesday"
+  | "thursday"
+  | "friday"
+  | "saturday";
+
+export type OperatingHours = {
+  [K in DayOfWeek]: {
+    isOpen: boolean;
+    openTime: string;
+    closeTime: string;
+  };
+};
+
 export type RaffleState = {
   startNumber: number;
   endNumber: number;
@@ -9,6 +26,8 @@ export type RaffleState = {
   orderLocked: boolean;
   timestamp: number | null;
   displayUrl: string | null;
+  operatingHours: OperatingHours | null;
+  timezone: string;
 };
 
 export const defaultState: RaffleState = {
@@ -20,6 +39,16 @@ export const defaultState: RaffleState = {
   orderLocked: false,
   timestamp: null,
   displayUrl: null,
+  operatingHours: {
+    sunday: { isOpen: false, openTime: "10:00:00", closeTime: "14:00:00" },
+    monday: { isOpen: true, openTime: "10:00:00", closeTime: "14:00:00" },
+    tuesday: { isOpen: true, openTime: "10:00:00", closeTime: "14:00:00" },
+    wednesday: { isOpen: true, openTime: "10:00:00", closeTime: "14:00:00" },
+    thursday: { isOpen: true, openTime: "10:00:00", closeTime: "14:00:00" },
+    friday: { isOpen: true, openTime: "10:00:00", closeTime: "14:00:00" },
+    saturday: { isOpen: false, openTime: "10:00:00", closeTime: "14:00:00" },
+  },
+  timezone: "America/Los_Angeles",
 };
 
 export const formatTimestamp = (timestamp: number) => {

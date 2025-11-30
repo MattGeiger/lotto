@@ -1,11 +1,17 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
-import { defaultState, formatTimestamp, type Mode, type RaffleState } from "./state-types";
+import {
+  defaultState,
+  formatTimestamp,
+  type Mode,
+  type OperatingHours,
+  type RaffleState,
+} from "./state-types";
 import { createDbStateManager } from "./state-manager-db";
 
 export { defaultState } from "./state-types";
-export type { Mode, RaffleState } from "./state-types";
+export type { Mode, RaffleState, OperatingHours, DayOfWeek } from "./state-types";
 
 const buildRange = (start: number, end: number) =>
   Array.from({ length: end - start + 1 }, (_, index) => start + index);
@@ -133,6 +139,8 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
       orderLocked: true,
       timestamp: null,
       displayUrl: current.displayUrl ?? null,
+      operatingHours: current.operatingHours ?? defaultState.operatingHours,
+      timezone: current.timezone ?? defaultState.timezone,
     });
   };
 
@@ -201,7 +209,14 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
     });
   };
 
-  const resetState = async () => persist(defaultState);
+  const resetState = async () => {
+    const current = await safeReadState();
+    return persist({
+      ...defaultState,
+      operatingHours: current.operatingHours ?? defaultState.operatingHours,
+      timezone: current.timezone ?? defaultState.timezone,
+    });
+  };
 
   const parseSnapshot = async (file: string): Promise<Snapshot | null> => {
     const fullPath = path.join(baseDir, file);
@@ -275,6 +290,11 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
     return persist({ ...current, displayUrl: url });
   };
 
+  const setOperatingHours = async (hours: OperatingHours, timezone: string) => {
+    const current = await safeReadState();
+    return persist({ ...current, operatingHours: hours, timezone });
+  };
+
   const getDisplayUrl = async () => {
     const current = await safeReadState();
     return current.displayUrl || null;
@@ -293,6 +313,7 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
     redo,
     setDisplayUrl,
     getDisplayUrl,
+    setOperatingHours,
   };
 };
 
@@ -309,6 +330,7 @@ if (!databaseUrl && !isProduction) {
   console.warn("[State] DATABASE_URL is not set; using file-based storage for development.");
 }
 
-export const stateManager = databaseUrl ? createDbStateManager(databaseUrl) : createStateManager();
+const storageMode = process.env.STATE_STORAGE?.toLowerCase();
+const useDatabase = storageMode === "db" || (!storageMode && Boolean(databaseUrl));
 
-export const storageMode = databaseUrl ? "database" : "file";
+export const stateManager = useDatabase ? createDbStateManager(databaseUrl) : createStateManager();

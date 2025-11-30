@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 
 import { ConfirmAction } from "@/components/confirm-action";
+import { OperatingHoursEditor } from "@/components/operating-hours-editor";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,7 +45,7 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeSwitcher } from "@/components/theme-switcher";
-import type { Mode, RaffleState } from "@/lib/state-manager";
+import type { Mode, OperatingHours, RaffleState } from "@/lib/state-manager";
 
 type ActionPayload =
   | { action: "generate"; startNumber: number; endNumber: number; mode: Mode }
@@ -54,7 +55,8 @@ type ActionPayload =
   | { action: "reset" }
   | { action: "undo" }
   | { action: "redo" }
-  | { action: "restoreSnapshot"; id: string };
+  | { action: "restoreSnapshot"; id: string }
+  | { action: "setOperatingHours"; hours: OperatingHours; timezone: string };
 
 type Snapshot = {
   id: string;
@@ -85,6 +87,8 @@ const AdminPage = () => {
   const [selectedSnapshot, setSelectedSnapshot] = React.useState<string>("");
   const [canUndo, setCanUndo] = React.useState(false);
   const [canRedo, setCanRedo] = React.useState(false);
+  const [pendingHours, setPendingHours] = React.useState<OperatingHours | null>(null);
+  const [pendingTimezone, setPendingTimezone] = React.useState<string>("America/Los_Angeles");
   const browserOriginRef = React.useRef<string | null>(null);
 
   const refreshSnapshots = React.useCallback(async () => {
@@ -184,6 +188,15 @@ const AdminPage = () => {
     }
   }, [state]);
 
+  React.useEffect(() => {
+    if (state?.operatingHours) {
+      setPendingHours(state.operatingHours);
+    }
+    if (state?.timezone) {
+      setPendingTimezone(state.timezone);
+    }
+  }, [state?.operatingHours, state?.timezone]);
+
   const sendAction = React.useCallback(
     async (payload: ActionPayload) => {
       setPendingAction(payload.action);
@@ -260,6 +273,11 @@ const AdminPage = () => {
     }
     await sendAction({ action: "reset" });
     setResetPhrase("");
+  };
+
+  const handleSaveOperatingHours = async () => {
+    if (!pendingHours) return;
+    await sendAction({ action: "setOperatingHours", hours: pendingHours, timezone: pendingTimezone });
   };
 
   const handleCleanup = async (days: number) => {
@@ -1053,6 +1071,36 @@ const AdminPage = () => {
                   </div>
                 </>
               )}
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card space-y-4">
+            <CardHeader>
+              <CardTitle>Set operating hours</CardTitle>
+              <CardDescription>
+                Choose open days and hours so clients know when the pantry is available.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {pendingHours ? (
+                <OperatingHoursEditor
+                  hours={pendingHours}
+                  timezone={pendingTimezone}
+                  onChange={setPendingHours}
+                  onTimezoneChange={setPendingTimezone}
+                  disabled={loading || pendingAction !== null}
+                />
+              ) : (
+                <p className="text-sm text-muted-foreground">Loading hours…</p>
+              )}
+              <Button
+                variant="default"
+                size="sm"
+                onClick={handleSaveOperatingHours}
+                disabled={!pendingHours || loading || pendingAction !== null}
+              >
+                Save operating hours
+              </Button>
             </CardContent>
           </Card>
         </div>

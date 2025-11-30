@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.0.3] - 2025-11-29
+### Added
+- Operating hours with timezone selection (default PST) persisted in state; display page now shows “Pantry Hours” and closed-day messaging with next open day.
+- Admin UI for setting open days/hours with per-day toggles and time inputs; timezone selector added.
+- Shadcn select/checkbox/popover primitives added to support the new editor.
+
+### Changed
+- Reset now preserves operating hours and timezone instead of wiping them.
+- Translations updated with pantry hours/closed messaging.
+
 ## [1.0.2] - 2025-11-28
 ### Changed
 - Refined global shadow tokens in `globals.css` (OKLCH base shadow mixes, adjusted transparency) and added `shadow-sm` to default/secondary buttons for clearer elevation.
