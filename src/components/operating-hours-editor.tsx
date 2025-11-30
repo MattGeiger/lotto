@@ -135,7 +135,6 @@ export function OperatingHoursEditor({
                 <>
                   <Input
                     type="time"
-                    step="1"
                     value={config.openTime}
                     onChange={(e) => handleTimeChange(day.value, "openTime", e.target.value)}
                     disabled={disabled}
@@ -143,7 +142,6 @@ export function OperatingHoursEditor({
                   />
                   <Input
                     type="time"
-                    step="1"
                     value={config.closeTime}
                     onChange={(e) => handleTimeChange(day.value, "closeTime", e.target.value)}
                     disabled={disabled}

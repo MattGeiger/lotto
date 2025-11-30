@@ -289,17 +289,14 @@ export const ReadOnlyDisplay = () => {
                         <p className="text-center text-lg font-semibold text-foreground">
                           {t("pantryHours")}
                         </p>
-                        <div className="space-y-1">
+                        <div className="space-y-0.5 text-center">
                           {DAYS.map((day) => {
                             const config = state.operatingHours![day];
-                            const dayLabel = day.charAt(0).toUpperCase() + day.slice(1);
+                            const dayLabel = t(day);
                             return (
-                              <div
-                                key={day}
-                                className="grid grid-cols-[1fr_auto] gap-4 rounded-md border border-border/60 bg-card/40 px-3 py-2"
-                              >
-                                <span className="text-sm font-medium text-foreground">{dayLabel}</span>
-                                <span className="text-sm text-muted-foreground">
+                              <div key={day} className="flex justify-between text-base">
+                                <span className="font-medium text-foreground">{dayLabel}</span>
+                                <span className="text-muted-foreground">
                                   {config.isOpen
                                     ? formatTimeRange(config.openTime, config.closeTime)
                                     : "CLOSED"}
