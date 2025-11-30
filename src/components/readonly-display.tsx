@@ -38,8 +38,12 @@ const formatDisplayTime = (time24: string): string => {
   return `${displayHours}${minutes ? `:${minutes}` : ""} ${period}`;
 };
 
-const formatTimeRange = (openTime: string, closeTime: string): string =>
-  `${formatDisplayTime(openTime)} - ${formatDisplayTime(closeTime)}`;
+const formatTimeRange = (openTime: string, closeTime: string, language: Language): string => {
+  const start = formatDisplayTime(openTime);
+  const end = formatDisplayTime(closeTime);
+  // Use directional isolates to keep time order stable in RTL
+  return isRTL(language) ? `\u2066${start}\u2069 - \u2066${end}\u2069` : `${start} - ${end}`;
+};
 
 const DAYS: DayOfWeek[] = [
   "sunday",
@@ -63,14 +67,14 @@ const isCurrentlyOpen = (hours: OperatingHours | null): boolean => {
   return current >= config.openTime && current <= config.closeTime;
 };
 
-const getNextOpenDay = (hours: OperatingHours | null): string | null => {
+const getNextOpenDay = (hours: OperatingHours | null): DayOfWeek | null => {
   if (!hours) return null;
   const todayIndex = new Date().getDay();
   for (let i = 1; i <= 7; i += 1) {
     const idx = (todayIndex + i) % 7;
     const day = DAYS[idx];
     if (hours[day]?.isOpen) {
-      return day.charAt(0).toUpperCase() + day.slice(1);
+      return day;
     }
   }
   return null;
@@ -281,7 +285,7 @@ export const ReadOnlyDisplay = () => {
                     </span>
                     {nextOpenDay && (
                       <span className="block w-full text-center text-xl font-semibold text-foreground">
-                        {t("nextOpenDay")}: {nextOpenDay}
+                        {t("nextOpenDay")}: {t(nextOpenDay)}
                       </span>
                     )}
                     {state?.operatingHours && (
@@ -298,8 +302,8 @@ export const ReadOnlyDisplay = () => {
                                 <span className="font-medium text-foreground">{dayLabel}</span>
                                 <span className="text-muted-foreground">
                                   {config.isOpen
-                                    ? formatTimeRange(config.openTime, config.closeTime)
-                                    : "CLOSED"}
+                                    ? formatTimeRange(config.openTime, config.closeTime, language)
+                                    : t("closed")}
                                 </span>
                               </div>
                             );
