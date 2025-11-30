@@ -120,10 +120,7 @@ export function OperatingHoursEditor({
         {DAYS.map((day) => {
           const config = hours[day.value];
           return (
-            <div
-              key={day.value}
-              className="grid grid-cols-[auto_1fr_1fr_1fr] items-center gap-2 rounded-md border border-border bg-card p-2"
-            >
+            <div key={day.value} className="grid grid-cols-[auto_1fr_1fr_1fr] items-center gap-2 p-2">
               <Checkbox
                 checked={config.isOpen}
                 onCheckedChange={(checked) => handleDayToggle(day.value, Boolean(checked))}
