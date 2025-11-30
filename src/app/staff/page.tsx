@@ -77,7 +77,7 @@ export default function Home() {
           </Card>
         </div>
         <div className="space-y-1 text-xs text-muted-foreground">
-          <p className="font-semibold text-foreground">v1.0.2</p>
+          <p className="font-semibold text-foreground">v1.0.3</p>
           <p>
             Created by{" "}
             <Link href="https://github.com/MattGeiger" className="underline underline-offset-4">

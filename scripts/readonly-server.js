@@ -258,7 +258,7 @@ const htmlPage = `<!doctype html>
 
       <div class="grid">
         <div class="card">
-          <h3>Tickets Issued Today</h3>
+          <h3>Ticket Numbers Issued Today</h3>
           <p id="range">—</p>
         </div>
         <div class="card">

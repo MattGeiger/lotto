@@ -35,8 +35,7 @@ const formatDisplayTime = (time24: string): string => {
   const hours = Number(hoursStr);
   const period = hours >= 12 ? "PM" : "AM";
   const displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
-  // Add Left-to-Right Mark to keep time order stable inside RTL contexts
-  return `${displayHours}:${minutes ?? "00"} ${period}\u200E`;
+  return `${displayHours}:${minutes ?? "00"} ${period}`;
 };
 
 const formatTimeRange = (openTime: string, closeTime: string): string => {
@@ -78,6 +77,22 @@ const getNextOpenDay = (hours: OperatingHours | null): DayOfWeek | null => {
     }
   }
   return null;
+};
+
+type PantryStatus = "open" | "before_opening" | "after_closing" | "not_operating_today";
+
+const getPantryStatus = (hours: OperatingHours | null): PantryStatus => {
+  if (!hours) return "open";
+  const today = getCurrentDayOfWeek();
+  const config = hours[today];
+  if (!config?.isOpen) return "not_operating_today";
+
+  const now = new Date();
+  const currentTime = now.toTimeString().slice(0, 8);
+
+  if (currentTime < config.openTime) return "before_opening";
+  if (currentTime > config.closeTime) return "after_closing";
+  return "open";
 };
 
 export const ReadOnlyDisplay = () => {
@@ -157,8 +172,18 @@ export const ReadOnlyDisplay = () => {
     generatedOrder && currentlyServing !== null ? generatedOrder.indexOf(currentlyServing) : -1;
   const hasTickets = generatedOrder.length > 0;
   const updatedTime = formatTime(state?.timestamp ?? null, language);
-  const isPantryOpen = isCurrentlyOpen(state?.operatingHours ?? null);
-  const nextOpenDay = !isPantryOpen ? getNextOpenDay(state?.operatingHours ?? null) : null;
+  const pantryStatus = getPantryStatus(state?.operatingHours ?? null);
+  const isPantryOpen = pantryStatus === "open";
+  const nextOpenDay =
+    pantryStatus === "after_closing" || pantryStatus === "not_operating_today"
+      ? getNextOpenDay(state?.operatingHours ?? null)
+      : null;
+
+  const todayHours = React.useMemo(() => {
+    if (!state?.operatingHours || pantryStatus !== "before_opening") return null;
+    const today = getCurrentDayOfWeek();
+    return state.operatingHours[today];
+  }, [state?.operatingHours, pantryStatus]);
 
   const getTicketDetails = (ticketNumber: number) => {
     if (!state?.generatedOrder?.length) return null;
@@ -280,17 +305,49 @@ export const ReadOnlyDisplay = () => {
               <div className="flex flex-col items-center gap-4 rounded-xl bg-muted/20 px-4 py-6">
                 {!isPantryOpen ? (
                   <>
-                    <span className="block w-full text-center text-3xl font-extrabold leading-snug text-foreground">
-                      {t("pantryClosed")}
-                    </span>
-                    {nextOpenDay && (
-                      <span className="block w-full text-center text-xl font-semibold text-foreground">
-                        {t("nextOpenDay")}: {t(nextOpenDay)}
-                      </span>
+                    {pantryStatus === "before_opening" && (
+                      <>
+                        <span className="block w-full text-center text-3xl font-extrabold leading-snug text-foreground">
+                          {t("pantryNotOpenYet")}
+                        </span>
+                        {todayHours && (
+                          <span className="block w-full text-center text-xl font-semibold text-foreground">
+                            {t("todaysHours")}:{" "}
+                            <span dir="ltr">{formatTimeRange(todayHours.openTime, todayHours.closeTime)}</span>
+                          </span>
+                        )}
+                      </>
                     )}
+
+                    {pantryStatus === "after_closing" && (
+                      <>
+                        <span className="block w-full text-center text-3xl font-extrabold leading-snug text-foreground">
+                          {t("pantryClosedForDay")}
+                        </span>
+                        {nextOpenDay && (
+                          <span className="block w-full text-center text-xl font-semibold text-foreground">
+                            {t("nextOpenDay")}: {t(nextOpenDay)}
+                          </span>
+                        )}
+                      </>
+                    )}
+
+                    {pantryStatus === "not_operating_today" && (
+                      <>
+                        <span className="block w-full text-center text-3xl font-extrabold leading-snug text-foreground">
+                          {t("pantryClosed")}
+                        </span>
+                        {nextOpenDay && (
+                          <span className="block w-full text-center text-xl font-semibold text-foreground">
+                            {t("nextOpenDay")}: {t(nextOpenDay)}
+                          </span>
+                        )}
+                      </>
+                    )}
+
                     {state?.operatingHours && (
-                      <div className="mt-2 w-full max-w-md space-y-2">
-                        <p className="text-center text-lg font-semibold text-foreground">
+                      <div className="mt-4 w-full max-w-md space-y-3">
+                        <p className="text-center text-xl font-bold text-foreground">
                           {t("pantryHours")}
                         </p>
                         <div className="space-y-0.5 text-center">
@@ -300,7 +357,7 @@ export const ReadOnlyDisplay = () => {
                             return (
                               <div key={day} className="flex justify-between text-base">
                                 <span className="font-medium text-foreground">{dayLabel}</span>
-                                <span className="text-muted-foreground">
+                                <span className="text-muted-foreground" dir={config.isOpen ? "ltr" : undefined}>
                                   {config.isOpen
                                     ? formatTimeRange(config.openTime, config.closeTime)
                                     : t("closed")}

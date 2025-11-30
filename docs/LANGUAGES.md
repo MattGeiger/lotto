@@ -12,7 +12,7 @@ Add language selection for display page with support for: English, Mandarin Chin
 | `nowServing` | Now Serving | 正在叫号 | Turno Actual | Вызывается номер | Викликається номер | Đang gọi số | در حال فراخوانی شماره | الرقم الحالي |
 | `waiting` | Waiting | 请等候 | En espera | Ожидайте | Очікуйте | Vui lòng chờ | لطفاً صبر کنید | يرجى الانتظار |
 | `foodPantryServiceFor` | Food Pantry Service For | 食品发放服务 | Servicio del Banco de Alimentos | Раздача продуктов | Роздача продуктів | Phát thực phẩm ngày | توزیع مواد غذایی برای | توزيع المواد الغذائية ليوم |
-| `ticketsIssuedToday` | Tickets Issued Today | 今日号码范围 | Boletos emitidos hoy | Выданные сегодня номера | Видані сьогодні номери | Số vé phát hôm nay | بلیط‌های صادر شده امروز | التذاكر الصادرة اليوم |
+| `ticketsIssuedToday` | Ticket Numbers Issued Today | 今日号码范围 | Boletos emitidos hoy | Выданные сегодня номера | Видані сьогодні номери | Số vé phát hôm nay | بلیط‌های صادر شده امروز | التذاكر الصادرة اليوم |
 | `totalTicketsIssued` | Total Tickets Issued | 已发号码总数 | Total de boletos emitidos | Всего выдано билетов | Всього видано квитків | Tổng số vé đã phát | مجموع بلیط‌های صادر شده | إجمالي التذاكر الصادرة |
 | `drawingOrder` | Drawing Order | 叫号顺序 | Orden de llamado | Порядок вызова | Порядок виклику | Thứ tự bốc thăm | ترتیب قرعه‌کشی | ترتيب السحب |
 | `updated` | Updated | 更新时间 | Actualizado | Обновлено | Оновлено | Cập nhật | به‌روزرسانی | تم التحديث |
@@ -127,7 +127,7 @@ const translations: Record<Language, Record<string, string>> = {
     nowServing: "Now Serving",
     waiting: "Waiting",
     foodPantryServiceFor: "Food Pantry Service For",
-    ticketsIssuedToday: "Tickets Issued Today",
+    ticketsIssuedToday: "Ticket Numbers Issued Today",
     totalTicketsIssued: "Total Tickets Issued",
     drawingOrder: "Drawing Order",
     updated: "Updated",

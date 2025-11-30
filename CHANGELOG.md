@@ -5,6 +5,7 @@
 - Operating hours with timezone selection (default PST) persisted in state; display page now shows “Pantry Hours” and closed-day messaging with next open day.
 - Admin UI for setting open days/hours with per-day toggles and time inputs; timezone selector added.
 - Shadcn select/checkbox/popover primitives added to support the new editor.
+- Localized day names and closed labels; clarified reset-state messaging (before opening, after closing, closed today).
 
 ### Changed
 - Reset now preserves operating hours and timezone instead of wiping them.
