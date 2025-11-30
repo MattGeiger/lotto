@@ -35,14 +35,14 @@ const formatDisplayTime = (time24: string): string => {
   const hours = Number(hoursStr);
   const period = hours >= 12 ? "PM" : "AM";
   const displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
-  return `${displayHours}${minutes ? `:${minutes}` : ""} ${period}`;
+  // Add Left-to-Right Mark to keep time order stable inside RTL contexts
+  return `${displayHours}:${minutes ?? "00"} ${period}\u200E`;
 };
 
-const formatTimeRange = (openTime: string, closeTime: string, language: Language): string => {
+const formatTimeRange = (openTime: string, closeTime: string): string => {
   const start = formatDisplayTime(openTime);
   const end = formatDisplayTime(closeTime);
-  // Use directional isolates to keep time order stable in RTL
-  return isRTL(language) ? `\u2066${start}\u2069 - \u2066${end}\u2069` : `${start} - ${end}`;
+  return `${start} - ${end}`;
 };
 
 const DAYS: DayOfWeek[] = [
@@ -302,7 +302,7 @@ export const ReadOnlyDisplay = () => {
                                 <span className="font-medium text-foreground">{dayLabel}</span>
                                 <span className="text-muted-foreground">
                                   {config.isOpen
-                                    ? formatTimeRange(config.openTime, config.closeTime, language)
+                                    ? formatTimeRange(config.openTime, config.closeTime)
                                     : t("closed")}
                                 </span>
                               </div>
