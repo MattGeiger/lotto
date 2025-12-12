@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Eye, Lock, QrCode } from "lucide-react";
+import { version } from "../../../package.json";
 
 import {
   Card,
@@ -8,7 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
@@ -76,10 +76,10 @@ export default function Home() {
             </CardHeader>
           </Card>
         </div>
-        <div className="space-y-1 text-xs text-muted-foreground">
-          <p className="font-semibold text-foreground">v1.0.3</p>
-          <p>
-            Created by{" "}
+	        <div className="space-y-1 text-xs text-muted-foreground">
+	          <p className="font-semibold text-foreground">v{version}</p>
+	          <p>
+	            Created by{" "}
             <Link href="https://github.com/MattGeiger" className="underline underline-offset-4">
               Matt Geiger, Temple Consulting, LLC.
             </Link>{" "}

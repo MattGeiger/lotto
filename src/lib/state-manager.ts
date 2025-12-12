@@ -36,8 +36,6 @@ const withTimestamp = (state: RaffleState) => ({
 
 export const createStateManager = (baseDir = path.join(process.cwd(), "data")) => {
   const statePath = path.join(baseDir, "state.json");
-  const backupPattern =
-    /^state-(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})(\d{3})-[^.]+\.json$/;
   let lastRedoSnapshot: Snapshot | null = null;
   let lastPersistTs = 0;
 

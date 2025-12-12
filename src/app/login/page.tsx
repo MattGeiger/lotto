@@ -107,15 +107,15 @@ const LoginForm = () => {
       </CardHeader>
 
       <CardContent>
-        <Tabs defaultValue="magic" className="w-full">
+        <Tabs defaultValue="otp" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="magic" className="flex items-center gap-2">
-              <Mail className="size-4" />
-              Magic Link
-            </TabsTrigger>
             <TabsTrigger value="otp" className="flex items-center gap-2">
               <KeyRound className="size-4" />
               OTP Code
+            </TabsTrigger>
+            <TabsTrigger value="magic" className="flex items-center gap-2">
+              <Mail className="size-4" />
+              Magic Link
             </TabsTrigger>
           </TabsList>
 

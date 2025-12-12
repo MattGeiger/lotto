@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.4] - 2025-12-12
+### Changed
+- Login now defaults to OTP and places the OTP tab left of the Magic Link tab.
+- Documented the recommended OTP-first auth approach and Microsoft Defender magic-link limitation in `docs/AUTHENTICATION.md`.
+- Updated the staff landing page to display the app version from `package.json`.
+- Cleaned up lint warnings (unused imports/variables, and Next.js `next/image` guidance).
+
 ## [1.0.3] - 2025-11-29
 ### Added
 - Operating hours with timezone selection (default PST) persisted in state; display page now shows “Pantry Hours” and closed-day messaging with next open day.

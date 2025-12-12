@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+/* eslint-disable @typescript-eslint/no-require-imports */
 const http = require("node:http");
 const fs = require("node:fs/promises");
 const path = require("node:path");

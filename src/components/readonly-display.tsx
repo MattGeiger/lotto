@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import QRCode from "qrcode";
 
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +10,6 @@ import { TicketDetailDialog } from "@/components/ticket-detail-dialog";
 import { useLanguage, type Language } from "@/contexts/language-context";
 import { formatDate } from "@/lib/date-format";
 import { isRTL } from "@/lib/rtl-utils";
-import { formatWaitTime } from "@/lib/time-format";
 import type { DayOfWeek, OperatingHours, RaffleState } from "@/lib/state-types";
 
 const TIME_LOCALES: Record<Language, string> = {
@@ -55,16 +55,6 @@ const DAYS: DayOfWeek[] = [
 ];
 
 const getCurrentDayOfWeek = (): DayOfWeek => DAYS[new Date().getDay()];
-
-const isCurrentlyOpen = (hours: OperatingHours | null): boolean => {
-  if (!hours) return true;
-  const today = getCurrentDayOfWeek();
-  const config = hours[today];
-  if (!config?.isOpen) return false;
-  const now = new Date();
-  const current = now.toTimeString().slice(0, 8);
-  return current >= config.openTime && current <= config.closeTime;
-};
 
 const getNextOpenDay = (hours: OperatingHours | null): DayOfWeek | null => {
   if (!hours) return null;
@@ -209,14 +199,18 @@ export const ReadOnlyDisplay = () => {
         <div className="mt-10 grid grid-cols-1 gap-4 sm:mt-12 sm:grid-cols-[minmax(280px,320px)_1fr_minmax(280px,320px)] sm:items-center sm:gap-6">
           {/* Logo - left */}
           <div className="flex justify-center sm:justify-start">
-            <img
+            <Image
               src="/wth-logo-horizontal.png"
               alt="William Temple House"
+              width={2314}
+              height={606}
               className="block h-auto w-full max-w-[400px] dark:hidden"
             />
-            <img
+            <Image
               src="/wth-logo-horizontal-reverse.png"
               alt="William Temple House"
+              width={2333}
+              height={641}
               className="hidden h-auto w-full max-w-[400px] dark:block"
             />
           </div>

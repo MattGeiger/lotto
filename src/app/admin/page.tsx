@@ -10,11 +10,10 @@ import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
-  Loader2,
-  Sparkles,
-  Undo2,
-  Redo2,
-  History,
+	Loader2,
+	Sparkles,
+	Undo2,
+	Redo2,
 } from "lucide-react";
 
 import { ConfirmAction } from "@/components/confirm-action";
@@ -31,7 +30,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { Button, type ButtonProps } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -298,11 +297,11 @@ const AdminPage = () => {
       setCleanupMessage(
         `Deleted ${data.deletedCount} snapshots older than ${data.retentionDays} days.`,
       );
-    } catch (err) {
-      setActionError("Cleanup request failed.");
-    } finally {
-      setPendingAction(null);
-    }
+	} catch {
+	  setActionError("Cleanup request failed.");
+	} finally {
+	  setPendingAction(null);
+	}
   };
 
   const handleModeToggleRequest = (newMode: Mode) => {
@@ -339,13 +338,13 @@ const AdminPage = () => {
       setUrlError("URL must be 64 characters or less");
       return;
     }
-    try {
-      // eslint-disable-next-line no-new
-      new URL(urlInput);
-    } catch {
-      setUrlError("Invalid URL format");
-      return;
-    }
+	try {
+	  const parsedUrl = new URL(urlInput);
+	  void parsedUrl;
+	} catch {
+	  setUrlError("Invalid URL format");
+	  return;
+	}
 
     try {
       const response = await fetch("/api/state", {
@@ -396,7 +395,6 @@ const AdminPage = () => {
     setUrlError("");
   };
 
-  const upcomingPreview = state?.generatedOrder.slice(0, 16) ?? [];
   const nextFive = state?.generatedOrder
     ? state.generatedOrder.slice(
         Math.max(
