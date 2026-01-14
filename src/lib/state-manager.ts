@@ -222,12 +222,29 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
       throw new Error("Generate tickets first.");
     }
 
+    const nextStatus = {
+      ...(current.ticketStatus ?? {}),
+      [ticketNumber]: "returned",
+    };
+    let nextServing = current.currentlyServing;
+    if (ticketNumber === current.currentlyServing) {
+      const currentIndex = current.generatedOrder.indexOf(ticketNumber);
+      if (currentIndex !== -1) {
+        nextServing = null;
+        for (let i = currentIndex + 1; i < current.generatedOrder.length; i += 1) {
+          const nextTicket = current.generatedOrder[i];
+          if (nextStatus[nextTicket] !== "returned") {
+            nextServing = nextTicket;
+            break;
+          }
+        }
+      }
+    }
+
     return persist({
       ...current,
-      ticketStatus: {
-        ...(current.ticketStatus ?? {}),
-        [ticketNumber]: "returned",
-      },
+      ticketStatus: nextStatus,
+      currentlyServing: nextServing,
     });
   };
 

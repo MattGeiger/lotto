@@ -179,10 +179,21 @@ export const ReadOnlyDisplay = () => {
     if (!state?.generatedOrder?.length) return null;
     const queuePosition = state.generatedOrder.indexOf(ticketNumber) + 1;
     if (queuePosition <= 0) return null;
+    const isReturned = state.ticketStatus?.[ticketNumber] === "returned";
+    if (isReturned) {
+      return { queuePosition, ticketsAhead: 0, estimatedWaitMinutes: 0 };
+    }
     const servingIndex =
       state.currentlyServing !== null ? state.generatedOrder.indexOf(state.currentlyServing) : -1;
+    const ticketIndex = state.generatedOrder.indexOf(ticketNumber);
     const ticketsAhead =
-      servingIndex === -1 ? Math.max(0, queuePosition - 1) : Math.max(0, queuePosition - servingIndex - 1);
+      servingIndex === -1
+        ? state.generatedOrder
+            .slice(0, ticketIndex)
+            .filter((ticket) => state.ticketStatus?.[ticket] !== "returned").length
+        : state.generatedOrder
+            .slice(servingIndex + 1, ticketIndex)
+            .filter((ticket) => state.ticketStatus?.[ticket] !== "returned").length;
     // 165 minutes / 75 shoppers = 2.2 minutes per shopper
     const estimatedWaitMinutes = Math.round(ticketsAhead * 2.2);
     return { queuePosition, ticketsAhead, estimatedWaitMinutes };
@@ -383,12 +394,17 @@ export const ReadOnlyDisplay = () => {
               {generatedOrder.map((value, index) => {
                 const baseClasses =
                   "flex items-center justify-center rounded-xl border text-center text-2xl font-extrabold leading-[1.2] px-4 py-3 cursor-pointer transition-transform hover:scale-[1.03]";
+                const ticketStatus = state?.ticketStatus?.[value];
                 const stateClass =
-                  value === currentlyServing
-                    ? "ticket-serving"
-                    : currentIndex !== -1 && index < currentIndex
-                      ? "ticket-served"
-                      : "ticket-upcoming";
+                  ticketStatus === "returned"
+                    ? "ticket-returned"
+                    : ticketStatus === "unclaimed"
+                      ? "ticket-unclaimed"
+                      : value === currentlyServing
+                        ? "ticket-serving"
+                        : currentIndex !== -1 && index < currentIndex
+                          ? "ticket-served"
+                          : "ticket-upcoming";
                 return (
                   <div
                     key={value}
@@ -407,6 +423,29 @@ export const ReadOnlyDisplay = () => {
                   </div>
                 );
               })}
+            </div>
+
+            <div className="mt-5 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <span className="size-3 rounded-full border ticket-upcoming" />
+                {t("notCalled")}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="size-3 rounded-full border ticket-serving" />
+                {t("nowServing")}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="size-3 rounded-full border ticket-served" />
+                {t("called")}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="size-3 rounded-full border ticket-unclaimed" />
+                {t("unclaimed")}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="size-3 rounded-full border ticket-returned" />
+                {t("returned")}
+              </div>
             </div>
 
             <div

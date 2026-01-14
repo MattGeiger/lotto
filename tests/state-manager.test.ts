@@ -180,6 +180,25 @@ describe("state manager", () => {
     expect(updated.ticketStatus[12]).toBe("returned");
   });
 
+  it("auto-advances when the current ticket is marked returned", async () => {
+    await manager.generateState({ startNumber: 1, endNumber: 3, mode: "sequential" });
+    await manager.updateCurrentlyServing(2);
+
+    const updated = await manager.markTicketReturned(2);
+
+    expect(updated.currentlyServing).toBe(3);
+    expect(updated.ticketStatus[2]).toBe("returned");
+  });
+
+  it("clears now serving when no later tickets remain after a return", async () => {
+    await manager.generateState({ startNumber: 1, endNumber: 2, mode: "sequential" });
+    await manager.updateCurrentlyServing(2);
+
+    const updated = await manager.markTicketReturned(2);
+
+    expect(updated.currentlyServing).toBeNull();
+  });
+
   it("marks tickets as unclaimed after they are called", async () => {
     await manager.generateState({ startNumber: 1, endNumber: 3, mode: "sequential" });
     await manager.updateCurrentlyServing(2);

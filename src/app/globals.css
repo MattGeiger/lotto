@@ -330,6 +330,18 @@ a {
     opacity: 0.85;
   }
 
+  .ticket-unclaimed {
+    background: var(--status-warning-bg);
+    border-color: var(--status-warning-border);
+    color: var(--status-warning-text);
+  }
+
+  .ticket-returned {
+    background: var(--status-danger-bg);
+    border-color: var(--status-danger-border);
+    color: var(--status-danger-text);
+  }
+
   /* Status badge variants */
   .badge-success {
     border-color: var(--status-success-border);
