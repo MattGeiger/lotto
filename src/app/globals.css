@@ -95,13 +95,13 @@
   --gradient-card-accent: linear-gradient(135deg, oklch(0.99 0.01 155), oklch(0.96 0.05 155));
   --gradient-card-warning: linear-gradient(
     135deg,
-    color-mix(in oklch, var(--status-warning-bg), white 22%),
-    var(--status-warning-bg)
+    color-mix(in oklch, var(--card), var(--status-warning-bg) 12%),
+    var(--card)
   );
   --gradient-card-danger: linear-gradient(
     135deg,
-    color-mix(in oklch, var(--status-danger-bg), white 18%),
-    var(--status-danger-bg)
+    color-mix(in oklch, var(--card), var(--status-danger-bg) 12%),
+    var(--card)
   );
   --card-title-color: oklch(0.08 0 0);
   --card-icon-color: var(--foreground);
@@ -209,13 +209,13 @@
   --gradient-card-accent: linear-gradient(135deg, oklch(0.20 0.02 155), oklch(0.24 0.04 155));
   --gradient-card-warning: linear-gradient(
     135deg,
-    color-mix(in oklch, var(--status-warning-bg), white 8%),
-    var(--status-warning-bg)
+    color-mix(in oklch, var(--card), var(--status-warning-bg) 14%),
+    var(--card)
   );
   --gradient-card-danger: linear-gradient(
     135deg,
-    color-mix(in oklch, var(--status-danger-bg), white 8%),
-    var(--status-danger-bg)
+    color-mix(in oklch, var(--card), var(--status-danger-bg) 14%),
+    var(--card)
   );
   --card-title-color: var(--card-foreground);
   --card-icon-color: var(--card-foreground);
