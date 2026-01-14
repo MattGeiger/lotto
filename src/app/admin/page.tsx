@@ -928,13 +928,13 @@ const AdminPage = () => {
               </div>
             </div>
 
-            <div className="space-y-3 rounded-lg border border-border bg-gradient-card-info p-4">
+            <div className="space-y-3 rounded-lg border border-[var(--status-danger-border)] bg-[var(--status-danger-bg)] p-4">
               <div>
-                <p className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
+                <p className="flex items-center gap-2 text-xs uppercase tracking-wide text-[var(--status-danger-text)]">
                   <TicketX className="size-4" />
                   Mark ticket as returned
                 </p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-[var(--status-danger-text)]">
                   Use when a client returns their ticket and leaves the line. You can undo this action.
                 </p>
               </div>
@@ -966,13 +966,13 @@ const AdminPage = () => {
               </div>
             </div>
 
-            <div className="space-y-3 rounded-lg border border-border bg-gradient-card-info p-4">
+            <div className="space-y-3 rounded-lg border border-[var(--status-warning-border)] bg-[var(--status-warning-bg)] p-4">
               <div>
-                <p className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
+                <p className="flex items-center gap-2 text-xs uppercase tracking-wide text-[var(--status-warning-text)]">
                   <TicketSlash className="size-4" />
                   Mark ticket as unclaimed
                 </p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-[var(--status-warning-text)]">
                   Use when no client has claimed a ticket after it was called. You can undo this action.
                 </p>
               </div>
@@ -1064,12 +1064,12 @@ const AdminPage = () => {
                     : "—"}
                 </div>
               </div>
-              <div className="space-y-1 rounded-lg border border-[var(--status-warning-border)] bg-[var(--status-warning-bg)] p-3 sm:col-span-2">
-                <p className="text-xs uppercase tracking-wide text-[var(--status-warning-text)]">Returned tickets</p>
+              <div className="space-y-1 rounded-lg border border-[var(--status-danger-border)] bg-[var(--status-danger-bg)] p-3 sm:col-span-2">
+                <p className="text-xs uppercase tracking-wide text-[var(--status-danger-text)]">Returned tickets</p>
                 <div className="flex flex-wrap gap-2">
                     {returnedTickets.length
                     ? returnedTickets.map((ticket) => (
-                        <Badge key={ticket} variant="warning">
+                        <Badge key={ticket} variant="danger">
                           #{ticket}
                         </Badge>
                       ))
