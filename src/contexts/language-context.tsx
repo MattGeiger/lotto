@@ -84,6 +84,11 @@ const translations: Record<Language, Record<string, string>> = {
     called: "Called",
     unclaimed: "Unclaimed",
     returned: "Returned",
+    returnedTicketMessage:
+      "This ticket number is marked as \"Returned\" and will not be called. Is this your ticket? Please let staff know about this issue.",
+    unclaimedTicketMessage:
+      "This ticket number has been called but is still unclaimed. If this is your ticket, please check-in or speak with a member of our staff.",
+    calledAtMessage: "This ticket was called at",
     close: "Close",
   },
   zh: {
@@ -124,6 +129,9 @@ const translations: Record<Language, Record<string, string>> = {
     called: "已叫号",
     unclaimed: "无人认领",
     returned: "已退回",
+    returnedTicketMessage: "此号码已标记为“已退回”，将不会被叫号。是您的号码吗？请告知工作人员。",
+    unclaimedTicketMessage: "此号码已叫号但仍无人认领。如果这是您的号码，请签到或与工作人员联系。",
+    calledAtMessage: "此号码叫号时间",
     close: "关闭",
   },
   es: {
@@ -164,6 +172,11 @@ const translations: Record<Language, Record<string, string>> = {
     called: "Llamado",
     unclaimed: "No reclamado",
     returned: "Devuelto",
+    returnedTicketMessage:
+      "Este número de boleto está marcado como \"Devuelto\" y no será llamado. ¿Es su boleto? Avise al personal sobre este problema.",
+    unclaimedTicketMessage:
+      "Este número de boleto ha sido llamado pero aún no se ha reclamado. Si es su boleto, haga check-in o hable con un miembro del personal.",
+    calledAtMessage: "Este boleto fue llamado a las",
     close: "Cerrar",
   },
   ru: {
@@ -204,6 +217,11 @@ const translations: Record<Language, Record<string, string>> = {
     called: "Вызван",
     unclaimed: "Не заявлен",
     returned: "Возвращён",
+    returnedTicketMessage:
+      "Этот номер билета отмечен как «Возвращён» и больше не будет вызван. Это ваш билет? Сообщите об этом сотрудникам.",
+    unclaimedTicketMessage:
+      "Этот номер билета был вызван, но остаётся невостребованным. Если это ваш билет, подойдите или сообщите сотрудникам.",
+    calledAtMessage: "Этот билет был вызван в",
     close: "Закрыть",
   },
   uk: {
@@ -244,6 +262,11 @@ const translations: Record<Language, Record<string, string>> = {
     called: "Викликано",
     unclaimed: "Не заявлено",
     returned: "Повернуто",
+    returnedTicketMessage:
+      "Цей номер квитка позначено як «Повернуто» і його не викликатимуть. Це ваш квиток? Повідомте про це працівникам.",
+    unclaimedTicketMessage:
+      "Цей номер квитка було викликано, але він досі не заявлений. Якщо це ваш квиток, підійдіть або зверніться до працівників.",
+    calledAtMessage: "Цей квиток було викликано о",
     close: "Закрити",
   },
   vi: {
@@ -284,6 +307,11 @@ const translations: Record<Language, Record<string, string>> = {
     called: "Đã gọi",
     unclaimed: "Chưa nhận",
     returned: "Đã trả",
+    returnedTicketMessage:
+      "Số vé này được đánh dấu \"Đã trả\" và sẽ không được gọi. Đây có phải vé của bạn không? Vui lòng báo cho nhân viên.",
+    unclaimedTicketMessage:
+      "Số vé này đã được gọi nhưng vẫn chưa được nhận. Nếu đây là vé của bạn, vui lòng check-in hoặc nói với nhân viên.",
+    calledAtMessage: "Số vé này được gọi lúc",
     close: "Đóng",
   },
   fa: {
@@ -324,6 +352,11 @@ const translations: Record<Language, Record<string, string>> = {
     called: "فراخوانی شده",
     unclaimed: "تحویل‌نشده",
     returned: "برگشت داده شده",
+    returnedTicketMessage:
+      "این شماره بلیط به عنوان «برگشت داده شده» علامت‌گذاری شده و دیگر فراخوانی نمی‌شود. اگر این بلیط شماست، لطفاً به کارکنان اطلاع دهید.",
+    unclaimedTicketMessage:
+      "این شماره بلیط فراخوانی شده اما هنوز تحویل نشده است. اگر این بلیط شماست، لطفاً مراجعه کنید یا با کارکنان صحبت کنید.",
+    calledAtMessage: "این بلیط در ساعت",
     close: "بستن",
   },
   ar: {
@@ -364,6 +397,11 @@ const translations: Record<Language, Record<string, string>> = {
     called: "تم النداء",
     unclaimed: "غير مطالب به",
     returned: "مُعاد",
+    returnedTicketMessage:
+      "تم وضع علامة \"مُعاد\" على رقم التذكرة هذا ولن يتم النداء عليه. هل هذه تذكرتك؟ يرجى إبلاغ الموظفين بهذه المشكلة.",
+    unclaimedTicketMessage:
+      "تم النداء على رقم التذكرة هذا لكنه لا يزال غير مطالب به. إذا كانت هذه تذكرتك، يرجى تسجيل الحضور أو التحدث مع أحد الموظفين.",
+    calledAtMessage: "تم النداء على هذه التذكرة في",
     close: "إغلاق",
   },
 };

@@ -8,6 +8,7 @@
 - Admin control to mark tickets as unclaimed after a draw position has been called.
 - Unclaimed tickets list in the Live State card for quick verification.
 - Display legend for ticket status (not called, now serving, called, unclaimed, returned).
+- Display ticket modal messaging for returned/unclaimed tickets and called-time context.
 
 ### Changed
 - Returned-ticket input styling now matches default input backgrounds for clarity.

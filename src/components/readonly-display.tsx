@@ -179,9 +179,19 @@ export const ReadOnlyDisplay = () => {
     if (!state?.generatedOrder?.length) return null;
     const queuePosition = state.generatedOrder.indexOf(ticketNumber) + 1;
     if (queuePosition <= 0) return null;
-    const isReturned = state.ticketStatus?.[ticketNumber] === "returned";
+    const ticketStatus = state.ticketStatus?.[ticketNumber] ?? null;
+    const calledAt = state.calledAt?.[ticketNumber] ?? null;
+    const calledAtTime = calledAt ? formatTime(calledAt, language) : null;
+    const isReturned = ticketStatus === "returned";
     if (isReturned) {
-      return { queuePosition, ticketsAhead: 0, estimatedWaitMinutes: 0 };
+      return {
+        queuePosition,
+        ticketsAhead: 0,
+        estimatedWaitMinutes: 0,
+        ticketStatus,
+        calledAt,
+        calledAtTime,
+      };
     }
     const servingIndex =
       state.currentlyServing !== null ? state.generatedOrder.indexOf(state.currentlyServing) : -1;
@@ -196,7 +206,7 @@ export const ReadOnlyDisplay = () => {
             .filter((ticket) => state.ticketStatus?.[ticket] !== "returned").length;
     // 165 minutes / 75 shoppers = 2.2 minutes per shopper
     const estimatedWaitMinutes = Math.round(ticketsAhead * 2.2);
-    return { queuePosition, ticketsAhead, estimatedWaitMinutes };
+    return { queuePosition, ticketsAhead, estimatedWaitMinutes, ticketStatus, calledAt, calledAtTime };
   };
 
   return (

@@ -162,6 +162,7 @@ describe("state manager", () => {
     const updated = await manager.updateCurrentlyServing(11);
 
     expect(updated.currentlyServing).toBe(11);
+    expect(updated.calledAt[11]).toBeTypeOf("number");
   });
 
   it("marks tickets as returned", async () => {
@@ -232,10 +233,12 @@ describe("state manager", () => {
   it("clears returned ticket flags on reset", async () => {
     await manager.generateState({ startNumber: 1, endNumber: 2, mode: "random" });
     await manager.markTicketReturned(1);
+    await manager.updateCurrentlyServing(1);
 
     const reset = await manager.resetState();
 
     expect(reset.ticketStatus).toEqual({});
+    expect(reset.calledAt).toEqual({});
   });
 
   it("rejects invalid currently serving updates", async () => {

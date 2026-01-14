@@ -1,11 +1,12 @@
 "use client";
 
-import { Clock, ListOrdered, Users, X } from "lucide-react";
+import { Clock, Info, ListOrdered, Users, X } from "lucide-react";
 
 import { useLanguage, type Language } from "@/contexts/language-context";
 import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { formatWaitTime } from "@/lib/time-format";
 import { isRTL } from "@/lib/rtl-utils";
+import type { TicketStatus } from "@/lib/state-types";
 
 type TicketDetailDialogProps = {
   open: boolean;
@@ -15,6 +16,8 @@ type TicketDetailDialogProps = {
   ticketsAhead: number;
   estimatedWaitMinutes: number;
   language: Language;
+  ticketStatus?: TicketStatus | null;
+  calledAtTime?: string | null;
 };
 
 export function TicketDetailDialog({
@@ -25,8 +28,16 @@ export function TicketDetailDialog({
   ticketsAhead,
   estimatedWaitMinutes,
   language,
+  ticketStatus,
+  calledAtTime,
 }: TicketDetailDialogProps) {
   const { t } = useLanguage();
+  const isReturned = ticketStatus === "returned";
+  const isUnclaimed = ticketStatus === "unclaimed";
+  const calledMessage =
+    calledAtTime && !isReturned && !isUnclaimed
+      ? `${t("calledAtMessage")} ${calledAtTime}`
+      : null;
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -45,31 +56,46 @@ export function TicketDetailDialog({
         </DialogClose>
 
         <div className="space-y-3 py-4">
-          <div className="flex items-center gap-3 rounded-lg border bg-card p-4">
-            <ListOrdered className="h-6 w-6 text-primary dark:text-[color:var(--ticket-serving-border)]" />
-            <div className="flex-1">
-              <p className="text-sm font-medium text-muted-foreground">{t("queuePosition")}</p>
-              <p className="text-2xl font-bold text-foreground">{queuePosition}</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 rounded-lg border bg-card p-4">
-            <Users className="h-6 w-6 text-primary dark:text-[color:var(--ticket-serving-border)]" />
-            <div className="flex-1">
-              <p className="text-sm font-medium text-muted-foreground">{t("ticketsAhead")}</p>
-              <p className="text-2xl font-bold text-foreground">{ticketsAhead}</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 rounded-lg border bg-card p-4">
-            <Clock className="h-6 w-6 text-primary dark:text-[color:var(--ticket-serving-border)]" />
-            <div className="flex-1">
-              <p className="text-sm font-medium text-muted-foreground">{t("estimatedWait")}</p>
-              <p className="text-2xl font-bold text-foreground">
-                {formatWaitTime(estimatedWaitMinutes, language)}
+          {(isReturned || isUnclaimed || calledMessage) ? (
+            <div className="flex items-start gap-3 rounded-lg border bg-card p-4">
+              <Info className="mt-0.5 h-5 w-5 text-primary dark:text-[color:var(--ticket-serving-border)]" />
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                {isReturned
+                  ? t("returnedTicketMessage")
+                  : isUnclaimed
+                    ? t("unclaimedTicketMessage")
+                    : calledMessage}
               </p>
             </div>
-          </div>
+          ) : (
+            <>
+              <div className="flex items-center gap-3 rounded-lg border bg-card p-4">
+                <ListOrdered className="h-6 w-6 text-primary dark:text-[color:var(--ticket-serving-border)]" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-muted-foreground">{t("queuePosition")}</p>
+                  <p className="text-2xl font-bold text-foreground">{queuePosition}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 rounded-lg border bg-card p-4">
+                <Users className="h-6 w-6 text-primary dark:text-[color:var(--ticket-serving-border)]" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-muted-foreground">{t("ticketsAhead")}</p>
+                  <p className="text-2xl font-bold text-foreground">{ticketsAhead}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 rounded-lg border bg-card p-4">
+                <Clock className="h-6 w-6 text-primary dark:text-[color:var(--ticket-serving-border)]" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-muted-foreground">{t("estimatedWait")}</p>
+                  <p className="text-2xl font-bold text-foreground">
+                    {formatWaitTime(estimatedWaitMinutes, language)}
+                  </p>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </DialogContent>
     </Dialog>

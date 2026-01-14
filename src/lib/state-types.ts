@@ -26,6 +26,7 @@ export type RaffleState = {
   generatedOrder: number[];
   currentlyServing: number | null;
   ticketStatus: Record<number, TicketStatus>;
+  calledAt: Record<number, number>;
   orderLocked: boolean;
   timestamp: number | null;
   displayUrl: string | null;
@@ -40,6 +41,7 @@ export const defaultState: RaffleState = {
   generatedOrder: [],
   currentlyServing: null,
   ticketStatus: {},
+  calledAt: {},
   orderLocked: false,
   timestamp: null,
   displayUrl: null,

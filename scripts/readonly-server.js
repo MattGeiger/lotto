@@ -164,6 +164,16 @@ const htmlPage = `<!doctype html>
         color: #94a3b8;
         opacity: 0.7;
       }
+      .badge.returned {
+        background: linear-gradient(135deg, #fb7185, #fda4af);
+        border-color: #fb7185;
+        color: #4c0519;
+      }
+      .badge.unclaimed {
+        background: linear-gradient(135deg, #f59e0b, #fbbf24);
+        border-color: #f59e0b;
+        color: #422006;
+      }
       .logo {
         display: flex;
         justify-content: flex-start;
@@ -210,6 +220,49 @@ const htmlPage = `<!doctype html>
       .muted {
         color: #e5e7eb;
         font-size: 14px;
+      }
+      .legend {
+        margin-top: 16px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 14px;
+        font-size: 12px;
+        color: #e5e7eb;
+        align-items: center;
+      }
+      .legend-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-size: 11px;
+      }
+      .legend-swatch {
+        width: 12px;
+        height: 12px;
+        border-radius: 999px;
+        border: 1px solid #1f2937;
+      }
+      .legend-swatch.not-called {
+        background: #0b0b0b;
+        border-color: #0f172a;
+      }
+      .legend-swatch.now-serving {
+        background: linear-gradient(135deg, #f59e0b, #fbbf24);
+        border-color: #fbbf24;
+      }
+      .legend-swatch.called {
+        background: linear-gradient(135deg, #10b981, #22d3ee);
+        border-color: #22d3ee;
+      }
+      .legend-swatch.unclaimed {
+        background: linear-gradient(135deg, #f59e0b, #fbbf24);
+        border-color: #f59e0b;
+      }
+      .legend-swatch.returned {
+        background: linear-gradient(135deg, #fb7185, #fda4af);
+        border-color: #fb7185;
       }
       .empty-state {
         margin-top: 12px;
@@ -280,6 +333,13 @@ const htmlPage = `<!doctype html>
           <span class="line">Check back soon for updates.</span>
         </div>
         <div class="order" id="order"></div>
+        <div class="legend" id="legend">
+          <span class="legend-item"><span class="legend-swatch not-called"></span>Not called</span>
+          <span class="legend-item"><span class="legend-swatch now-serving"></span>Now serving</span>
+          <span class="legend-item"><span class="legend-swatch called"></span>Called</span>
+          <span class="legend-item"><span class="legend-swatch unclaimed"></span>Unclaimed</span>
+          <span class="legend-item"><span class="legend-swatch returned"></span>Returned</span>
+        </div>
         <div class="muted" id="status" style="margin-top: 8px;">Polling for latest state…</div>
       </div>
 
@@ -328,7 +388,7 @@ const htmlPage = `<!doctype html>
       };
 
       const renderState = (state) => {
-        const { startNumber, endNumber, mode, generatedOrder, currentlyServing, timestamp } = state;
+        const { startNumber, endNumber, mode, generatedOrder, currentlyServing, timestamp, ticketStatus } = state;
         servingEl.textContent = currentlyServing ?? "Waiting";
         rangeEl.textContent =
           startNumber && endNumber ? startNumber + " – " + endNumber : "Not set";
@@ -350,7 +410,12 @@ const htmlPage = `<!doctype html>
           generatedOrder.forEach((value, index) => {
             const badge = document.createElement("div");
             badge.className = "badge";
-            if (value === currentlyServing) {
+            const status = ticketStatus ? ticketStatus[value] : null;
+            if (status === "returned") {
+              badge.classList.add("returned");
+            } else if (status === "unclaimed") {
+              badge.classList.add("unclaimed");
+            } else if (value === currentlyServing) {
               badge.classList.add("serving");
             } else if (currentIndex !== -1 && index < currentIndex) {
               badge.classList.add("served");

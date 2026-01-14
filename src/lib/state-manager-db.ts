@@ -151,6 +151,7 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
       generatedOrder,
       currentlyServing: null,
       ticketStatus: {},
+      calledAt: {},
       orderLocked: true,
       timestamp: null,
       displayUrl: current.displayUrl ?? null,
@@ -211,9 +212,15 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
       throw new Error("Currently serving must be within the active range.");
     }
 
+    const nextCalledAt = { ...(current.calledAt ?? {}) } as RaffleState["calledAt"];
+    if (value !== null) {
+      nextCalledAt[value] = Date.now();
+    }
+
     return persist({
       ...current,
       currentlyServing: value,
+      calledAt: nextCalledAt,
     });
   };
 
@@ -236,6 +243,7 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
       [ticketNumber]: "returned",
     } as RaffleState["ticketStatus"];
     let nextServing = current.currentlyServing;
+    const nextCalledAt = { ...(current.calledAt ?? {}) } as RaffleState["calledAt"];
     if (ticketNumber === current.currentlyServing) {
       const currentIndex = current.generatedOrder.indexOf(ticketNumber);
       if (currentIndex !== -1) {
@@ -244,6 +252,7 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
           const nextTicket = current.generatedOrder[i];
           if (nextStatus[nextTicket] !== "returned") {
             nextServing = nextTicket;
+            nextCalledAt[nextTicket] = Date.now();
             break;
           }
         }
@@ -254,6 +263,7 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
       ...current,
       ticketStatus: nextStatus,
       currentlyServing: nextServing,
+      calledAt: nextCalledAt,
     });
   };
 
@@ -306,6 +316,7 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
     return persist({
       ...defaultState,
       ticketStatus: {},
+      calledAt: {},
       operatingHours: current.operatingHours ?? defaultState.operatingHours,
       timezone: current.timezone ?? defaultState.timezone,
     });
