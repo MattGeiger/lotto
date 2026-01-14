@@ -240,6 +240,45 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
     });
   };
 
+  const markTicketUnclaimed = async (ticketNumber: number) => {
+    const current = await safeReadState();
+    ensureHasRange(current);
+
+    if (!Number.isInteger(ticketNumber) || ticketNumber <= 0) {
+      throw new Error("Ticket number must be a positive integer.");
+    }
+    if (ticketNumber < current.startNumber || ticketNumber > current.endNumber) {
+      throw new Error("Ticket number must be within the active range.");
+    }
+    if (current.generatedOrder.length === 0) {
+      throw new Error("Generate tickets first.");
+    }
+
+    const currentIndex =
+      current.currentlyServing !== null
+        ? current.generatedOrder.indexOf(current.currentlyServing)
+        : -1;
+    if (currentIndex === -1) {
+      throw new Error("No draw position has been called yet.");
+    }
+
+    const ticketIndex = current.generatedOrder.indexOf(ticketNumber);
+    if (ticketIndex === -1) {
+      throw new Error("Ticket number is not in the current order.");
+    }
+    if (ticketIndex > currentIndex) {
+      throw new Error("Ticket must be called before it can be marked unclaimed.");
+    }
+
+    return persist({
+      ...current,
+      ticketStatus: {
+        ...(current.ticketStatus ?? {}),
+        [ticketNumber]: "unclaimed",
+      },
+    });
+  };
+
   const resetState = async () => {
     const current = await safeReadState();
     cleanupOldSnapshots(30).catch((error) => {
@@ -323,6 +362,7 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
     setMode,
     updateCurrentlyServing,
     markTicketReturned,
+    markTicketUnclaimed,
     resetState,
     listSnapshots,
     restoreSnapshot,

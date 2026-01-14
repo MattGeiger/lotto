@@ -17,7 +17,7 @@ export type OperatingHours = {
   };
 };
 
-export type TicketStatus = "returned";
+export type TicketStatus = "returned" | "unclaimed";
 
 export type RaffleState = {
   startNumber: number;

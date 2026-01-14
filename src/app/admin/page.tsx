@@ -52,6 +52,7 @@ type ActionPayload =
   | { action: "setMode"; mode: Mode }
   | { action: "updateServing"; currentlyServing: number | null }
   | { action: "markReturned"; ticketNumber: number }
+  | { action: "markUnclaimed"; ticketNumber: number }
   | { action: "reset" }
   | { action: "undo" }
   | { action: "redo" }
@@ -72,6 +73,7 @@ const AdminPage = () => {
   const [mode, setMode] = React.useState<Mode>("random");
   const [appendEnd, setAppendEnd] = React.useState("");
   const [returnedTicket, setReturnedTicket] = React.useState("");
+  const [unclaimedTicket, setUnclaimedTicket] = React.useState("");
   const [modeConfirmOpen, setModeConfirmOpen] = React.useState(false);
   const [pendingModeChoice, setPendingModeChoice] = React.useState<Mode | null>(null);
   const [modeChanging, setModeChanging] = React.useState(false);
@@ -444,6 +446,12 @@ const AdminPage = () => {
     parsedReturnedNumber > 0 &&
     returnedTicket.trim() !== "";
   const returnedTicketLabel = returnedTicket ? `#${returnedTicket}` : "this ticket";
+  const parsedUnclaimedNumber = Number(unclaimedTicket);
+  const canMarkUnclaimed =
+    Number.isInteger(parsedUnclaimedNumber) &&
+    parsedUnclaimedNumber > 0 &&
+    unclaimedTicket.trim() !== "";
+  const unclaimedTicketLabel = unclaimedTicket ? `#${unclaimedTicket}` : "this ticket";
 
   const formatOrdinal = (value: number) => {
     const remainder = value % 100;
@@ -509,6 +517,48 @@ const AdminPage = () => {
     }
     await sendAction({ action: "markReturned", ticketNumber });
     setReturnedTicket("");
+  };
+
+  const handleMarkUnclaimed = async () => {
+    const ticketNumber = Number(unclaimedTicket);
+    if (!Number.isInteger(ticketNumber) || ticketNumber <= 0) {
+      toast.error("Ticket number must be a whole number.");
+      throw new Error("Invalid input");
+    }
+    if (!state) {
+      toast.error("Generate tickets first.");
+      throw new Error("Missing state");
+    }
+    if (ticketNumber < state.startNumber || ticketNumber > state.endNumber) {
+      toast.error("Ticket number must be within the active range.");
+      throw new Error("Out of range");
+    }
+    if (state.generatedOrder.length === 0) {
+      toast.error("Generate tickets first.");
+      throw new Error("Missing order");
+    }
+
+    const currentIndex =
+      state.currentlyServing !== null
+        ? state.generatedOrder.indexOf(state.currentlyServing)
+        : -1;
+    if (currentIndex === -1) {
+      toast.error("No draw position has been called yet.");
+      throw new Error("No draw position");
+    }
+
+    const ticketIndex = state.generatedOrder.indexOf(ticketNumber);
+    if (ticketIndex === -1) {
+      toast.error("Ticket number is not in the current order.");
+      throw new Error("Missing ticket");
+    }
+    if (ticketIndex > currentIndex) {
+      toast.error("Ticket must be called before it can be marked unclaimed.");
+      throw new Error("Ticket not called");
+    }
+
+    await sendAction({ action: "markUnclaimed", ticketNumber });
+    setUnclaimedTicket("");
   };
 
   const handleUndo = async () => {
@@ -873,7 +923,7 @@ const AdminPage = () => {
                     onChange={(e) =>
                       setReturnedTicket(e.target.value.replace(/\D/g, "").slice(0, 6))
                     }
-                    className="w-32 appearance-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                    className="w-32 bg-background appearance-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                   />
                 </div>
                 <ConfirmAction
@@ -883,6 +933,43 @@ const AdminPage = () => {
                   description={`This will mark ${returnedTicketLabel} as returned so it no longer counts in the active queue. You can undo this action.`}
                   onConfirm={handleMarkReturned}
                   disabled={!canMarkReturned || loading || pendingAction !== null}
+                  variant="default"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-3 rounded-lg border border-border bg-gradient-card-info p-4">
+              <div>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Mark ticket as unclaimed
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Use when no client has claimed a ticket after it was called. You can undo this action.
+                </p>
+              </div>
+              <div className="flex flex-wrap items-end gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="unclaimed-ticket">Ticket number</Label>
+                  <Input
+                    id="unclaimed-ticket"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="\d*"
+                    maxLength={6}
+                    value={unclaimedTicket}
+                    onChange={(e) =>
+                      setUnclaimedTicket(e.target.value.replace(/\D/g, "").slice(0, 6))
+                    }
+                    className="w-32 bg-background appearance-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                  />
+                </div>
+                <ConfirmAction
+                  triggerLabel="Mark ticket"
+                  actionLabel="Mark ticket"
+                  title="Mark ticket as unclaimed"
+                  description={`This will mark ${unclaimedTicketLabel} as unclaimed so it no longer counts in the active queue. You can undo this action.`}
+                  onConfirm={handleMarkUnclaimed}
+                  disabled={!canMarkUnclaimed || loading || pendingAction !== null}
                   variant="default"
                 />
               </div>

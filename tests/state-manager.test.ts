@@ -180,6 +180,28 @@ describe("state manager", () => {
     expect(updated.ticketStatus[12]).toBe("returned");
   });
 
+  it("marks tickets as unclaimed after they are called", async () => {
+    await manager.generateState({ startNumber: 1, endNumber: 3, mode: "sequential" });
+    await manager.updateCurrentlyServing(2);
+
+    const updated = await manager.markTicketUnclaimed(1);
+
+    expect(updated.ticketStatus[1]).toBe("unclaimed");
+  });
+
+  it("rejects unclaimed tickets before any draw position is called", async () => {
+    await manager.generateState({ startNumber: 1, endNumber: 3, mode: "sequential" });
+
+    await expect(manager.markTicketUnclaimed(1)).rejects.toThrow(/draw position/i);
+  });
+
+  it("rejects unclaimed tickets that have not been called yet", async () => {
+    await manager.generateState({ startNumber: 1, endNumber: 3, mode: "sequential" });
+    await manager.updateCurrentlyServing(1);
+
+    await expect(manager.markTicketUnclaimed(2)).rejects.toThrow(/must be called/i);
+  });
+
   it("rejects returned ticket updates outside range", async () => {
     await manager.generateState({ startNumber: 1, endNumber: 2, mode: "random" });
 
