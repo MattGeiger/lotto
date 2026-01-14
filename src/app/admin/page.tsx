@@ -853,7 +853,9 @@ const AdminPage = () => {
 
             <div className="space-y-3 rounded-lg border border-border bg-gradient-card-info p-4">
               <div>
-                <p className="text-sm font-semibold text-foreground">Mark ticket as Returned</p>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Mark ticket as returned
+                </p>
                 <p className="text-xs text-muted-foreground">
                   Use when a client returns their ticket and leaves the line. You can undo this action.
                 </p>
@@ -871,7 +873,7 @@ const AdminPage = () => {
                     onChange={(e) =>
                       setReturnedTicket(e.target.value.replace(/\D/g, "").slice(0, 6))
                     }
-                    className="w-32 bg-background dark:bg-background appearance-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                    className="w-32 appearance-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                   />
                 </div>
                 <ConfirmAction
@@ -943,8 +945,8 @@ const AdminPage = () => {
                     : "—"}
                 </div>
               </div>
-              <div className="space-y-1 rounded-lg border border-border bg-gradient-card-accent p-3 sm:col-span-2">
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">Returned tickets</p>
+              <div className="space-y-1 rounded-lg border border-[var(--status-warning-border)] bg-[var(--status-warning-bg)] p-3 sm:col-span-2">
+                <p className="text-xs uppercase tracking-wide text-[var(--status-warning-text)]">Returned tickets</p>
                 <div className="flex flex-wrap gap-2">
                     {returnedTickets.length
                     ? returnedTickets.map((ticket) => (
