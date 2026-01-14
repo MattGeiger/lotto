@@ -6,11 +6,21 @@ import Image from "next/image";
 import QRCode from "react-qr-code";
 import {
   ArrowLeft,
+  CalendarClock,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
+  DatabaseZap,
+  History,
 	Loader2,
+  ScanQrCode,
 	Sparkles,
+  Ticket,
+  TicketCheck,
+  TicketPlus,
+  TicketSlash,
+  Tickets,
+  TicketX,
 	Undo2,
 	Redo2,
 } from "lucide-react";
@@ -665,7 +675,10 @@ const AdminPage = () => {
           <Card className="bg-card">
             <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <CardTitle>Ticket Range & Order</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Ticket className="size-4 text-muted-foreground" />
+                  Ticket Range & Order
+                </CardTitle>
                 <CardDescription>
                   Set the starting and ending ticket numbers, then generate or re-generate the
                   order. Mode controls how the order is built.
@@ -798,7 +811,11 @@ const AdminPage = () => {
 
               <div className="grid gap-3 sm:grid-cols-3 sm:items-end">
                 <div className="space-y-2 sm:col-span-2">
-                  <Label htmlFor="append" className="text-lg font-semibold text-foreground">
+                  <Label
+                    htmlFor="append"
+                    className="flex items-center gap-2 text-lg font-semibold text-foreground"
+                  >
+                    <TicketPlus className="size-4 text-muted-foreground" />
                     Append additional tickets
                   </Label>
                   <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
@@ -858,7 +875,10 @@ const AdminPage = () => {
             <CardContent className="space-y-4">
               <div className="flex flex-col gap-3 rounded-lg border border-border bg-gradient-card-info p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="space-y-1">
-                  <p className="text-xs uppercase tracking-wide text-muted-foreground">Draw position</p>
+                  <p className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
+                    <TicketCheck className="size-4" />
+                    Draw position
+                  </p>
                   <p className="text-2xl font-semibold text-foreground">
                     {currentDrawNumber ? formatOrdinal(currentDrawNumber) : "Not started"}
                   </p>
@@ -910,7 +930,8 @@ const AdminPage = () => {
 
             <div className="space-y-3 rounded-lg border border-border bg-gradient-card-info p-4">
               <div>
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                <p className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
+                  <TicketX className="size-4" />
                   Mark ticket as returned
                 </p>
                 <p className="text-xs text-muted-foreground">
@@ -947,7 +968,8 @@ const AdminPage = () => {
 
             <div className="space-y-3 rounded-lg border border-border bg-gradient-card-info p-4">
               <div>
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                <p className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
+                  <TicketSlash className="size-4" />
                   Mark ticket as unclaimed
                 </p>
                 <p className="text-xs text-muted-foreground">
@@ -990,7 +1012,10 @@ const AdminPage = () => {
           <Card className="bg-card">
             <CardHeader className="flex items-center justify-between">
               <div>
-                <CardTitle>Live State</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Tickets className="size-4 text-muted-foreground" />
+                  Live State
+                </CardTitle>
                 <CardDescription>Everything stored in the JSON datastore.</CardDescription>
               </div>
               {state?.timestamp && (
@@ -1068,7 +1093,10 @@ const AdminPage = () => {
 
           <Card className="bg-card space-y-3">
             <CardHeader className="pb-2">
-              <CardTitle>History</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <History className="size-4 text-muted-foreground" />
+                History
+              </CardTitle>
               <CardDescription>Undo/redo or restore from snapshots.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -1142,7 +1170,10 @@ const AdminPage = () => {
         <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
           <Card className="bg-card space-y-3">
             <CardHeader>
-              <CardTitle>System reset</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <DatabaseZap className="size-4 text-muted-foreground" />
+                System reset
+              </CardTitle>
               <CardDescription>
                 Clears the range, order, and now serving. State is backed up before reset.
               </CardDescription>
@@ -1211,7 +1242,10 @@ const AdminPage = () => {
 
           <Card className="bg-card space-y-4">
             <CardHeader>
-              <CardTitle>Share the live board</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <ScanQrCode className="size-4 text-muted-foreground" />
+                Share the live board
+              </CardTitle>
               <CardDescription>
                 Clients can scan to watch updates from anywhere. Works on phones and big screens.
               </CardDescription>
@@ -1267,7 +1301,10 @@ const AdminPage = () => {
 
           <Card className="bg-card space-y-4">
             <CardHeader>
-              <CardTitle>Set operating hours</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <CalendarClock className="size-4 text-muted-foreground" />
+                Set operating hours
+              </CardTitle>
               <CardDescription>
                 Choose open days and hours so clients know when the pantry is available.
               </CardDescription>
