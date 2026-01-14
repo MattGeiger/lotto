@@ -425,6 +425,13 @@ const AdminPage = () => {
         .filter((ticket) => Number.isInteger(ticket))
         .sort((a, b) => a - b)
     : [];
+  const unclaimedTickets = state?.ticketStatus
+    ? Object.entries(state.ticketStatus)
+        .filter(([, status]) => status === "unclaimed")
+        .map(([ticket]) => Number(ticket))
+        .filter((ticket) => Number.isInteger(ticket))
+        .sort((a, b) => a - b)
+    : [];
 
   const currentIndex =
     state?.generatedOrder && state.currentlyServing !== null
@@ -1037,6 +1044,18 @@ const AdminPage = () => {
                 <div className="flex flex-wrap gap-2">
                     {returnedTickets.length
                     ? returnedTickets.map((ticket) => (
+                        <Badge key={ticket} variant="warning">
+                          #{ticket}
+                        </Badge>
+                      ))
+                    : "—"}
+                </div>
+              </div>
+              <div className="space-y-1 rounded-lg border border-[var(--status-warning-border)] bg-[var(--status-warning-bg)] p-3 sm:col-span-2">
+                <p className="text-xs uppercase tracking-wide text-[var(--status-warning-text)]">Unclaimed tickets</p>
+                <div className="flex flex-wrap gap-2">
+                    {unclaimedTickets.length
+                    ? unclaimedTickets.map((ticket) => (
                         <Badge key={ticket} variant="warning">
                           #{ticket}
                         </Badge>

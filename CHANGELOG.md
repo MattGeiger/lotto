@@ -6,6 +6,7 @@
 - Sonner toast notifications for admin and login error states.
 - Returned tickets list in the Live State card for quick verification.
 - Admin control to mark tickets as unclaimed after a draw position has been called.
+- Unclaimed tickets list in the Live State card for quick verification.
 
 ### Changed
 - Returned-ticket input styling now matches default input backgrounds for clarity.
