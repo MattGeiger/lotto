@@ -932,7 +932,7 @@ const AdminPage = () => {
               </div>
             </div>
 
-            <div className="space-y-3 rounded-lg border border-[var(--status-danger-border)] bg-[var(--status-danger-bg)] p-4">
+            <div className="space-y-3 rounded-lg border border-[var(--status-danger-border)] bg-gradient-card-danger p-4">
               <div>
                 <p className="flex items-center gap-2 text-xs uppercase tracking-wide text-[var(--status-danger-text)]">
                   <TicketX className="size-4" />
@@ -970,7 +970,7 @@ const AdminPage = () => {
               </div>
             </div>
 
-            <div className="space-y-3 rounded-lg border border-[var(--status-warning-border)] bg-[var(--status-warning-bg)] p-4">
+            <div className="space-y-3 rounded-lg border border-[var(--status-warning-border)] bg-gradient-card-warning p-4">
               <div>
                 <p className="flex items-center gap-2 text-xs uppercase tracking-wide text-[var(--status-warning-text)]">
                   <TicketSlash className="size-4" />

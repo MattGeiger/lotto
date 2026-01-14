@@ -14,6 +14,7 @@
 - Returned-ticket input styling now matches default input backgrounds for clarity.
 - Display URL validation errors now surface via toast notifications.
 - Returned tickets are excluded from display wait time estimates, and returning the current ticket auto-advances to the next available draw position.
+- Returned/unclaimed admin cards now use subtle status gradients for better readability.
 
 ## [1.0.4] - 2025-12-12
 ### Changed

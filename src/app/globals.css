@@ -93,6 +93,16 @@
 
   --gradient-card-info: linear-gradient(135deg, oklch(0.99 0.01 250), oklch(0.96 0.04 250));
   --gradient-card-accent: linear-gradient(135deg, oklch(0.99 0.01 155), oklch(0.96 0.05 155));
+  --gradient-card-warning: linear-gradient(
+    135deg,
+    color-mix(in oklch, var(--status-warning-bg), white 22%),
+    var(--status-warning-bg)
+  );
+  --gradient-card-danger: linear-gradient(
+    135deg,
+    color-mix(in oklch, var(--status-danger-bg), white 18%),
+    var(--status-danger-bg)
+  );
   --card-title-color: oklch(0.08 0 0);
   --card-icon-color: var(--foreground);
   /* Card feature gradients */
@@ -197,6 +207,16 @@
 
   --gradient-card-info: linear-gradient(135deg, oklch(0.20 0.02 250), oklch(0.24 0.04 250));
   --gradient-card-accent: linear-gradient(135deg, oklch(0.20 0.02 155), oklch(0.24 0.04 155));
+  --gradient-card-warning: linear-gradient(
+    135deg,
+    color-mix(in oklch, var(--status-warning-bg), white 8%),
+    var(--status-warning-bg)
+  );
+  --gradient-card-danger: linear-gradient(
+    135deg,
+    color-mix(in oklch, var(--status-danger-bg), white 8%),
+    var(--status-danger-bg)
+  );
   --card-title-color: var(--card-foreground);
   --card-icon-color: var(--card-foreground);
   /* Card feature gradients (dark) */
@@ -368,6 +388,14 @@ a {
 
 .bg-gradient-card-emerald {
   background: var(--gradient-card-emerald);
+}
+
+.bg-gradient-card-warning {
+  background: var(--gradient-card-warning);
+}
+
+.bg-gradient-card-danger {
+  background: var(--gradient-card-danger);
 }
 
 .text-card-title {
