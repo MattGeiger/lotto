@@ -486,6 +486,14 @@ const AdminPage = () => {
       setActionError("Ticket number must be a whole number.");
       throw new Error("Invalid input");
     }
+    if (!state) {
+      setActionError("Generate tickets first.");
+      throw new Error("Missing state");
+    }
+    if (ticketNumber < state.startNumber || ticketNumber > state.endNumber) {
+      setActionError("Ticket number must be within the active range.");
+      throw new Error("Out of range");
+    }
     await sendAction({ action: "markReturned", ticketNumber });
     setReturnedTicket("");
   };
@@ -830,7 +838,7 @@ const AdminPage = () => {
               </div>
             </div>
 
-            <div className="space-y-3 rounded-lg border border-border bg-gradient-card-accent p-4">
+            <div className="space-y-3 rounded-lg border border-border bg-gradient-card-info p-4">
               <div>
                 <p className="text-sm font-semibold text-foreground">Mark ticket as Returned</p>
                 <p className="text-xs text-muted-foreground">
