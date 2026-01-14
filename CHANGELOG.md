@@ -3,6 +3,11 @@
 ## [1.0.5] - 2026-01-13
 ### Added
 - Admin control to mark tickets as returned, stored in raffle state for queue adjustments.
+- Sonner toast notifications for admin and login error states.
+
+### Changed
+- Returned-ticket input styling now matches default input backgrounds for clarity.
+- Display URL validation errors now surface via toast notifications.
 
 ## [1.0.4] - 2025-12-12
 ### Changed

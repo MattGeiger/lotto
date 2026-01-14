@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist_Mono, Lato } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 import { LanguageProvider } from "@/contexts/language-context";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
@@ -31,6 +32,7 @@ export default function RootLayout({
       <body className={`${lato.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider>
           <LanguageProvider>{children}</LanguageProvider>
+          <Toaster />
         </ThemeProvider>
         <SpeedInsights />
       </body>

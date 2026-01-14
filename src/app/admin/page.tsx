@@ -5,7 +5,6 @@ import Link from "next/link";
 import Image from "next/image";
 import QRCode from "react-qr-code";
 import {
-  AlertTriangle,
   ArrowLeft,
   CheckCircle2,
   ChevronLeft,
@@ -15,6 +14,7 @@ import {
 	Undo2,
 	Redo2,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import { ConfirmAction } from "@/components/confirm-action";
 import { OperatingHoursEditor } from "@/components/operating-hours-editor";
@@ -67,7 +67,6 @@ const AdminPage = () => {
   const [state, setState] = React.useState<RaffleState | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
-  const [actionError, setActionError] = React.useState<string | null>(null);
   const [pendingAction, setPendingAction] = React.useState<string | null>(null);
   const [rangeForm, setRangeForm] = React.useState({ startNumber: "", endNumber: "" });
   const [mode, setMode] = React.useState<Mode>("random");
@@ -141,7 +140,10 @@ const AdminPage = () => {
         setSnapshots(snaps);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unexpected error while loading state.");
+      const message =
+        err instanceof Error ? err.message : "Unexpected error while loading state.";
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -201,7 +203,6 @@ const AdminPage = () => {
   const sendAction = React.useCallback(
     async (payload: ActionPayload) => {
       setPendingAction(payload.action);
-      setActionError(null);
       try {
         const response = await fetch("/api/state", {
           method: "POST",
@@ -221,7 +222,7 @@ const AdminPage = () => {
         return data;
       } catch (err) {
         const message = err instanceof Error ? err.message : "Unexpected error while saving.";
-        setActionError(message);
+        toast.error(message);
         throw err;
       } finally {
         setPendingAction(null);
@@ -234,7 +235,7 @@ const AdminPage = () => {
     const start = Number(rangeForm.startNumber);
     const end = Number(rangeForm.endNumber);
     if (!Number.isInteger(start) || !Number.isInteger(end)) {
-      setActionError("Start and end must be whole numbers.");
+      toast.error("Start and end must be whole numbers.");
       throw new Error("Invalid input");
     }
     await sendAction({ action: "generate", startNumber: start, endNumber: end, mode });
@@ -243,7 +244,7 @@ const AdminPage = () => {
   const handleAppend = async () => {
     const newEnd = Number(appendEnd);
     if (!Number.isInteger(newEnd)) {
-      setActionError("Append value must be a whole number.");
+      toast.error("Append value must be a whole number.");
       throw new Error("Invalid input");
     }
     await sendAction({ action: "append", endNumber: newEnd });
@@ -269,7 +270,7 @@ const AdminPage = () => {
 
   const handleReset = async () => {
     if (resetPhrase !== "RESET") {
-      setActionError('Type "RESET" to confirm.');
+      toast.error('Type "RESET" to confirm.');
       throw new Error("Reset phrase missing");
     }
     await sendAction({ action: "reset" });
@@ -283,7 +284,6 @@ const AdminPage = () => {
 
   const handleCleanup = async (days: number) => {
     setCleanupMessage(null);
-    setActionError(null);
     setPendingAction("cleanup");
     try {
       const response = await fetch("/api/state/cleanup", {
@@ -293,14 +293,14 @@ const AdminPage = () => {
       });
       const data = await response.json();
       if (!response.ok) {
-        setActionError(data?.error || "Cleanup failed. Please try again.");
+        toast.error(data?.error || "Cleanup failed. Please try again.");
         return;
       }
       setCleanupMessage(
         `Deleted ${data.deletedCount} snapshots older than ${data.retentionDays} days.`,
       );
 	} catch {
-	  setActionError("Cleanup request failed.");
+	  toast.error("Cleanup request failed.");
 	} finally {
 	  setPendingAction(null);
 	}
@@ -325,7 +325,7 @@ const AdminPage = () => {
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch {
-      setActionError("Unable to copy link to clipboard.");
+      toast.error("Unable to copy link to clipboard.");
     }
   };
 
@@ -338,6 +338,7 @@ const AdminPage = () => {
   const handleSaveUrl = async () => {
     if (urlInput.length > 64) {
       setUrlError("URL must be 64 characters or less");
+      toast.error("URL must be 64 characters or less");
       return;
     }
 	try {
@@ -345,6 +346,7 @@ const AdminPage = () => {
 	  void parsedUrl;
 	} catch {
 	  setUrlError("Invalid URL format");
+    toast.error("Invalid URL format");
 	  return;
 	}
 
@@ -356,7 +358,9 @@ const AdminPage = () => {
       });
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
-        setUrlError(data.error || "Failed to save URL");
+        const message = data.error || "Failed to save URL";
+        setUrlError(message);
+        toast.error(message);
         return;
       }
       setCustomDisplayUrl(urlInput);
@@ -367,6 +371,7 @@ const AdminPage = () => {
       setEditingUrl(false);
     } catch {
       setUrlError("Failed to save URL");
+      toast.error("Failed to save URL");
     }
   };
 
@@ -389,6 +394,7 @@ const AdminPage = () => {
       setUrlError("");
     } catch {
       setUrlError("Failed to reset URL");
+      toast.error("Failed to reset URL");
     }
   };
 
@@ -449,7 +455,7 @@ const AdminPage = () => {
 
   const setServingByIndex = async (index: number | null) => {
     if (!state || totalTickets === 0) {
-      setActionError("Generate tickets first.");
+      toast.error("Generate tickets first.");
       return;
     }
     if (index === null) {
@@ -483,15 +489,15 @@ const AdminPage = () => {
   const handleMarkReturned = async () => {
     const ticketNumber = Number(returnedTicket);
     if (!Number.isInteger(ticketNumber) || ticketNumber <= 0) {
-      setActionError("Ticket number must be a whole number.");
+      toast.error("Ticket number must be a whole number.");
       throw new Error("Invalid input");
     }
     if (!state) {
-      setActionError("Generate tickets first.");
+      toast.error("Generate tickets first.");
       throw new Error("Missing state");
     }
     if (ticketNumber < state.startNumber || ticketNumber > state.endNumber) {
-      setActionError("Ticket number must be within the active range.");
+      toast.error("Ticket number must be within the active range.");
       throw new Error("Out of range");
     }
     await sendAction({ action: "markReturned", ticketNumber });
@@ -513,7 +519,7 @@ const AdminPage = () => {
       setCanRedo(true);
       await refreshSnapshots();
     } catch (error) {
-      setActionError(error instanceof Error ? error.message : "Undo failed");
+      toast.error(error instanceof Error ? error.message : "Undo failed");
     }
   };
 
@@ -532,7 +538,7 @@ const AdminPage = () => {
       setCanRedo(false);
       await refreshSnapshots();
     } catch (error) {
-      setActionError(error instanceof Error ? error.message : "Redo failed");
+      toast.error(error instanceof Error ? error.message : "Redo failed");
     }
   };
 
@@ -858,7 +864,7 @@ const AdminPage = () => {
                     onChange={(e) =>
                       setReturnedTicket(e.target.value.replace(/\D/g, "").slice(0, 6))
                     }
-                    className="w-32 appearance-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                    className="w-32 bg-background appearance-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                   />
                 </div>
                 <ConfirmAction
@@ -1114,7 +1120,6 @@ const AdminPage = () => {
                       maxLength={64}
                       className={urlError ? "border-destructive" : ""}
                     />
-                    {urlError && <p className="text-xs text-destructive">{urlError}</p>}
                     <p className="text-xs text-muted-foreground">{urlInput.length}/64 characters</p>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -1163,18 +1168,6 @@ const AdminPage = () => {
             </CardContent>
           </Card>
         </div>
-
-        {(error || actionError) && (
-          <Card className="border-status-danger-border bg-status-danger-bg">
-            <CardContent className="flex items-start gap-3">
-              <AlertTriangle className="mt-1 size-5 text-status-danger-text" />
-              <div>
-                <p className="font-semibold text-status-danger-text">Something needs attention</p>
-                <p className="text-sm text-status-danger-text">{error ?? actionError}</p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {!error && state && (
           <Card className="border-status-success-border bg-status-success-bg">

@@ -5,8 +5,9 @@ import Image from "next/image";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { KeyRound, Mail } from "lucide-react";
+import { toast } from "sonner";
 
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -21,19 +22,24 @@ const LoginForm = () => {
   const [magicStatus, setMagicStatus] = React.useState<"idle" | "sending" | "sent" | "error">(
     "idle",
   );
-  const [magicError, setMagicError] = React.useState<string | null>(null);
 
   const [otpCode, setOtpCode] = React.useState("");
   const [otpStatus, setOtpStatus] = React.useState<
     "idle" | "requesting" | "sent" | "verifying" | "error"
   >("idle");
-  const [otpError, setOtpError] = React.useState<string | null>(null);
 
   const hasVerificationError = searchParams.get("error") === "Verification";
 
+  React.useEffect(() => {
+    if (hasVerificationError) {
+      toast.error(
+        "The magic link could not be verified. Try requesting a new link or use the OTP code instead.",
+      );
+    }
+  }, [hasVerificationError]);
+
   const handleMagicLink = async (e: React.FormEvent) => {
     e.preventDefault();
-    setMagicError(null);
     setMagicStatus("sending");
     const result = await signIn("resend", {
       email,
@@ -41,7 +47,7 @@ const LoginForm = () => {
       redirect: false,
     });
     if (result?.error) {
-      setMagicError(result.error);
+      toast.error(result.error);
       setMagicStatus("error");
       return;
     }
@@ -49,7 +55,6 @@ const LoginForm = () => {
   };
 
   const handleRequestOTP = async () => {
-    setOtpError(null);
     setOtpCode("");
     setOtpStatus("requesting");
     try {
@@ -64,14 +69,13 @@ const LoginForm = () => {
       }
       setOtpStatus("sent");
     } catch (err) {
-      setOtpError(err instanceof Error ? err.message : "Unable to send code. Please try again.");
+      toast.error(err instanceof Error ? err.message : "Unable to send code. Please try again.");
       setOtpStatus("error");
     }
   };
 
   const handleVerifyOTP = async (e: React.FormEvent) => {
     e.preventDefault();
-    setOtpError(null);
     setOtpStatus("verifying");
     const result = await signIn("otp", {
       email,
@@ -80,7 +84,7 @@ const LoginForm = () => {
       redirect: false,
     });
     if (result?.error) {
-      setOtpError(result.error);
+      toast.error(result.error);
       setOtpStatus("error");
       return;
     }
@@ -91,16 +95,6 @@ const LoginForm = () => {
 
   return (
     <Card className="w-full max-w-md">
-      {hasVerificationError && (
-        <Alert variant="destructive" className="mb-4">
-          <AlertTitle>Verification failed</AlertTitle>
-          <AlertDescription>
-            The magic link could not be verified. Try requesting a new link or use the OTP code
-            instead.
-          </AlertDescription>
-        </Alert>
-      )}
-
       <CardHeader>
         <CardTitle>Sign in to William Temple House</CardTitle>
         <CardDescription>Staff access only — use your @williamtemple.org email.</CardDescription>
@@ -144,11 +138,6 @@ const LoginForm = () => {
                 <AlertDescription>
                   Check your email for the sign-in link. It expires in 10 minutes.
                 </AlertDescription>
-              </Alert>
-            )}
-            {magicStatus === "error" && magicError && (
-              <Alert variant="destructive">
-                <AlertDescription>{magicError}</AlertDescription>
               </Alert>
             )}
           </TabsContent>
@@ -208,7 +197,6 @@ const LoginForm = () => {
                       onClick={() => {
                         setOtpStatus("idle");
                         setOtpCode("");
-                        setOtpError(null);
                       }}
                       className="flex-1"
                     >
@@ -224,11 +212,6 @@ const LoginForm = () => {
                   </div>
                 </form>
               </>
-            )}
-            {otpError && (
-              <Alert variant="destructive">
-                <AlertDescription>{otpError}</AlertDescription>
-              </Alert>
             )}
           </TabsContent>
         </Tabs>
