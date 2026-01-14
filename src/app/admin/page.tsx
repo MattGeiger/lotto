@@ -51,6 +51,7 @@ type ActionPayload =
   | { action: "append"; endNumber: number }
   | { action: "setMode"; mode: Mode }
   | { action: "updateServing"; currentlyServing: number | null }
+  | { action: "markReturned"; ticketNumber: number }
   | { action: "reset" }
   | { action: "undo" }
   | { action: "redo" }
@@ -71,6 +72,7 @@ const AdminPage = () => {
   const [rangeForm, setRangeForm] = React.useState({ startNumber: "", endNumber: "" });
   const [mode, setMode] = React.useState<Mode>("random");
   const [appendEnd, setAppendEnd] = React.useState("");
+  const [returnedTicket, setReturnedTicket] = React.useState("");
   const [modeConfirmOpen, setModeConfirmOpen] = React.useState(false);
   const [pendingModeChoice, setPendingModeChoice] = React.useState<Mode | null>(null);
   const [modeChanging, setModeChanging] = React.useState(false);
@@ -423,6 +425,12 @@ const AdminPage = () => {
     Number.isFinite(parsedAppendValue) && appendEnd.trim() !== ""
       ? parsedAppendValue
       : appendMin;
+  const parsedReturnedNumber = Number(returnedTicket);
+  const canMarkReturned =
+    Number.isInteger(parsedReturnedNumber) &&
+    parsedReturnedNumber > 0 &&
+    returnedTicket.trim() !== "";
+  const returnedTicketLabel = returnedTicket ? `#${returnedTicket}` : "this ticket";
 
   const formatOrdinal = (value: number) => {
     const remainder = value % 100;
@@ -470,6 +478,16 @@ const AdminPage = () => {
     }
     if (currentIndex >= totalTickets - 1) return;
     await setServingByIndex(currentIndex + 1);
+  };
+
+  const handleMarkReturned = async () => {
+    const ticketNumber = Number(returnedTicket);
+    if (!Number.isInteger(ticketNumber) || ticketNumber <= 0) {
+      setActionError("Ticket number must be a whole number.");
+      throw new Error("Invalid input");
+    }
+    await sendAction({ action: "markReturned", ticketNumber });
+    setReturnedTicket("");
   };
 
   const handleUndo = async () => {
@@ -808,6 +826,41 @@ const AdminPage = () => {
                   disabled={loading || !state || currentIndex === -1}
                   variant="ghost"
                   size="sm"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-3 rounded-lg border border-border bg-gradient-card-accent p-4">
+              <div>
+                <p className="text-sm font-semibold text-foreground">Mark ticket as Returned</p>
+                <p className="text-xs text-muted-foreground">
+                  Use when a client returns their ticket and leaves the line. You can undo this action.
+                </p>
+              </div>
+              <div className="flex flex-wrap items-end gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="returned-ticket">Ticket number</Label>
+                  <Input
+                    id="returned-ticket"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="\d*"
+                    maxLength={6}
+                    value={returnedTicket}
+                    onChange={(e) =>
+                      setReturnedTicket(e.target.value.replace(/\D/g, "").slice(0, 6))
+                    }
+                    className="w-32 appearance-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                  />
+                </div>
+                <ConfirmAction
+                  triggerLabel="Mark ticket"
+                  actionLabel="Mark ticket"
+                  title="Mark ticket as returned"
+                  description={`This will mark ${returnedTicketLabel} as returned so it no longer counts in the active queue. You can undo this action.`}
+                  onConfirm={handleMarkReturned}
+                  disabled={!canMarkReturned || loading || pendingAction !== null}
+                  variant="default"
                 />
               </div>
             </div>

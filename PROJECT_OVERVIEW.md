@@ -85,6 +85,7 @@ The William Temple House Digital Raffle system replaces a manual coffee-can raff
 - **"Now Serving" control:** Step through draw positions with prev/next arrows
 - **Ordinal display:** "1st", "2nd", "3rd" draw position labels
 - **Clear position:** Reset to start (requires confirmation)
+- **Returned tickets:** Staff can mark a ticket as returned; status is stored in state for queue adjustments
 
 ### 4.3 History & Recovery
 - **Undo/Redo:** Navigate snapshot history (ordered by timestamp)
@@ -122,6 +123,7 @@ The William Temple House Digital Raffle system replaces a manual coffee-can raff
   "mode": "random",
   "generatedOrder": [689, 650, 677, ...],
   "currentlyServing": 689,
+  "ticketStatus": { "650": "returned" },
   "orderLocked": true,
   "timestamp": 1732723847123,
   "displayUrl": "https://williamtemple.app/"

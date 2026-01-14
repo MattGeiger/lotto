@@ -25,6 +25,10 @@ const actionSchema = z.discriminatedUnion("action", [
     currentlyServing: z.number().int().positive().nullable(),
   }),
   z.object({
+    action: z.literal("markReturned"),
+    ticketNumber: z.number().int().positive(),
+  }),
+  z.object({
     action: z.literal("reset"),
   }),
   z.object({
@@ -93,6 +97,10 @@ export async function POST(request: Request) {
       case "updateServing":
         return NextResponse.json(
           await stateManager.updateCurrentlyServing(payload.currentlyServing),
+        );
+      case "markReturned":
+        return NextResponse.json(
+          await stateManager.markTicketReturned(payload.ticketNumber),
         );
       case "reset":
         return NextResponse.json(await stateManager.resetState());

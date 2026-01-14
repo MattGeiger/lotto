@@ -134,6 +134,7 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
       mode: input.mode,
       generatedOrder,
       currentlyServing: null,
+      ticketStatus: {},
       orderLocked: true,
       timestamp: null,
       displayUrl: current.displayUrl ?? null,
@@ -207,10 +208,34 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
     });
   };
 
+  const markTicketReturned = async (ticketNumber: number) => {
+    const current = await safeReadState();
+    ensureHasRange(current);
+
+    if (!Number.isInteger(ticketNumber) || ticketNumber <= 0) {
+      throw new Error("Ticket number must be a positive integer.");
+    }
+    if (ticketNumber < current.startNumber || ticketNumber > current.endNumber) {
+      throw new Error("Ticket number must be within the active range.");
+    }
+    if (current.generatedOrder.length === 0) {
+      throw new Error("Generate tickets first.");
+    }
+
+    return persist({
+      ...current,
+      ticketStatus: {
+        ...(current.ticketStatus ?? {}),
+        [ticketNumber]: "returned",
+      },
+    });
+  };
+
   const resetState = async () => {
     const current = await safeReadState();
     return persist({
       ...defaultState,
+      ticketStatus: {},
       operatingHours: current.operatingHours ?? defaultState.operatingHours,
       timezone: current.timezone ?? defaultState.timezone,
     });
@@ -304,6 +329,7 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
     appendTickets,
     setMode,
     updateCurrentlyServing,
+    markTicketReturned,
     resetState,
     listSnapshots,
     restoreSnapshot,

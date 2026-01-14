@@ -150,6 +150,7 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
       mode: input.mode,
       generatedOrder,
       currentlyServing: null,
+      ticketStatus: {},
       orderLocked: true,
       timestamp: null,
       displayUrl: current.displayUrl ?? null,
@@ -216,6 +217,29 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
     });
   };
 
+  const markTicketReturned = async (ticketNumber: number) => {
+    const current = await safeReadState();
+    ensureHasRange(current);
+
+    if (!Number.isInteger(ticketNumber) || ticketNumber <= 0) {
+      throw new Error("Ticket number must be a positive integer.");
+    }
+    if (ticketNumber < current.startNumber || ticketNumber > current.endNumber) {
+      throw new Error("Ticket number must be within the active range.");
+    }
+    if (current.generatedOrder.length === 0) {
+      throw new Error("Generate tickets first.");
+    }
+
+    return persist({
+      ...current,
+      ticketStatus: {
+        ...(current.ticketStatus ?? {}),
+        [ticketNumber]: "returned",
+      },
+    });
+  };
+
   const resetState = async () => {
     const current = await safeReadState();
     cleanupOldSnapshots(30).catch((error) => {
@@ -223,6 +247,7 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
     });
     return persist({
       ...defaultState,
+      ticketStatus: {},
       operatingHours: current.operatingHours ?? defaultState.operatingHours,
       timezone: current.timezone ?? defaultState.timezone,
     });
@@ -297,6 +322,7 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
     appendTickets,
     setMode,
     updateCurrentlyServing,
+    markTicketReturned,
     resetState,
     listSnapshots,
     restoreSnapshot,

@@ -164,6 +164,30 @@ describe("state manager", () => {
     expect(updated.currentlyServing).toBe(11);
   });
 
+  it("marks tickets as returned", async () => {
+    await manager.generateState({ startNumber: 10, endNumber: 12, mode: "random" });
+    const updated = await manager.markTicketReturned(11);
+
+    expect(updated.ticketStatus[11]).toBe("returned");
+  });
+
+  it("rejects returned ticket updates outside range", async () => {
+    await manager.generateState({ startNumber: 1, endNumber: 2, mode: "random" });
+
+    await expect(manager.markTicketReturned(10)).rejects.toThrow(
+      /within the active range/i,
+    );
+  });
+
+  it("clears returned ticket flags on reset", async () => {
+    await manager.generateState({ startNumber: 1, endNumber: 2, mode: "random" });
+    await manager.markTicketReturned(1);
+
+    const reset = await manager.resetState();
+
+    expect(reset.ticketStatus).toEqual({});
+  });
+
   it("rejects invalid currently serving updates", async () => {
     await manager.generateState({ startNumber: 1, endNumber: 2, mode: "random" });
 

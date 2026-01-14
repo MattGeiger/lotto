@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.5] - 2026-01-13
+### Added
+- Admin control to mark tickets as returned, stored in raffle state for queue adjustments.
+
 ## [1.0.4] - 2025-12-12
 ### Changed
 - Login now defaults to OTP and places the OTP tab left of the Magic Link tab.

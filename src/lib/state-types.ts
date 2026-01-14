@@ -17,12 +17,15 @@ export type OperatingHours = {
   };
 };
 
+export type TicketStatus = "returned";
+
 export type RaffleState = {
   startNumber: number;
   endNumber: number;
   mode: Mode;
   generatedOrder: number[];
   currentlyServing: number | null;
+  ticketStatus: Record<number, TicketStatus>;
   orderLocked: boolean;
   timestamp: number | null;
   displayUrl: string | null;
@@ -36,6 +39,7 @@ export const defaultState: RaffleState = {
   mode: "random",
   generatedOrder: [],
   currentlyServing: null,
+  ticketStatus: {},
   orderLocked: false,
   timestamp: null,
   displayUrl: null,
