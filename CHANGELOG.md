@@ -4,6 +4,7 @@
 ### Added
 - Admin control to mark tickets as returned, stored in raffle state for queue adjustments.
 - Sonner toast notifications for admin and login error states.
+ - Returned tickets list in the Live State card for quick verification.
 
 ### Changed
 - Returned-ticket input styling now matches default input backgrounds for clarity.

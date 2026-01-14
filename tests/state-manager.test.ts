@@ -171,6 +171,15 @@ describe("state manager", () => {
     expect(updated.ticketStatus[11]).toBe("returned");
   });
 
+  it("keeps multiple returned tickets", async () => {
+    await manager.generateState({ startNumber: 10, endNumber: 12, mode: "random" });
+    await manager.markTicketReturned(11);
+    const updated = await manager.markTicketReturned(12);
+
+    expect(updated.ticketStatus[11]).toBe("returned");
+    expect(updated.ticketStatus[12]).toBe("returned");
+  });
+
   it("rejects returned ticket updates outside range", async () => {
     await manager.generateState({ startNumber: 1, endNumber: 2, mode: "random" });
 

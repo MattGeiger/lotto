@@ -416,6 +416,13 @@ const AdminPage = () => {
           : 5,
       )
     : [];
+  const returnedTickets = state?.ticketStatus
+    ? Object.entries(state.ticketStatus)
+        .filter(([, status]) => status === "returned")
+        .map(([ticket]) => Number(ticket))
+        .filter((ticket) => Number.isInteger(ticket))
+        .sort((a, b) => a - b)
+    : [];
 
   const currentIndex =
     state?.generatedOrder && state.currentlyServing !== null
@@ -864,7 +871,7 @@ const AdminPage = () => {
                     onChange={(e) =>
                       setReturnedTicket(e.target.value.replace(/\D/g, "").slice(0, 6))
                     }
-                    className="w-32 bg-background appearance-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                    className="w-32 bg-background dark:bg-background appearance-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                   />
                 </div>
                 <ConfirmAction
@@ -930,6 +937,18 @@ const AdminPage = () => {
                     {nextFive?.length
                     ? nextFive.map((ticket) => (
                         <Badge key={ticket} variant="success">
+                          #{ticket}
+                        </Badge>
+                      ))
+                    : "—"}
+                </div>
+              </div>
+              <div className="space-y-1 rounded-lg border border-border bg-gradient-card-accent p-3 sm:col-span-2">
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">Returned tickets</p>
+                <div className="flex flex-wrap gap-2">
+                    {returnedTickets.length
+                    ? returnedTickets.map((ticket) => (
+                        <Badge key={ticket} variant="warning">
                           #{ticket}
                         </Badge>
                       ))
