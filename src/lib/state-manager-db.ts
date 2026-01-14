@@ -234,7 +234,7 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
     const nextStatus = {
       ...(current.ticketStatus ?? {}),
       [ticketNumber]: "returned",
-    };
+    } as RaffleState["ticketStatus"];
     let nextServing = current.currentlyServing;
     if (ticketNumber === current.currentlyServing) {
       const currentIndex = current.generatedOrder.indexOf(ticketNumber);
@@ -287,12 +287,14 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
       throw new Error("Ticket must be called before it can be marked unclaimed.");
     }
 
+    const nextStatus = {
+      ...(current.ticketStatus ?? {}),
+      [ticketNumber]: "unclaimed",
+    } as RaffleState["ticketStatus"];
+
     return persist({
       ...current,
-      ticketStatus: {
-        ...(current.ticketStatus ?? {}),
-        [ticketNumber]: "unclaimed",
-      },
+      ticketStatus: nextStatus,
     });
   };
 

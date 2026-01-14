@@ -225,7 +225,7 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
     const nextStatus = {
       ...(current.ticketStatus ?? {}),
       [ticketNumber]: "returned",
-    };
+    } as RaffleState["ticketStatus"];
     let nextServing = current.currentlyServing;
     if (ticketNumber === current.currentlyServing) {
       const currentIndex = current.generatedOrder.indexOf(ticketNumber);
@@ -278,12 +278,14 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
       throw new Error("Ticket must be called before it can be marked unclaimed.");
     }
 
+    const nextStatus = {
+      ...(current.ticketStatus ?? {}),
+      [ticketNumber]: "unclaimed",
+    } as RaffleState["ticketStatus"];
+
     return persist({
       ...current,
-      ticketStatus: {
-        ...(current.ticketStatus ?? {}),
-        [ticketNumber]: "unclaimed",
-      },
+      ticketStatus: nextStatus,
     });
   };
 
