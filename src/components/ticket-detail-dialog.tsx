@@ -59,7 +59,7 @@ export function TicketDetailDialog({
           {(isReturned || isUnclaimed || calledMessage) ? (
             <div className="flex items-start gap-3 rounded-lg border bg-card p-4">
               <Info className="mt-0.5 size-20 text-primary dark:text-[color:var(--ticket-serving-border)]" />
-              <p className="text-sm leading-relaxed text-muted-foreground">
+              <p className="text-2xl leading-relaxed text-muted-foreground">
                 {isReturned
                   ? t("returnedTicketMessage")
                   : isUnclaimed
