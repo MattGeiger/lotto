@@ -15,6 +15,7 @@ import {
 	Loader2,
   ScanQrCode,
 	Sparkles,
+  HandPlatter,
   Ticket,
   TicketCheck,
   TicketPlus,
@@ -867,7 +868,10 @@ const AdminPage = () => {
 
           <Card className="bg-card space-y-4">
             <CardHeader>
-              <CardTitle>Now Serving</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <HandPlatter className="size-4 text-muted-foreground" />
+                Now Serving
+              </CardTitle>
               <CardDescription>
                 Step through the draw order using arrows. Positions are first, second, third, etc.
               </CardDescription>
