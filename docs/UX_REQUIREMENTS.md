@@ -126,6 +126,8 @@ type RaffleState = {
   mode: "random" | "sequential";
   generatedOrder: number[];
   currentlyServing: number | null;
+  ticketStatus: Record<number, "returned" | "unclaimed">;
+  calledAt: Record<number, number>;
   orderLocked: boolean;  // Prevents regeneration
   timestamp: number | null;
   displayUrl: string | null;

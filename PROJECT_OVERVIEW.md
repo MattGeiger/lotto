@@ -1,7 +1,7 @@
 # William Temple House — Digital Raffle System
 ## Project Overview & Architecture Documentation
 
-**Status:** Production (v1.0.3)  
+**Status:** Production (v1.1.0)  
 **Deployment:** https://williamtemple.app  
 
 ---
@@ -85,7 +85,8 @@ The William Temple House Digital Raffle system replaces a manual coffee-can raff
 - **"Now Serving" control:** Step through draw positions with prev/next arrows
 - **Ordinal display:** "1st", "2nd", "3rd" draw position labels
 - **Clear position:** Reset to start (requires confirmation)
-- **Returned tickets:** Staff can mark a ticket as returned; status is stored in state for queue adjustments
+- **Returned tickets:** Staff can mark a ticket as returned; status is stored, returned tickets are excluded from wait-time estimates, and returning the current ticket auto-advances to the next available draw position
+- **Unclaimed tickets:** Staff can mark a called ticket as unclaimed; status is surfaced on the live board for staff/client clarity
 
 ### 4.3 History & Recovery
 - **Undo/Redo:** Navigate snapshot history (ordered by timestamp)
@@ -109,6 +110,8 @@ The William Temple House Digital Raffle system replaces a manual coffee-can raff
 - **QR code generation:** Admin-configurable URL (defaults to production domain)
 - **High-contrast UI:** Gold/blue gradients, 8rem "NOW SERVING" headline
 - **Responsive grid:** Served tickets highlighted, upcoming muted
+- **Status legend:** Legend clarifies not called / now serving / called / unclaimed / returned tickets
+- **Ticket detail messaging:** Tapping a ticket shows called-time context or returned/unclaimed guidance
 - **Empty state:** Welcoming message when no tickets issued
 
 ---
@@ -123,7 +126,8 @@ The William Temple House Digital Raffle system replaces a manual coffee-can raff
   "mode": "random",
   "generatedOrder": [689, 650, 677, ...],
   "currentlyServing": 689,
-  "ticketStatus": { "650": "returned" },
+  "ticketStatus": { "650": "returned", "651": "unclaimed" },
+  "calledAt": { "689": 1732723847123 },
   "orderLocked": true,
   "timestamp": 1732723847123,
   "displayUrl": "https://williamtemple.app/"
@@ -151,8 +155,9 @@ The William Temple House Digital Raffle system replaces a manual coffee-can raff
 3. Click "Generate order" → randomized sequence created, snapshot saved
 4. Display QR code on wall screen, clients scan to view on phones
 5. Step through "Now Serving" with arrows as clients approach counter
-6. Append additional tickets mid-day if queue grows (new tickets randomized within order)
-7. End of day: Click "Reset for New Day" (requires "RESET" confirmation, auto-cleanups 30-day snapshots)
+6. Mark returned tickets if a client leaves (auto-advances if currently serving); mark unclaimed tickets after a number is called
+7. Append additional tickets mid-day if queue grows (new tickets randomized within order)
+8. End of day: Click "Reset for New Day" (requires "RESET" confirmation, auto-cleanups 30-day snapshots)
 
 ### 6.2 Append Logic
 - **Random mode:** New tickets are shuffled as a batch and appended to the end.
@@ -288,6 +293,6 @@ Built through collaborative AI agent development:
 
 ---
 
-**Version:** 1.0.2 
-**Last Updated:** November 28, 2025  
+**Version:** 1.1.0 
+**Last Updated:** January 13, 2026  
 **Status:** Production, serving William Temple House food pantry operations

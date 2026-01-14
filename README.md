@@ -3,8 +3,8 @@
 Next.js (App Router) app with ShadCN-inspired UI, JSON persistence, and atomic backups to digitize the pantry raffle flow.
 
 ## Features
-- Staff dashboard (`/admin`) to set ranges, toggle random vs sequential, append tickets, re-randomize, update “now serving,” and reset with confirmations.
-- Public display (`/`) with airport-style grid and QR code sharing, auto-polling `/api/state` every 4s.
+- Staff dashboard (`/admin`) to set ranges, toggle random vs sequential, append tickets, update “now serving,” mark returned/unclaimed tickets, and reset with confirmations.
+- Public display (`/`) with airport-style grid, status legend, ticket detail messaging (called/returned/unclaimed), and QR code sharing, auto-polling `/api/state` every 4s.
 - Multilingual display UI with language switcher (English, 中文, Español, Русский, Українська, Tiếng Việt, فارسی, العربية) and automatic RTL direction for Farsi/Arabic.
 - Built-in read-only board in Next.js plus an optional standalone server (`npm run readonly`) on its own port for edge/legacy hosting.
 - File-based datastore with atomic writes, timestamped backups, and append logic that preserves prior random order.
@@ -185,6 +185,8 @@ Local options:
 - Vitest + Testing Library.
 
 ## Version History
+- 1.1.0 (2026-01-13) — Added returned/unclaimed ticket statuses, admin controls + Live State lists, display legend + ticket detail messaging, and returned tickets excluded from wait estimates with auto-advance when returned.
+- 1.0.4 (2025-12-12) — OTP-first login default and staff version display; lint cleanup.
 - 1.0.3 (2025-11-29) — Added operating hours with timezone selection, preserved through reset, plus closed-day display messaging and pantry hours table.
 - 1.0.1 (2025-11-28) — Added Vietnamese/Farsi/Arabic translations, RTL-aware public display (scoped to display only), and per-language timestamp localization.
 - 1.0.0 (2025-11-27) — Production release with magic link + OTP auth, Neon/Resend, snapshot cleanup, Speed Insights, custom domain.

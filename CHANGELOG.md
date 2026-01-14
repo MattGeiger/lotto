@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.0.5] - 2026-01-13
+## [1.1.0] - 2026-01-13
 ### Added
 - Admin control to mark tickets as returned, stored in raffle state for queue adjustments.
 - Sonner toast notifications for admin and login error states.

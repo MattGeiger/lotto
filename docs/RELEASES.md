@@ -1,26 +1,28 @@
-# William Temple House Digital Raffle System v1.0.4
+# William Temple House Digital Raffle System v1.1.0
 
-**Release Date:** December 12, 2025
+**Release Date:** January 13, 2026
 
-## Authentication (OTP-First)
+## Queue Management (Returned/Unclaimed)
 
-- Updated the `/login` authentication card so **One-Time Passcode (OTP)** is the default sign-in method.
-- Swapped tab order so **OTP appears on the left** and **Magic Link appears on the right** (Magic Link remains available as a fallback).
+- Added admin actions to mark tickets as returned or unclaimed with validation.
+- Returned tickets are excluded from wait-time estimates; returning the current ticket auto-advances to the next available draw position.
+- Unclaimed tickets can only be marked after their draw position has been called.
 
-## Important IT Limitation (Magic Links)
+## Live State Visibility
 
-- Magic links are currently not viable in the staff environment because Microsoft Defender (CCSI) automatically inspects links in email bodies and burns the single-use token before the user clicks it.
-- Recommended and supported method: ➡️ **One-Time Passcode (OTP)**.
+- Added Returned tickets and Unclaimed tickets sections under Live State for quick confirmation.
 
-## Documentation
+## Public Display Updates
 
-- Added technical documentation at `docs/AUTHENTICATION.md` covering supported methods, domain restriction (`@williamtemple.org`), the Defender limitation, and the OTP flow.
+- Added ticket status legend (not called, now serving, called, unclaimed, returned).
+- Ticket detail dialog now shows status-specific messaging and called-time context.
+- Read-only standalone display updated for parity with new legend/status behavior.
 
-## Versioning & UI
+## Admin UX & Feedback
 
-- Bumped application version to **1.0.4**.
-- Updated the staff landing page to display the version from `package.json` (prevents stale hardcoded version strings).
+- Returned/unclaimed admin cards use subtle status gradients and consistent input backgrounds.
+- Sonner toast notifications added for validation and error feedback.
 
-## Maintenance (Lint Warning Cleanup)
+## Versioning
 
-- Resolved existing lint warnings by removing unused imports/variables and applying Next.js image guidance (replaced logo `<img>` tags with `next/image` on the read-only display).
+- Bumped application version to **1.1.0**.
