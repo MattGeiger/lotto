@@ -1020,7 +1020,7 @@ const AdminPage = () => {
                   <Tickets className="size-4 text-muted-foreground" />
                   Live State
                 </CardTitle>
-                <CardDescription>Everything stored in the JSON datastore.</CardDescription>
+                <CardDescription>Summary status for today's raffle drawing.</CardDescription>
               </div>
               {state?.timestamp && (
                 <Badge
