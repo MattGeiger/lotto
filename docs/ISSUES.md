@@ -7,7 +7,7 @@
 - **Stack:** Next.js App Router, React 19, Tailwind v4, Shadcn UI, Radix dialogs, Sonner toasts.
 - **State pattern:** All admin actions go through `/api/state` and `stateManager` (`src/lib/state-manager.ts` for file, `src/lib/state-manager-db.ts` for Postgres). Ticket status and called-at timestamps live in `RaffleState`.
 - **Admin UX pattern:** Confirmation modals use a shared `ConfirmAction` wrapper (`src/components/confirm-action.tsx`).
-- **Display pattern:** Public board is `ReadOnlyDisplay` (`src/components/readonly-display.tsx`) polling every 30s; date rendering uses `formatDate` (`src/lib/date-format.ts`). The standalone display is `scripts/readonly-server.js`.
+- **Display pattern:** Public board is `ReadOnlyDisplay` (`src/components/readonly-display.tsx`) polling every 10s; date rendering uses `formatDate` (`src/lib/date-format.ts`). The standalone display is `scripts/readonly-server.js`.
 - **Constraints:** Order is immutable once generated; returned tickets should not reorder the queue; all changes should be incremental, using existing UI patterns and centralized state logic.
 
 ---
@@ -89,19 +89,22 @@ Intermittently, after confirming "Mark ticket," the modal remains open even thou
 
 ## Issue 3: Display date stuck after 24 hours of idle time
 
-### Observed
-Display auto-refreshes state every 30 seconds, but the **date header stays on yesterday** after 24+ hours of idle time.
+### Status
+- Implemented by recomputing the date on each render and refreshing the standalone title during polling (pending verification).
 
-### Root Cause (Code References)
-- `ReadOnlyDisplay` memoizes the formatted date **only by language**, so it never recomputes on day change.
+### Observed
+Display auto-refreshes state every 10 seconds, but the **date header stays on yesterday** after 24+ hours of idle time.
+
+### Root Cause (Before Fix)
+- `ReadOnlyDisplay` memoized the formatted date **only by language**, so it never recomputed on day change.
   - `src/components/readonly-display.tsx` → `const formattedDate = React.useMemo(..., [language])`.
-  - `src/lib/date-format.ts` uses `new Date()` but is not re-run.
-- Standalone display also sets the date **only once at load**.
+  - `src/lib/date-format.ts` uses `new Date()` but was not re-run.
+- Standalone display also set the date **only once at load**.
   - `scripts/readonly-server.js` → `setTitle()` called once at boot, not on poll.
 
 ### Approaches
 1) **Remove memoization and compute per render**
-   - Let `formatDate(language)` run each render; re-renders already happen every 30s.
+   - Let `formatDate(language)` run each render; re-renders already happen every 10s.
    - Pros: Minimal changes; no new timers.
    - Cons: Slight extra compute (negligible).
 
@@ -116,23 +119,14 @@ Display auto-refreshes state every 30 seconds, but the **date header stays on ye
    - Cons: Logic spread across polling side effects.
 
 ### Recommendation
-**Approach 1** is simplest and consistent with the existing 30s polling. For the standalone server, calling `setTitle()` inside the polling loop achieves the same result with minimal change.
+**Approach 1** is simplest and consistent with the existing 10s polling. For the standalone server, calling `setTitle()` inside the polling loop achieves the same result with minimal change.
 
 ---
 
-## Recommended Incremental Plan (No Code Changes Yet)
-1) **Draw Position Skip**
-   - Implement new `advanceServing` action (server + tests).
-   - Update admin arrows to use it.
-   - Update docs + changelog for the behavior change.
-2) **Modal Reliability**
-   - Update `ConfirmAction` close behavior; confirm consistent behavior across all confirm dialogs.
-   - Add a regression note in docs/changelog.
-3) **Display Date Refresh**
-   - Update `ReadOnlyDisplay` date calculation; update standalone server title refresh.
-   - Add a short note in display docs/changelog.
-
-At each phase: update technical docs, `CHANGELOG.md`, and commit with a focused message.
+## Implementation Phases (Completed)
+1) **Draw Position Skip** — Implemented (server action + admin wiring + tests + docs).
+2) **Modal Reliability** — Implemented (`ConfirmAction` closes in `finally` + docs).
+3) **Display Date Refresh** — Implemented (date recompute + standalone title refresh + docs).
 
 ---
 

@@ -94,7 +94,7 @@ export const ReadOnlyDisplay = () => {
   const [qrUrl, setQrUrl] = React.useState("");
   const qrCanvasRef = React.useRef<HTMLCanvasElement | null>(null);
 
-  const formattedDate = React.useMemo(() => formatDate(language), [language]);
+  const formattedDate = formatDate(language);
 
   const fetchState = React.useCallback(async () => {
     setStatus(t("refreshing"));
@@ -116,7 +116,7 @@ export const ReadOnlyDisplay = () => {
 
   React.useEffect(() => {
     fetchState();
-    const interval = setInterval(fetchState, 30000);
+    const interval = setInterval(fetchState, 10000);
     return () => clearInterval(interval);
   }, [fetchState]);
 
