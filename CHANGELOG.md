@@ -20,6 +20,7 @@
 
 ### Fixed
 - Advancing the draw position now skips tickets marked as returned.
+- Confirmation modals now close after confirming, even if a follow-up error is surfaced.
 
 ## [1.0.4] - 2025-12-12
 ### Changed

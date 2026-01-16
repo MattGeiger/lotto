@@ -54,9 +54,9 @@ export const ConfirmAction: React.FC<ConfirmActionProps> = ({
     setBusy(true);
     try {
       await onConfirm();
-      setOpen(false);
     } finally {
       setBusy(false);
+      setOpen(false);
     }
   };
 
