@@ -54,7 +54,7 @@ Advancing the Draw Position (next/prev) can land on a ticket already marked as `
 ## Issue 2: Confirmation modal sometimes stays open after "Mark ticket"
 
 ### Status
-- Implemented by closing `ConfirmAction` dialogs in `finally` (pending verification).
+- Verified in production after updating `ConfirmAction` to close dialogs in `finally`.
 
 ### Observed
 Intermittently, after confirming "Mark ticket," the modal remains open even though the ticket status updates successfully. The user must click Cancel to dismiss it.
