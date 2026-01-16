@@ -62,6 +62,7 @@ type ActionPayload =
   | { action: "append"; endNumber: number }
   | { action: "setMode"; mode: Mode }
   | { action: "updateServing"; currentlyServing: number | null }
+  | { action: "advanceServing"; direction: "next" | "prev" }
   | { action: "markReturned"; ticketNumber: number }
   | { action: "markUnclaimed"; ticketNumber: number }
   | { action: "reset" }
@@ -452,6 +453,22 @@ const AdminPage = () => {
   const totalTickets = state?.generatedOrder.length ?? 0;
   const currentTicket =
     currentIndex >= 0 && state?.generatedOrder ? state.generatedOrder[currentIndex] : null;
+  const getNextNonReturnedIndex = (startIndex: number, step: 1 | -1) => {
+    if (!state?.generatedOrder?.length) return -1;
+    const order = state.generatedOrder;
+    const status = state.ticketStatus ?? {};
+    for (let i = startIndex + step; i >= 0 && i < order.length; i += step) {
+      if (status[order[i]] !== "returned") {
+        return i;
+      }
+    }
+    return -1;
+  };
+  const nextServingIndex = getNextNonReturnedIndex(currentIndex, 1);
+  const prevServingIndex =
+    currentIndex === -1 ? getNextNonReturnedIndex(-1, 1) : getNextNonReturnedIndex(currentIndex, -1);
+  const canAdvanceNext = totalTickets > 0 && nextServingIndex !== -1;
+  const canAdvancePrev = totalTickets > 0 && prevServingIndex !== -1;
   const appendMin = (state?.endNumber ?? 0) + 1;
   const parsedAppendValue = Number(appendEnd);
   const resolvedAppendValue =
@@ -502,21 +519,12 @@ const AdminPage = () => {
 
   const handlePrevServing = async () => {
     if (!state || totalTickets === 0) return;
-    if (currentIndex <= 0) {
-      await setServingByIndex(0);
-      return;
-    }
-    await setServingByIndex(currentIndex - 1);
+    await sendAction({ action: "advanceServing", direction: "prev" });
   };
 
   const handleNextServing = async () => {
     if (!state || totalTickets === 0) return;
-    if (currentIndex === -1) {
-      await setServingByIndex(0);
-      return;
-    }
-    if (currentIndex >= totalTickets - 1) return;
-    await setServingByIndex(currentIndex + 1);
+    await sendAction({ action: "advanceServing", direction: "next" });
   };
 
   const handleMarkReturned = async () => {
@@ -897,9 +905,9 @@ const AdminPage = () => {
                   variant="outline"
                   size="icon"
                   onClick={handlePrevServing}
-                  disabled={loading || !state || totalTickets === 0}
+                  disabled={loading || !state || !canAdvancePrev}
                   aria-label="Previous draw"
-                  className={currentIndex <= 0 ? "opacity-50" : ""}
+                  className={!canAdvancePrev ? "opacity-50" : ""}
                 >
                   <ChevronLeft className="size-4" />
                 </Button>
@@ -908,14 +916,9 @@ const AdminPage = () => {
                   variant="outline"
                   size="icon"
                   onClick={handleNextServing}
-                  disabled={
-                    loading ||
-                    !state ||
-                    totalTickets === 0 ||
-                    (currentIndex !== -1 && currentIndex >= totalTickets - 1)
-                  }
+                  disabled={loading || !state || !canAdvanceNext}
                   aria-label="Next draw"
-                  className=""
+                  className={!canAdvanceNext ? "opacity-50" : ""}
                 >
                   <ChevronRight className="size-4" />
                 </Button>

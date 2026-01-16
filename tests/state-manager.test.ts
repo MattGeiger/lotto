@@ -165,6 +165,27 @@ describe("state manager", () => {
     expect(updated.calledAt[11]).toBeTypeOf("number");
   });
 
+  it("advances to the next non-returned ticket", async () => {
+    await manager.generateState({ startNumber: 1, endNumber: 4, mode: "sequential" });
+    await manager.updateCurrentlyServing(1);
+    await manager.markTicketReturned(2);
+
+    const updated = await manager.advanceServing("next");
+
+    expect(updated.currentlyServing).toBe(3);
+    expect(updated.calledAt[3]).toBeTypeOf("number");
+  });
+
+  it("advances to the previous non-returned ticket", async () => {
+    await manager.generateState({ startNumber: 1, endNumber: 4, mode: "sequential" });
+    await manager.updateCurrentlyServing(4);
+    await manager.markTicketReturned(3);
+
+    const updated = await manager.advanceServing("prev");
+
+    expect(updated.currentlyServing).toBe(2);
+  });
+
   it("marks tickets as returned", async () => {
     await manager.generateState({ startNumber: 10, endNumber: 12, mode: "random" });
     const updated = await manager.markTicketReturned(11);

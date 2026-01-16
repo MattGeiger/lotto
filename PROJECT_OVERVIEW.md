@@ -41,7 +41,7 @@ The William Temple House Digital Raffle system replaces a manual coffee-can raff
 ## 3. System Architecture
 
 ### 3.1 Frontend (Next.js 16 App Router)
-- **Public Display** (`/`) — High-contrast wall-screen UI, auto-polling every 4s
+- **Public Display** (`/`) — High-contrast wall-screen UI, auto-polling every 30s
 - **Staff Dashboard** (`/admin`) — Range management, append, mode toggle, undo/redo
 - **Authentication** (`/login`) — Magic link + OTP fallback
 - **Staff Landing** (`/staff`) — Welcome page with dashboard link

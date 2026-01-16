@@ -25,6 +25,10 @@ const actionSchema = z.discriminatedUnion("action", [
     currentlyServing: z.number().int().positive().nullable(),
   }),
   z.object({
+    action: z.literal("advanceServing"),
+    direction: z.enum(["next", "prev"]),
+  }),
+  z.object({
     action: z.literal("markReturned"),
     ticketNumber: z.number().int().positive(),
   }),
@@ -101,6 +105,10 @@ export async function POST(request: Request) {
       case "updateServing":
         return NextResponse.json(
           await stateManager.updateCurrentlyServing(payload.currentlyServing),
+        );
+      case "advanceServing":
+        return NextResponse.json(
+          await stateManager.advanceServing(payload.direction),
         );
       case "markReturned":
         return NextResponse.json(

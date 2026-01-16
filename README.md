@@ -4,7 +4,7 @@ Next.js (App Router) app with ShadCN-inspired UI, JSON persistence, and atomic b
 
 ## Features
 - Staff dashboard (`/admin`) to set ranges, toggle random vs sequential, append tickets, update “now serving,” mark returned/unclaimed tickets, and reset with confirmations.
-- Public display (`/`) with airport-style grid, status legend, ticket detail messaging (called/returned/unclaimed), and QR code sharing, auto-polling `/api/state` every 4s.
+- Public display (`/`) with airport-style grid, status legend, ticket detail messaging (called/returned/unclaimed), and QR code sharing, auto-polling `/api/state` every 30s.
 - Multilingual display UI with language switcher (English, 中文, Español, Русский, Українська, Tiếng Việt, فارسی, العربية) and automatic RTL direction for Farsi/Arabic.
 - Built-in read-only board in Next.js plus an optional standalone server (`npm run readonly`) on its own port for edge/legacy hosting.
 - File-based datastore with atomic writes, timestamped backups, and append logic that preserves prior random order.
@@ -44,11 +44,11 @@ NODE_ENV=production
 - `npm run lint` — run ESLint.
 
 ## Read-only board options
-- Built-in: `/` in Next.js, polling `/api/state` every 4s; high-contrast wall-screen UI with WTH logo.
+- Built-in: `/` in Next.js, polling `/api/state` every 30s; high-contrast wall-screen UI with WTH logo.
 - Optional standalone: `npm run readonly` on port `4000`, still polling `data/state.json` for legacy/edge hosting.
 - Configure standalone via env vars:
   - `READONLY_PORT` — port to listen on (default `4000`).
-  - `READONLY_POLL_MS` — poll interval in milliseconds (default `4000`).
+  - `READONLY_POLL_MS` — poll interval in milliseconds (default `30000`).
   - `READONLY_DATA_DIR` — directory containing `state.json` (default `./data`).
   ```bash
   npm run readonly

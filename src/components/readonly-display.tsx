@@ -116,7 +116,7 @@ export const ReadOnlyDisplay = () => {
 
   React.useEffect(() => {
     fetchState();
-    const interval = setInterval(fetchState, 4000);
+    const interval = setInterval(fetchState, 30000);
     return () => clearInterval(interval);
   }, [fetchState]);
 

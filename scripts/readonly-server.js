@@ -7,7 +7,7 @@ const path = require("node:path");
 
 const port = Number.parseInt(process.env.READONLY_PORT ?? "4000", 10) || 4000;
 const pollIntervalMs =
-  Number.parseInt(process.env.READONLY_POLL_MS ?? "4000", 10) || 4000;
+  Number.parseInt(process.env.READONLY_POLL_MS ?? "30000", 10) || 30000;
 const dataDir = process.env.READONLY_DATA_DIR
   ? path.resolve(process.env.READONLY_DATA_DIR)
   : path.join(process.cwd(), "data");

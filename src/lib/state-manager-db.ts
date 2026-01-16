@@ -224,6 +224,55 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
     });
   };
 
+  const advanceServing = async (direction: "next" | "prev") => {
+    const current = await safeReadState();
+    ensureHasRange(current);
+
+    if (current.generatedOrder.length === 0) {
+      throw new Error("Generate tickets first.");
+    }
+
+    const order = current.generatedOrder;
+    const status = current.ticketStatus ?? {};
+    const currentIndex =
+      current.currentlyServing !== null ? order.indexOf(current.currentlyServing) : -1;
+    const step = direction === "next" ? 1 : -1;
+    const startIndex = currentIndex === -1 ? -1 : currentIndex;
+
+    const findNextIndex = (start: number, stepValue: number) => {
+      for (let i = start + stepValue; i >= 0 && i < order.length; i += stepValue) {
+        const ticketNumber = order[i];
+        if (status[ticketNumber] !== "returned") {
+          return i;
+        }
+      }
+      return -1;
+    };
+
+    const nextIndex =
+      direction === "prev" && currentIndex === -1
+        ? findNextIndex(-1, 1)
+        : findNextIndex(startIndex, step);
+
+    if (nextIndex === -1) {
+      return current;
+    }
+
+    const nextTicket = order[nextIndex];
+    if (nextTicket === current.currentlyServing) {
+      return current;
+    }
+
+    const nextCalledAt = { ...(current.calledAt ?? {}) } as RaffleState["calledAt"];
+    nextCalledAt[nextTicket] = Date.now();
+
+    return persist({
+      ...current,
+      currentlyServing: nextTicket,
+      calledAt: nextCalledAt,
+    });
+  };
+
   const markTicketReturned = async (ticketNumber: number) => {
     const current = await safeReadState();
     ensureHasRange(current);
@@ -391,6 +440,7 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
     appendTickets,
     setMode,
     updateCurrentlyServing,
+    advanceServing,
     markTicketReturned,
     markTicketUnclaimed,
     resetState,
