@@ -185,6 +185,7 @@ Local options:
 - Vitest + Testing Library.
 
 ## Version History
+- 1.1.1 (2026-01-13) — Fixed returned-ticket skipping when advancing draw positions, confirm dialogs now close reliably, and display date refreshes on long-running screens.
 - 1.1.0 (2026-01-13) — Added returned/unclaimed ticket statuses, admin controls + Live State lists, display legend + ticket detail messaging, and returned tickets excluded from wait estimates with auto-advance when returned.
 - 1.0.4 (2025-12-12) — OTP-first login default and staff version display; lint cleanup.
 - 1.0.3 (2025-11-29) — Added operating hours with timezone selection, preserved through reset, plus closed-day display messaging and pantry hours table.

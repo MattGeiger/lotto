@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.1.1] - 2026-01-13
+### Changed
+- Public display polling interval adjusted to 10 seconds (built-in + standalone).
+
+### Fixed
+- Advancing the draw position now skips tickets marked as returned.
+- Confirmation modals now close after confirming, even if a follow-up error is surfaced.
+- Display date now refreshes correctly after long idle periods.
+
 ## [1.1.0] - 2026-01-13
 ### Added
 - Admin control to mark tickets as returned, stored in raffle state for queue adjustments.
@@ -16,12 +25,6 @@
 - Returned tickets are excluded from display wait time estimates, and returning the current ticket auto-advances to the next available draw position.
 - Returned/unclaimed admin cards now use subtle status gradients for better readability.
 - Live State card description copy updated for clearer staff-facing language.
-- Public display polling interval adjusted to 10 seconds (built-in + standalone).
-
-### Fixed
-- Advancing the draw position now skips tickets marked as returned.
-- Confirmation modals now close after confirming, even if a follow-up error is surfaced.
-- Display date now refreshes correctly after long idle periods.
 
 ## [1.0.4] - 2025-12-12
 ### Changed

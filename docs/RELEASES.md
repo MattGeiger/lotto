@@ -1,28 +1,28 @@
-# William Temple House Digital Raffle System v1.1.0
+# William Temple House Digital Raffle System v1.1.1
 
 **Release Date:** January 13, 2026
 
-## Queue Management (Returned/Unclaimed)
+## Fixes & Reliability
 
-- Added admin actions to mark tickets as returned or unclaimed with validation.
-- Returned tickets are excluded from wait-time estimates; returning the current ticket auto-advances to the next available draw position.
+- Draw position advance now skips tickets marked as returned.
+- Confirmation dialogs now close after confirming, even when follow-up errors occur.
+- Display date now refreshes correctly after long idle periods (including the standalone display title).
+
+## Display Cadence
+
+- Public display polling interval adjusted to 10 seconds (built-in + standalone).
+- Standalone `READONLY_POLL_MS` default updated to `10000`.
+
+## Included from v1.1.0 (Feature Highlights)
+
+- Admin actions to mark tickets as returned or unclaimed with validation.
+- Returned tickets excluded from wait-time estimates; returning the current ticket auto-advances.
 - Unclaimed tickets can only be marked after their draw position has been called.
-
-## Live State Visibility
-
-- Added Returned tickets and Unclaimed tickets sections under Live State for quick confirmation.
-
-## Public Display Updates
-
-- Added ticket status legend (not called, now serving, called, unclaimed, returned).
-- Ticket detail dialog now shows status-specific messaging and called-time context.
+- Live State sections for Returned tickets and Unclaimed tickets.
+- Display legend for ticket status and ticket detail messaging for returned/unclaimed/called-at.
 - Read-only standalone display updated for parity with new legend/status behavior.
-
-## Admin UX & Feedback
-
-- Returned/unclaimed admin cards use subtle status gradients and consistent input backgrounds.
-- Sonner toast notifications added for validation and error feedback.
+- Admin cards use subtle status gradients; Sonner toasts added for validation/error feedback.
 
 ## Versioning
 
-- Bumped application version to **1.1.0**.
+- Bumped application version to **1.1.1**.
