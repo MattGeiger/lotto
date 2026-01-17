@@ -1,4 +1,4 @@
-# Production Pilot Issues (2026-01-13)
+# Production Pilot Issues (2026-01-16)
 
 ## Pattern Alignment
 - Working within established documentation and architectural patterns. This document follows the existing project docs style and references the current admin/display/state-manager flows without proposing structural rewrites.
@@ -7,7 +7,7 @@
 - **Stack:** Next.js App Router, React 19, Tailwind v4, Shadcn UI, Radix dialogs, Sonner toasts.
 - **State pattern:** All admin actions go through `/api/state` and `stateManager` (`src/lib/state-manager.ts` for file, `src/lib/state-manager-db.ts` for Postgres). Ticket status and called-at timestamps live in `RaffleState`.
 - **Admin UX pattern:** Confirmation modals use a shared `ConfirmAction` wrapper (`src/components/confirm-action.tsx`).
-- **Display pattern:** Public board is `ReadOnlyDisplay` (`src/components/readonly-display.tsx`) polling every 10s; date rendering uses `formatDate` (`src/lib/date-format.ts`). The standalone display is `scripts/readonly-server.js`.
+- **Display pattern:** Public board is `ReadOnlyDisplay` (`src/components/readonly-display.tsx`) with adaptive polling and visibility pause; date rendering uses `formatDate` (`src/lib/date-format.ts`). The standalone display is `scripts/readonly-server.js`.
 - **Constraints:** Order is immutable once generated; returned tickets should not reorder the queue; all changes should be incremental, using existing UI patterns and centralized state logic.
 
 ---
@@ -93,7 +93,7 @@ Intermittently, after confirming "Mark ticket," the modal remains open even thou
 - Implemented by recomputing the date on each render and refreshing the standalone title during polling (pending verification).
 
 ### Observed
-Display auto-refreshes state every 10 seconds, but the **date header stays on yesterday** after 24+ hours of idle time.
+Display auto-refreshes state regularly, but the **date header stays on yesterday** after 24+ hours of idle time.
 
 ### Root Cause (Before Fix)
 - `ReadOnlyDisplay` memoized the formatted date **only by language**, so it never recomputed on day change.
@@ -104,7 +104,7 @@ Display auto-refreshes state every 10 seconds, but the **date header stays on ye
 
 ### Approaches
 1) **Remove memoization and compute per render**
-   - Let `formatDate(language)` run each render; re-renders already happen every 10s.
+   - Let `formatDate(language)` run each render; re-renders already happen on a regular polling cadence.
    - Pros: Minimal changes; no new timers.
    - Cons: Slight extra compute (negligible).
 
@@ -119,7 +119,41 @@ Display auto-refreshes state every 10 seconds, but the **date header stays on ye
    - Cons: Logic spread across polling side effects.
 
 ### Recommendation
-**Approach 1** is simplest and consistent with the existing 10s polling. For the standalone server, calling `setTitle()` inside the polling loop achieves the same result with minimal change.
+**Approach 1** is simplest and consistent with the existing polling cadence. For the standalone server, calling `setTitle()` inside the polling loop achieves the same result with minimal change.
+
+---
+
+## Issue 4: Edge request usage grows quickly under fixed polling
+
+### Status
+- Implemented with adaptive polling and visibility-based pause (pending verification).
+
+### Observed
+After launching the pilot, edge request usage climbed quickly. The public display polls `/api/state` on a fixed cadence, which can generate high request volume for always-on screens.
+
+### Root Cause (Code References)
+- `ReadOnlyDisplay` used a fixed `setInterval` to poll `/api/state` at a steady rate.
+  - `src/components/readonly-display.tsx` → interval-based polling.
+- The cadence did not account for operating hours or idle periods.
+
+### Approaches
+1) **Adaptive polling with idle tiers**
+   - Increase polling interval as time since last change grows, with caps for open/closed windows.
+   - Pros: Reduces requests when idle while keeping fresh data during active use.
+   - Cons: Slightly more complex scheduling logic.
+
+2) **Pause polling when hidden**
+   - Stop polling entirely when the tab is not visible; resume immediately on focus.
+   - Pros: Eliminates background polling on wall displays that are minimized or inactive.
+   - Cons: Requires visibility event handling.
+
+3) **Server push (SSE/WebSocket)**
+   - Maintain a long-lived connection for updates.
+   - Pros: Efficient for live updates with low request volume.
+   - Cons: Platform constraints and operational complexity for long-lived connections.
+
+### Recommendation
+Combine (1) and (2): adaptive polling based on time since last change, with operating-hours-aware backoff tiers and a visibility pause. This aligns with live usage without requiring server push infrastructure.
 
 ---
 
@@ -127,6 +161,7 @@ Display auto-refreshes state every 10 seconds, but the **date header stays on ye
 1) **Draw Position Skip** — Implemented (server action + admin wiring + tests + docs).
 2) **Modal Reliability** — Implemented (`ConfirmAction` closes in `finally` + docs).
 3) **Display Date Refresh** — Implemented (date recompute + standalone title refresh + docs).
+4) **Adaptive Display Polling** — Implemented (idle tiers + visibility pause + operating-hours slack).
 
 ---
 
@@ -135,3 +170,5 @@ Display auto-refreshes state every 10 seconds, but the **date header stays on ye
 - **Modal close:** Mark returned/unclaimed with successful response; modal closes immediately. Simulate a failed network response and confirm modal behavior matches the chosen approach.
 - **Display date:** Leave display running past midnight (or simulate time change); confirm date and document title update without reload.
 - **Standalone display:** Repeat date test on `npm run readonly` server.
+- **Polling backoff:** Leave the display idle during open hours; confirm polling slows after 10/30/60/120 minutes without changes, and resumes quickly after a state update.
+- **Visibility pause:** Hide the display tab, confirm polling stops, and verify it refreshes immediately on return.

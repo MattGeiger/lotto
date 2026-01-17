@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TicketDetailDialog } from "@/components/ticket-detail-dialog";
 import { useLanguage, type Language } from "@/contexts/language-context";
 import { formatDate } from "@/lib/date-format";
+import { getPollingIntervalMs } from "@/lib/polling-strategy";
 import { isRTL } from "@/lib/rtl-utils";
 import type { DayOfWeek, OperatingHours, RaffleState } from "@/lib/state-types";
 
@@ -43,6 +44,8 @@ const formatTimeRange = (openTime: string, closeTime: string): string => {
   const end = formatDisplayTime(closeTime);
   return `${start} - ${end}`;
 };
+
+const POLL_ERROR_RETRY_MS = 30_000;
 
 const DAYS: DayOfWeek[] = [
   "sunday",
@@ -93,10 +96,35 @@ export const ReadOnlyDisplay = () => {
   const [selectedTicket, setSelectedTicket] = React.useState<number | null>(null);
   const [qrUrl, setQrUrl] = React.useState("");
   const qrCanvasRef = React.useRef<HTMLCanvasElement | null>(null);
+  const pollTimeoutRef = React.useRef<number | null>(null);
+  const pollStateRef = React.useRef<() => void>(() => {});
+  const pollStepRef = React.useRef(0);
+  const lastTimestampRef = React.useRef<number | null>(null);
 
   const formattedDate = formatDate(language);
 
-  const fetchState = React.useCallback(async () => {
+  const clearPollTimeout = React.useCallback(() => {
+    if (pollTimeoutRef.current !== null) {
+      window.clearTimeout(pollTimeoutRef.current);
+      pollTimeoutRef.current = null;
+    }
+  }, []);
+
+  const scheduleNextPoll = React.useCallback(
+    (delayMs: number) => {
+      clearPollTimeout();
+      pollTimeoutRef.current = window.setTimeout(() => {
+        void pollStateRef.current();
+      }, delayMs);
+    },
+    [clearPollTimeout],
+  );
+
+  const pollState = React.useCallback(async () => {
+    if (document.visibilityState === "hidden") {
+      clearPollTimeout();
+      return;
+    }
     setStatus(t("refreshing"));
     setHasError(false);
     try {
@@ -107,18 +135,51 @@ export const ReadOnlyDisplay = () => {
       const payload = (await response.json()) as RaffleState;
       setState(payload);
       setStatus(`${t("lastChecked")}: ${formatTime(new Date(), language)}`);
+
+      const nextTimestamp =
+        typeof payload.timestamp === "number" ? payload.timestamp : Date.now();
+      if (lastTimestampRef.current === null || lastTimestampRef.current !== nextTimestamp) {
+        lastTimestampRef.current = nextTimestamp;
+        pollStepRef.current = 0;
+      } else {
+        pollStepRef.current += 1;
+      }
+
+      const { delayMs } = getPollingIntervalMs({
+        now: new Date(),
+        lastChangeAt: lastTimestampRef.current,
+        operatingHours: payload.operatingHours,
+        pollStep: pollStepRef.current,
+      });
+      scheduleNextPoll(delayMs);
     } catch (error) {
       const message = error instanceof Error ? error.message : t("unknownError");
       setStatus(`${t("errorLoadingState")}: ${message}`);
       setHasError(true);
+      scheduleNextPoll(POLL_ERROR_RETRY_MS);
     }
-  }, [language, t]);
+  }, [clearPollTimeout, language, scheduleNextPoll, t]);
 
   React.useEffect(() => {
-    fetchState();
-    const interval = setInterval(fetchState, 10000);
-    return () => clearInterval(interval);
-  }, [fetchState]);
+    pollStateRef.current = pollState;
+  }, [pollState]);
+
+  React.useEffect(() => {
+    void pollState();
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        clearPollTimeout();
+        return;
+      }
+      pollStepRef.current = 0;
+      void pollState();
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      clearPollTimeout();
+    };
+  }, [clearPollTimeout, pollState]);
 
   React.useEffect(() => {
     setStatus(t("pollingState"));

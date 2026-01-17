@@ -1,7 +1,7 @@
 # William Temple House — Digital Raffle System
 ## Project Overview & Architecture Documentation
 
-**Status:** Production (v1.1.1)  
+**Status:** Production (v1.1.2)  
 **Deployment:** https://williamtemple.app  
 
 ---
@@ -41,7 +41,7 @@ The William Temple House Digital Raffle system replaces a manual coffee-can raff
 ## 3. System Architecture
 
 ### 3.1 Frontend (Next.js 16 App Router)
-- **Public Display** (`/`) — High-contrast wall-screen UI, auto-polling every 10s
+- **Public Display** (`/`) — High-contrast wall-screen UI, adaptive polling with visibility pause and operating-hours backoff
 - **Staff Dashboard** (`/admin`) — Range management, append, mode toggle, undo/redo
 - **Authentication** (`/login`) — Magic link + OTP fallback
 - **Staff Landing** (`/staff`) — Welcome page with dashboard link
@@ -293,6 +293,6 @@ Built through collaborative AI agent development:
 
 ---
 
-**Version:** 1.1.1 
-**Last Updated:** January 13, 2026  
+**Version:** 1.1.2 
+**Last Updated:** January 16, 2026  
 **Status:** Production, serving William Temple House food pantry operations

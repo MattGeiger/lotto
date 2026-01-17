@@ -1,17 +1,23 @@
-# William Temple House Digital Raffle System v1.1.1
+# William Temple House Digital Raffle System v1.1.2
 
-**Release Date:** January 13, 2026
+**Release Date:** January 16, 2026
 
 ## Fixes & Reliability
+
+- Public display polling now backs off during idle periods and pauses when the tab is hidden.
+- Operating-hours-aware polling uses a 15-minute slack window before opening and after closing.
+- Closed-window polling caps at a maximum of 120 minutes or half the time to the next open window.
+
+## Display Cadence
+
+- Public display now uses adaptive polling with idle tiers, visibility pause, and operating-hours-aware backoff.
+- Closed-window polling caps at a maximum of 120 minutes or half the time to the next open window.
+
+## Included from v1.1.1 (Fixes & Reliability)
 
 - Draw position advance now skips tickets marked as returned.
 - Confirmation dialogs now close after confirming, even when follow-up errors occur.
 - Display date now refreshes correctly after long idle periods (including the standalone display title).
-
-## Display Cadence
-
-- Public display polling interval adjusted to 10 seconds (built-in + standalone).
-- Standalone `READONLY_POLL_MS` default updated to `10000`.
 
 ## Included from v1.1.0 (Feature Highlights)
 
@@ -25,4 +31,4 @@
 
 ## Versioning
 
-- Bumped application version to **1.1.1**.
+- Bumped application version to **1.1.2**.

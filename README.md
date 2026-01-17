@@ -4,7 +4,7 @@ Next.js (App Router) app with ShadCN-inspired UI, JSON persistence, and atomic b
 
 ## Features
 - Staff dashboard (`/admin`) to set ranges, toggle random vs sequential, append tickets, update “now serving,” mark returned/unclaimed tickets, and reset with confirmations.
-- Public display (`/`) with airport-style grid, status legend, ticket detail messaging (called/returned/unclaimed), and QR code sharing, auto-polling `/api/state` every 10s.
+- Public display (`/`) with airport-style grid, status legend, ticket detail messaging (called/returned/unclaimed), and QR code sharing, using adaptive polling with visibility pause and operating-hours backoff.
 - Multilingual display UI with language switcher (English, 中文, Español, Русский, Українська, Tiếng Việt, فارسی, العربية) and automatic RTL direction for Farsi/Arabic.
 - Built-in read-only board in Next.js plus an optional standalone server (`npm run readonly`) on its own port for edge/legacy hosting.
 - File-based datastore with atomic writes, timestamped backups, and append logic that preserves prior random order.
@@ -44,7 +44,7 @@ NODE_ENV=production
 - `npm run lint` — run ESLint.
 
 ## Read-only board options
-- Built-in: `/` in Next.js, polling `/api/state` every 10s; high-contrast wall-screen UI with WTH logo.
+- Built-in: `/` in Next.js, adaptive polling with visibility pause and operating-hours-aware backoff; high-contrast wall-screen UI with WTH logo.
 - Optional standalone: `npm run readonly` on port `4000`, still polling `data/state.json` for legacy/edge hosting.
 - Configure standalone via env vars:
   - `READONLY_PORT` — port to listen on (default `4000`).
@@ -185,6 +185,7 @@ Local options:
 - Vitest + Testing Library.
 
 ## Version History
+- 1.1.2 (2026-01-16) — Adaptive display polling with visibility pause, operating-hours slack, and idle backoff tiers to reduce edge requests.
 - 1.1.1 (2026-01-13) — Fixed returned-ticket skipping when advancing draw positions, confirm dialogs now close reliably, and display date refreshes on long-running screens.
 - 1.1.0 (2026-01-13) — Added returned/unclaimed ticket statuses, admin controls + Live State lists, display legend + ticket detail messaging, and returned tickets excluded from wait estimates with auto-advance when returned.
 - 1.0.4 (2025-12-12) — OTP-first login default and staff version display; lint cleanup.

@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.2] - 2026-01-16
+### Changed
+- Public display polling now uses adaptive backoff with idle tiers and pauses when the tab is hidden.
+- Polling honors operating-hours slack windows and caps closed-window intervals by time to next opening.
+
 ## [1.1.1] - 2026-01-13
 ### Changed
 - Public display polling interval adjusted to 10 seconds (built-in + standalone).
