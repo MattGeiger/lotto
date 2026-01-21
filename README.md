@@ -183,8 +183,8 @@ Local options:
 - Next.js 16 (App Router) + Tailwind CSS.
 - ShadCN-style UI components (Radix + cva).
 - Vitest + Testing Library.
-
 ## Version History
+- 1.2.0 (2026-01-20) — Refined the floating header search cluster so the pill shares the same palette-based gradient/hover fill as the language/theme buttons, keeps responsive text/icon scaling, and sits in its own padded grouping with a shadowed icon trigger.
 - 1.1.3 (2026-01-19) — Added the multilingual search bar on the public display so clients can quickly locate a ticket, with dedicated lookups and a “ticket not found” dialog.
 - 1.1.2 (2026-01-16) — Adaptive display polling with visibility pause, operating-hours slack, and idle backoff tiers to reduce edge requests.
 - 1.1.1 (2026-01-13) — Fixed returned-ticket skipping when advancing draw positions, confirm dialogs now close reliably, and display date refreshes on long-running screens.

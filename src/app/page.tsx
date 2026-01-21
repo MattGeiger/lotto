@@ -63,7 +63,7 @@ export default function DisplayPage() {
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="!h-[3.375rem] !w-[3.375rem] !border-0 !bg-transparent"
+                className="!h-[3.375rem] !w-[3.375rem] !border-0 !rounded-full bg-card/80 hover:bg-accent hover:text-accent-foreground shadow-[var(--base-shadow-lg)]"
                 onClick={handleSearchSubmit}
               >
                 <Search className="size-5" />

@@ -1,3 +1,18 @@
+# William Temple House Digital Raffle System v1.2.0
+
+**Release Date:** January 20, 2026
+
+## Ticket Lookup Experience
+
+- Header search controls now share the same gradient/palette fill, hover treatment, and elevation as the language and light/dark toggles, while extra horizontal padding and responsive text/icon scaling keep the pill legible on desktop and tactile on mobile.
+- The search pill sits inside its own padded cluster, so it feels visually cohesive yet distinct from other header buttons, and the digit-only input behavior plus the dedicated icon trigger deliver the same modal/“ticket number not found” experience.
+
+## Versioning
+
+- Bumped application version to **1.2.0**.
+
+---
+
 # William Temple House Digital Raffle System v1.1.3
 
 **Release Date:** January 19, 2026

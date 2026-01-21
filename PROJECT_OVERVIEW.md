@@ -1,7 +1,7 @@
 # William Temple House — Digital Raffle System
 ## Project Overview & Architecture Documentation
 
-**Status:** Production (v1.1.3)  
+**Status:** Production (v1.2.0)  
 **Deployment:** https://williamtemple.app  
 
 ---
@@ -293,6 +293,6 @@ Built through collaborative AI agent development:
 
 ---
 
-**Version:** 1.1.3 
+**Version:** 1.2.0 
 **Last Updated:** January 20, 2026  
 **Status:** Production, serving William Temple House food pantry operations

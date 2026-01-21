@@ -166,17 +166,17 @@ Combine (1) and (2): adaptive polling based on time since last change, with oper
 ---
 
 ## Accessibility Update: Header controls on mobile
-- **Status**: Implemented (pending verification).
+- **Status**: Verified (mobile UX complete).
 - **Observation**: The language & theme toggles were tight on touch screens and sat close to the WTH logo/QR code.
 - **Action**: Increased each button’s hit target by 50%, padded the floating header, and added extra padding to the display shell so the logo/QR block stays below the controls while preserving the layout (`src/components/language-switcher.tsx`, `src/components/theme-switcher.tsx`, `src/app/page.tsx`, `src/components/readonly-display.tsx`).
-- **Result**: Interactive accessibility on phones/tablets improved without altering the existing queue presentation.
+- **Result**: Interactive accessibility on phones/tablets improved without altering the existing queue presentation and the header controls now match the established palette/padding rules documented in `docs/UI_DESIGN.md`.
 
 ---
 
 ## UX Issue: Ticket lookup in long queues
-- **Status**: Implemented (pending verification).
+- **Status**: Resolved (search cluster deployed).
 - **Observation**: When >80 tickets are listed, finding a specific number in the Drawing Order card becomes tedious for clients.
-- **Action**: Added a centered header search field with an icon-only trigger that mirrors the language/theme buttons, digit-only sanitization, ticket-detail modal launches for matches, and a “Ticket number not found” dialog when the lookup misses (`src/app/page.tsx`, `src/components/readonly-display.tsx`, `src/components/ui/input-group.tsx`, `src/components/ui/dialog.tsx`).
+- **Action**: Added a centered header search field with an icon-only trigger that mirrors the language/theme buttons, digit-only sanitization, ticket-detail modal launches for matches, and a “Ticket number not found” dialog when the lookup misses (`src/app/page.tsx`, `src/components/readonly-display.tsx`, `src/components/ui/input-group.tsx`, `src/components/ui/dialog.tsx`). The search pill now shares the same gradient/palette tokens used elsewhere, keeps responsive text/icon scaling per user preference, and sits within the defined padding cluster so the input feels cohesive yet distinct.
 
 ---
 
