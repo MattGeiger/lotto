@@ -69,7 +69,7 @@ export default function DisplayPage() {
         </div>
         <ThemeSwitcher />
       </div>
-      <ReadOnlyDisplay ticketSearchRequest={searchSubmission} />
+      <ReadOnlyDisplay ticketSearchRequest={searchSubmission ?? undefined} />
     </div>
   );
 }
