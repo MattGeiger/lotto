@@ -304,7 +304,7 @@ export const ReadOnlyDisplay = ({ ticketSearchRequest }: ReadOnlyDisplayProps) =
       <div
         dir={isRTL(language) ? "rtl" : "ltr"}
         lang={language}
-        className="min-h-screen w-full bg-gradient-display px-8 pt-14 pb-8 text-foreground sm:px-10 lg:px-12"
+        className="min-h-screen w-full bg-gradient-display px-6 pt-14 pb-8 text-foreground sm:px-8 lg:px-10"
       >
       <div className="mx-auto flex w-full flex-col gap-4">
         {/* Logo + Now Serving Row */}
@@ -408,7 +408,7 @@ export const ReadOnlyDisplay = ({ ticketSearchRequest }: ReadOnlyDisplayProps) =
           </CardHeader>
           <CardContent className="space-y-4">
             {!hasTickets && (
-              <div className="flex flex-col items-center gap-4 rounded-xl bg-muted/20 px-4 py-6">
+              <div className="flex flex-col items-center gap-4 rounded-xl bg-muted/20 px-3 py-6">
                 {!isPantryOpen ? (
                   <>
                     {pantryStatus === "before_opening" && (
@@ -494,7 +494,7 @@ export const ReadOnlyDisplay = ({ ticketSearchRequest }: ReadOnlyDisplayProps) =
             <div className="grid grid-cols-[repeat(auto-fill,minmax(96px,1fr))] gap-3 md:gap-4">
               {generatedOrder.map((value, index) => {
                 const baseClasses =
-                  "flex items-center justify-center rounded-xl border text-center text-2xl font-extrabold leading-[1.2] px-4 py-3 cursor-pointer transition-transform hover:scale-[1.03]";
+                  "flex items-center justify-center rounded-xl border text-center text-2xl font-extrabold leading-[1.2] px-3 py-3 cursor-pointer transition-transform hover:scale-[1.03]";
                 const ticketStatus = state?.ticketStatus?.[value];
                 const stateClass =
                   ticketStatus === "returned"

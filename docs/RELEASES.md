@@ -1,3 +1,17 @@
+# William Temple House Digital Raffle System v1.1.3
+
+**Release Date:** January 19, 2026
+
+## Ticket Lookup Experience
+
+- Added a multilingual header search so clients can type or tap a ticket number, with a dedicated light/dark-friendly icon button that triggers the same ticket detail modal or a “Ticket number not found” dialog when the lookup misses.
+
+## Versioning
+
+- Bumped application version to **1.1.3**.
+
+---
+
 # William Temple House Digital Raffle System v1.1.2
 
 **Release Date:** January 16, 2026

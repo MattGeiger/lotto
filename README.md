@@ -185,6 +185,7 @@ Local options:
 - Vitest + Testing Library.
 
 ## Version History
+- 1.1.3 (2026-01-19) — Added the multilingual search bar on the public display so clients can quickly locate a ticket, with dedicated lookups and a “ticket not found” dialog.
 - 1.1.2 (2026-01-16) — Adaptive display polling with visibility pause, operating-hours slack, and idle backoff tiers to reduce edge requests.
 - 1.1.1 (2026-01-13) — Fixed returned-ticket skipping when advancing draw positions, confirm dialogs now close reliably, and display date refreshes on long-running screens.
 - 1.1.0 (2026-01-13) — Added returned/unclaimed ticket statuses, admin controls + Live State lists, display legend + ticket detail messaging, and returned tickets excluded from wait estimates with auto-advance when returned.

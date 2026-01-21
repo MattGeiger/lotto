@@ -41,11 +41,11 @@ export default function DisplayPage() {
       <div className="absolute left-6 right-6 top-4 z-50 flex items-center justify-between gap-5 py-2 sm:left-8 sm:right-8 lg:left-10 lg:right-10">
         <LanguageSwitcher />
         <div className="flex-1 flex justify-center px-2">
-          <div className="min-w-0 flex-1 max-w-[286px]">
+          <div className="min-w-0 flex-1 max-w-[360px]">
             <label htmlFor="ticket-search" className="sr-only">
               {t("searchTicketLabel")}
             </label>
-            <div className="flex w-full items-center gap-3 rounded-full bg-card/80 px-3 py-1 shadow-sm">
+            <div className="flex w-full items-center gap-0 rounded-full bg-card/80 px-0 py-0.5 shadow-sm">
               <InputGroup className="flex-1 border-0 shadow-none bg-transparent">
                 <InputGroupInput
                   id="ticket-search"

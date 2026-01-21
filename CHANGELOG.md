@@ -1,5 +1,8 @@
 # Changelog
 
+## [1.1.3] - 2026-01-19
+- Added multilingual, mobile-friendly header search that launches the ticket detail modal or a “ticket not found” dialog so clients can find their number fast.
+
 ## [1.1.2] - 2026-01-16
 ### Changed
 - Public display polling now uses adaptive backoff with idle tiers and pauses when the tab is hidden.
