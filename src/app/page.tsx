@@ -38,15 +38,15 @@ export default function DisplayPage() {
 
   return (
     <div className="relative">
-      <div className="absolute left-8 right-8 top-4 z-50 flex items-center justify-between py-2 sm:left-10 sm:right-10 lg:left-12 lg:right-12">
+      <div className="absolute left-6 right-6 top-4 z-50 flex items-center justify-between gap-5 py-2 sm:left-8 sm:right-8 lg:left-10 lg:right-10">
         <LanguageSwitcher />
-        <div className="flex-1 flex justify-center px-3">
-          <div className="min-w-0 flex-1 max-w-[260px]">
+        <div className="flex-1 flex justify-center px-2">
+          <div className="min-w-0 flex-1 max-w-[286px]">
             <label htmlFor="ticket-search" className="sr-only">
               {t("searchTicketLabel")}
             </label>
-            <div className="flex w-full items-center gap-3">
-              <InputGroup className="flex-1">
+            <div className="flex w-full items-center gap-3 rounded-full bg-card/80 px-3 py-1 shadow-sm">
+              <InputGroup className="flex-1 border-0 shadow-none bg-transparent">
                 <InputGroupInput
                   id="ticket-search"
                   placeholder={t("searchTicketPlaceholder")}
@@ -61,9 +61,9 @@ export default function DisplayPage() {
               </InputGroup>
               <Button
                 type="button"
-                variant="outline"
+                variant="ghost"
                 size="icon"
-                className="!h-[3.375rem] !w-[3.375rem]"
+                className="!h-[3.375rem] !w-[3.375rem] !border-0 !bg-transparent"
                 onClick={handleSearchSubmit}
               >
                 <Search className="size-5" />
