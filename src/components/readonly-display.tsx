@@ -271,11 +271,11 @@ export const ReadOnlyDisplay = () => {
   };
 
   return (
-    <div
-      dir={isRTL(language) ? "rtl" : "ltr"}
-      lang={language}
-      className="min-h-screen w-full bg-gradient-display px-2 py-8 text-foreground sm:px-4 lg:px-6"
-    >
+      <div
+        dir={isRTL(language) ? "rtl" : "ltr"}
+        lang={language}
+        className="min-h-screen w-full bg-gradient-display px-8 pt-14 pb-8 text-foreground sm:px-10 lg:px-12"
+      >
       <div className="mx-auto flex w-full flex-col gap-4">
         {/* Logo + Now Serving Row */}
         <div className="mt-10 grid grid-cols-1 gap-4 sm:mt-12 sm:grid-cols-[minmax(280px,320px)_1fr_minmax(280px,320px)] sm:items-center sm:gap-6">

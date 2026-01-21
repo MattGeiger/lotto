@@ -165,6 +165,14 @@ Combine (1) and (2): adaptive polling based on time since last change, with oper
 
 ---
 
+## Accessibility Update: Header controls on mobile
+- **Status**: Implemented (pending verification).
+- **Observation**: The language & theme toggles were tight on touch screens and sat close to the WTH logo/QR code.
+- **Action**: Increased each button’s hit target by 50%, padded the floating header, and added extra padding to the display shell so the logo/QR block stays below the controls while preserving the layout (`src/components/language-switcher.tsx`, `src/components/theme-switcher.tsx`, `src/app/page.tsx`, `src/components/readonly-display.tsx`).
+- **Result**: Interactive accessibility on phones/tablets improved without altering the existing queue presentation.
+
+---
+
 ## Manual Test Checklist (for later implementation)
 - **Returned skip:** Mark a mid-queue ticket returned, then advance Next; verify the returned ticket is skipped. Repeat with Prev.
 - **Modal close:** Mark returned/unclaimed with successful response; modal closes immediately. Simulate a failed network response and confirm modal behavior matches the chosen approach.
