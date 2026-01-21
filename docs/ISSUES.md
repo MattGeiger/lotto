@@ -174,10 +174,9 @@ Combine (1) and (2): adaptive polling based on time since last change, with oper
 ---
 
 ## UX Issue: Ticket lookup in long queues
-- **Status**: UI placeholder added (search behavior to follow).
+- **Status**: Implemented (pending verification).
 - **Observation**: When >80 tickets are listed, finding a specific number in the Drawing Order card becomes tedious for clients.
-- **Action**: Added a header search field (InputGroup + Search icon) next to the language/theme controls to make initiating a lookup easier (`src/app/page.tsx`, `src/components/ui/input-group.tsx`).
-- **Next Step**: Wire the input to highlight/move to matching tickets and optionally open the modal once a match is selected.
+- **Action**: Added a centered header search field plus logic that sanitizes/digits-only input, opens the ticket detail modal when a match is found, and shows a “Ticket number not found” dialog otherwise (`src/app/page.tsx`, `src/components/readonly-display.tsx`, `src/components/ui/input-group.tsx`, `src/components/ui/dialog.tsx`).
 
 ---
 

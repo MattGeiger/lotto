@@ -5,7 +5,9 @@ import Image from "next/image";
 import QRCode from "qrcode";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { TicketDetailDialog } from "@/components/ticket-detail-dialog";
 import { useLanguage, type Language } from "@/contexts/language-context";
 import { formatDate } from "@/lib/date-format";
@@ -88,18 +90,29 @@ const getPantryStatus = (hours: OperatingHours | null): PantryStatus => {
   return "open";
 };
 
-export const ReadOnlyDisplay = () => {
+export type TicketSearchRequest = {
+  ticketNumber: number;
+  triggerId: number;
+};
+
+type ReadOnlyDisplayProps = {
+  ticketSearchRequest?: TicketSearchRequest;
+};
+
+export const ReadOnlyDisplay = ({ ticketSearchRequest }: ReadOnlyDisplayProps) => {
   const { language, t } = useLanguage();
   const [state, setState] = React.useState<RaffleState | null>(null);
   const [status, setStatus] = React.useState("");
   const [hasError, setHasError] = React.useState(false);
   const [selectedTicket, setSelectedTicket] = React.useState<number | null>(null);
+  const [notFoundDialogOpen, setNotFoundDialogOpen] = React.useState(false);
   const [qrUrl, setQrUrl] = React.useState("");
   const qrCanvasRef = React.useRef<HTMLCanvasElement | null>(null);
   const pollTimeoutRef = React.useRef<number | null>(null);
   const pollStateRef = React.useRef<() => void>(() => {});
   const pollStepRef = React.useRef(0);
   const lastTimestampRef = React.useRef<number | null>(null);
+  const lastSearchRequestRef = React.useRef(0);
 
   const formattedDate = formatDate(language);
 
@@ -235,6 +248,23 @@ export const ReadOnlyDisplay = () => {
     const today = getCurrentDayOfWeek();
     return state.operatingHours[today];
   }, [state?.operatingHours, pantryStatus]);
+
+  React.useEffect(() => {
+    if (!ticketSearchRequest) return;
+    if (ticketSearchRequest.triggerId <= lastSearchRequestRef.current) return;
+    lastSearchRequestRef.current = ticketSearchRequest.triggerId;
+    const ticketNumber = ticketSearchRequest.ticketNumber;
+    if (ticketNumber === null || !generatedOrder.length) return;
+    const inRange = ticketNumber >= startNumber && ticketNumber <= endNumber;
+    const exists = generatedOrder.includes(ticketNumber);
+    if (inRange && exists) {
+      setSelectedTicket(ticketNumber);
+      setNotFoundDialogOpen(false);
+    } else {
+      setSelectedTicket(null);
+      setNotFoundDialogOpen(true);
+    }
+  }, [ticketSearchRequest, startNumber, endNumber, generatedOrder]);
 
   const getTicketDetails = (ticketNumber: number) => {
     if (!state?.generatedOrder?.length) return null;
@@ -539,6 +569,19 @@ export const ReadOnlyDisplay = () => {
             language={language}
           />
         )}
+        <Dialog open={notFoundDialogOpen} onOpenChange={(open) => setNotFoundDialogOpen(open)}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle>{t("ticketNotFoundTitle")}</DialogTitle>
+              <DialogDescription>{t("ticketNotFoundMessage")}</DialogDescription>
+            </DialogHeader>
+            <div className="mt-6 flex justify-end">
+              <Button variant="outline" onClick={() => setNotFoundDialogOpen(false)}>
+                {t("close")}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
