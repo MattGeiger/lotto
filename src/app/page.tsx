@@ -4,13 +4,8 @@ import * as React from "react";
 import { ReadOnlyDisplay } from "@/components/readonly-display";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { ThemeSwitcher } from "@/components/theme-switcher";
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "@/components/ui/input-group";
+import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
 import { Search } from "lucide-react";
-import { isRTL } from "@/lib/rtl-utils";
 import { useLanguage } from "@/contexts/language-context";
 import { Button } from "@/components/ui/button";
 
@@ -19,7 +14,6 @@ export default function DisplayPage() {
   const [searchSubmission, setSearchSubmission] = React.useState<{ ticketNumber: number; triggerId: number } | null>(null);
   const searchTriggerRef = React.useRef(0);
   const { language, t } = useLanguage();
-  const rtl = isRTL(language);
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const digitsOnly = event.target.value.replace(/\D/g, "");
@@ -51,33 +45,31 @@ export default function DisplayPage() {
             <label htmlFor="ticket-search" className="sr-only">
               {t("searchTicketLabel")}
             </label>
-            <InputGroup className="w-full px-3">
-              <InputGroupAddon align={rtl ? "inline-end" : "inline-start"}>
-                <Search className="text-muted-foreground" />
-              </InputGroupAddon>
-              <InputGroupInput
-                id="ticket-search"
-                placeholder={t("searchTicketPlaceholder")}
-                aria-label="Search ticket number"
-                value={searchValue}
-                onChange={handleSearchChange}
-                onKeyDown={handleSearchKeyDown}
-                inputMode="numeric"
-                enterKeyHint="search"
-                maxLength={6}
-              />
-              <InputGroupAddon align="inline-end">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-full px-3"
-                  onClick={handleSearchSubmit}
-                >
-                  {t("searchButtonLabel")}
-                </Button>
-              </InputGroupAddon>
-            </InputGroup>
+            <div className="flex w-full items-center gap-3">
+              <InputGroup className="flex-1">
+                <InputGroupInput
+                  id="ticket-search"
+                  placeholder={t("searchTicketPlaceholder")}
+                  aria-label="Search ticket number"
+                  value={searchValue}
+                  onChange={handleSearchChange}
+                  onKeyDown={handleSearchKeyDown}
+                  inputMode="numeric"
+                  enterKeyHint="search"
+                  maxLength={6}
+                />
+              </InputGroup>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="!h-[3.375rem] !w-[3.375rem]"
+                onClick={handleSearchSubmit}
+              >
+                <Search className="size-5" />
+                <span className="sr-only">{t("searchButtonLabel")}</span>
+              </Button>
+            </div>
           </div>
         </div>
         <ThemeSwitcher />
