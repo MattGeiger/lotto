@@ -92,6 +92,7 @@ const translations: Record<Language, Record<string, string>> = {
     close: "Close",
     ticketNotFoundTitle: "Ticket not found",
     ticketNotFoundMessage: "Ticket number not found! Please check your ticket and try again.",
+    searchButtonLabel: "Search",
     searchTicketLabel: "Search ticket number",
     searchTicketPlaceholder: "Search ticket #",
   },
@@ -141,6 +142,7 @@ const translations: Record<Language, Record<string, string>> = {
     ticketNotFoundMessage: "找不到该票号！请核对票据后再试。",
     searchTicketLabel: "搜索票号",
     searchTicketPlaceholder: "搜索票号 #",
+    searchButtonLabel: "搜索",
   },
   es: {
     nowServing: "Turno Actual",
@@ -190,6 +192,7 @@ const translations: Record<Language, Record<string, string>> = {
     ticketNotFoundMessage: "¡No se encontró el número de boleto! Verifique su boleto y vuelva a intentarlo.",
     searchTicketLabel: "Buscar número de boleto",
     searchTicketPlaceholder: "Buscar boleto #",
+    searchButtonLabel: "Buscar",
   },
   ru: {
     nowServing: "Вызывается номер",
@@ -239,6 +242,7 @@ const translations: Record<Language, Record<string, string>> = {
     ticketNotFoundMessage: "Номер билета не найден! Проверьте билет и попробуйте снова.",
     searchTicketLabel: "Поиск номера билета",
     searchTicketPlaceholder: "Поиск билета #",
+    searchButtonLabel: "Поиск",
   },
   uk: {
     nowServing: "Викликається номер",
@@ -288,6 +292,7 @@ const translations: Record<Language, Record<string, string>> = {
     ticketNotFoundMessage: "Номер квитка не знайдено! Перевірте квиток і спробуйте ще раз.",
     searchTicketLabel: "Пошук номера квитка",
     searchTicketPlaceholder: "Пошук квитка #",
+    searchButtonLabel: "Пошук",
   },
   vi: {
     nowServing: "Đang gọi số",
@@ -337,6 +342,7 @@ const translations: Record<Language, Record<string, string>> = {
     ticketNotFoundMessage: "Không tìm thấy số vé! Vui lòng kiểm tra vé và thử lại.",
     searchTicketLabel: "Tìm số vé",
     searchTicketPlaceholder: "Tìm vé #",
+    searchButtonLabel: "Tìm",
   },
   fa: {
     nowServing: "در حال فراخوانی شماره",
@@ -386,6 +392,7 @@ const translations: Record<Language, Record<string, string>> = {
     ticketNotFoundMessage: "شماره بلیط پیدا نشد! لطفاً بلیط خود را بررسی کرده و دوباره تلاش کنید.",
     searchTicketLabel: "جستجوی شماره بلیط",
     searchTicketPlaceholder: "# جستجوی بلیط",
+    searchButtonLabel: "جستجو",
   },
   ar: {
     nowServing: "الرقم الحالي",
@@ -435,5 +442,6 @@ const translations: Record<Language, Record<string, string>> = {
     ticketNotFoundMessage: "لم يتم العثور على رقم التذكرة! يرجى التحقق من التذكرة والمحاولة مرة أخرى.",
     searchTicketLabel: "ابحث عن رقم التذكرة",
     searchTicketPlaceholder: "# ابحث عن تذكرة",
+    searchButtonLabel: "بحث",
   },
 };

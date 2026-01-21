@@ -12,6 +12,7 @@ import {
 import { Search } from "lucide-react";
 import { isRTL } from "@/lib/rtl-utils";
 import { useLanguage } from "@/contexts/language-context";
+import { Button } from "@/components/ui/button";
 
 export default function DisplayPage() {
   const [searchValue, setSearchValue] = React.useState("");
@@ -62,8 +63,20 @@ export default function DisplayPage() {
                 onChange={handleSearchChange}
                 onKeyDown={handleSearchKeyDown}
                 inputMode="numeric"
+                enterKeyHint="search"
                 maxLength={6}
               />
+              <InputGroupAddon align="inline-end">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-full px-3"
+                  onClick={handleSearchSubmit}
+                >
+                  {t("searchButtonLabel")}
+                </Button>
+              </InputGroupAddon>
             </InputGroup>
           </div>
         </div>
