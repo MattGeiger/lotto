@@ -173,6 +173,14 @@ Combine (1) and (2): adaptive polling based on time since last change, with oper
 
 ---
 
+## UX Issue: Ticket lookup in long queues
+- **Status**: UI placeholder added (search behavior to follow).
+- **Observation**: When >80 tickets are listed, finding a specific number in the Drawing Order card becomes tedious for clients.
+- **Action**: Added a header search field (InputGroup + Search icon) next to the language/theme controls to make initiating a lookup easier (`src/app/page.tsx`, `src/components/ui/input-group.tsx`).
+- **Next Step**: Wire the input to highlight/move to matching tickets and optionally open the modal once a match is selected.
+
+---
+
 ## Manual Test Checklist (for later implementation)
 - **Returned skip:** Mark a mid-queue ticket returned, then advance Next; verify the returned ticket is skipped. Repeat with Prev.
 - **Modal close:** Mark returned/unclaimed with successful response; modal closes immediately. Simulate a failed network response and confirm modal behavior matches the chosen approach.
