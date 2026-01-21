@@ -46,7 +46,7 @@ export default function DisplayPage() {
               {t("searchTicketLabel")}
             </label>
             <div className="flex w-full items-center gap-0 rounded-full bg-card/80 px-0 py-0.5 shadow-sm">
-              <InputGroup className="flex-1 border-0 shadow-none bg-transparent">
+              <InputGroup className="flex-1 border-0 shadow-none bg-transparent dark:bg-transparent !bg-transparent !dark:bg-transparent">
                 <InputGroupInput
                   id="ticket-search"
                   placeholder={t("searchTicketPlaceholder")}
