@@ -274,7 +274,7 @@ export const ReadOnlyDisplay = () => {
       <div
         dir={isRTL(language) ? "rtl" : "ltr"}
         lang={language}
-        className="min-h-screen w-full bg-gradient-display px-8 pt-12 pb-8 text-foreground sm:px-10 lg:px-12"
+        className="min-h-screen w-full bg-gradient-display px-8 pt-14 pb-8 text-foreground sm:px-10 lg:px-12"
       >
       <div className="mx-auto flex w-full flex-col gap-4">
         {/* Logo + Now Serving Row */}
