@@ -14,74 +14,110 @@ const buildHours = (): OperatingHours => ({
 });
 
 const minutes = (value: number) => value * 60 * 1000;
+const seconds = (value: number) => value * 1000;
+const timeZone = "America/Los_Angeles";
 
 describe("polling strategy", () => {
-  it("treats the open window with slack as open", () => {
+  it("treats pre-open as its own window", () => {
     const hours = buildHours();
-    const now = new Date(2026, 0, 12, 10, 50, 0); // Monday
-    const status = getPollingWindowStatus(hours, now, 15);
-    expect(status.isOpenWindow).toBe(true);
+    const now = new Date("2026-01-12T18:40:00Z"); // 10:40 AM LA
+    const status = getPollingWindowStatus(hours, now, timeZone);
+    expect(status.window).toBe("pre-open");
   });
 
-  it("returns the next open window when before slack", () => {
+  it("treats post-close slack as open", () => {
     const hours = buildHours();
-    const now = new Date(2026, 0, 12, 10, 40, 0); // Monday
-    const status = getPollingWindowStatus(hours, now, 15);
-    expect(status.isOpenWindow).toBe(false);
-    expect(status.nextOpenAt).not.toBeNull();
-    expect(status.nextOpenAt?.getHours()).toBe(10);
-    expect(status.nextOpenAt?.getMinutes()).toBe(45);
+    const now = new Date("2026-01-12T22:20:00Z"); // 2:20 PM LA
+    const status = getPollingWindowStatus(hours, now, timeZone);
+    expect(status.window).toBe("open");
   });
 
-  it("uses the open-active ladder for recent changes", () => {
+  it("returns next pre-open when before the pre-open window", () => {
     const hours = buildHours();
-    const now = new Date(2026, 0, 12, 12, 0, 0);
+    const now = new Date("2026-01-12T18:15:00Z"); // 10:15 AM LA
+    const status = getPollingWindowStatus(hours, now, timeZone);
+    expect(status.window).toBe("closed");
+    expect(status.nextPreOpenAt?.toISOString()).toBe("2026-01-12T18:30:00.000Z");
+  });
+
+  it("uses the 5-minute baseline during pre-open without changes", () => {
+    const hours = buildHours();
+    const now = new Date("2026-01-12T18:40:00Z"); // 10:40 AM LA
+    const result = getPollingIntervalMs({
+      now,
+      lastChangeAt: null,
+      operatingHours: hours,
+      timeZone,
+    });
+    expect(result.delayMs).toBe(minutes(5));
+  });
+
+  it("uses the 5-minute baseline during open without changes", () => {
+    const hours = buildHours();
+    const now = new Date("2026-01-12T20:10:00Z"); // 12:10 PM LA
+    const result = getPollingIntervalMs({
+      now,
+      lastChangeAt: null,
+      operatingHours: hours,
+      timeZone,
+    });
+    expect(result.delayMs).toBe(minutes(5));
+  });
+
+  it("caps closed polling to the upcoming pre-open start", () => {
+    const hours = buildHours();
+    const now = new Date("2026-01-12T18:20:00Z"); // 10:20 AM LA
+    const result = getPollingIntervalMs({
+      now,
+      lastChangeAt: null,
+      operatingHours: hours,
+      timeZone,
+    });
+    expect(result.delayMs).toBe(minutes(10));
+  });
+
+  it("uses the burst interval when inside the burst window", () => {
+    const hours = buildHours();
+    const now = new Date("2026-01-12T20:00:00Z"); // 12:00 PM LA
+    const result = getPollingIntervalMs({
+      now,
+      lastChangeAt: now.getTime() - minutes(5),
+      burstUntil: now.getTime() + minutes(1),
+      operatingHours: hours,
+      timeZone,
+    });
+    expect(result.delayMs).toBe(seconds(30));
+  });
+
+  it("uses a 1-minute cadence shortly after a change", () => {
+    const hours = buildHours();
+    const now = new Date("2026-01-12T20:00:00Z"); // 12:00 PM LA
     const result = getPollingIntervalMs({
       now,
       lastChangeAt: now.getTime() - minutes(5),
       operatingHours: hours,
-      pollStep: 0,
+      timeZone,
     });
-    expect(result.ladder).toBe("open-active");
-    expect(result.delayMs).toBe(10 * 1000);
+    expect(result.delayMs).toBe(minutes(1));
   });
 
-  it("switches to the 10-minute idle ladder after 10 minutes", () => {
+  it("uses 15 minutes after long idle while open, 30 minutes while closed", () => {
     const hours = buildHours();
-    const now = new Date(2026, 0, 12, 12, 0, 0);
-    const result = getPollingIntervalMs({
-      now,
-      lastChangeAt: now.getTime() - minutes(12),
+    const openNow = new Date("2026-01-12T20:00:00Z"); // open
+    const closedNow = new Date("2026-01-12T17:00:00Z"); // 9:00 AM LA
+    const openResult = getPollingIntervalMs({
+      now: openNow,
+      lastChangeAt: openNow.getTime() - minutes(250),
       operatingHours: hours,
-      pollStep: 1,
+      timeZone,
     });
-    expect(result.ladder).toBe("open-idle-10m");
-    expect(result.delayMs).toBe(minutes(10));
-  });
-
-  it("caps open idle polling at 120 minutes when inactive long enough", () => {
-    const hours = buildHours();
-    const now = new Date(2026, 0, 12, 12, 0, 0);
-    const result = getPollingIntervalMs({
-      now,
-      lastChangeAt: now.getTime() - minutes(130),
+    const closedResult = getPollingIntervalMs({
+      now: closedNow,
+      lastChangeAt: closedNow.getTime() - minutes(250),
       operatingHours: hours,
-      pollStep: 2,
+      timeZone,
     });
-    expect(result.ladder).toBe("open-idle-120m");
-    expect(result.delayMs).toBe(minutes(120));
-  });
-
-  it("caps closed polling based on time to open", () => {
-    const hours = buildHours();
-    const now = new Date(2026, 0, 12, 9, 45, 0); // Monday, before slack
-    const result = getPollingIntervalMs({
-      now,
-      lastChangeAt: now.getTime() - minutes(200),
-      operatingHours: hours,
-      pollStep: 3,
-    });
-    expect(result.ladder).toBe("closed");
-    expect(result.delayMs).toBe(minutes(30));
+    expect(openResult.delayMs).toBe(minutes(15));
+    expect(closedResult.delayMs).toBe(minutes(30));
   });
 });

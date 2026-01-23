@@ -56,6 +56,7 @@ import { Switch } from "@/components/ui/switch";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import type { Mode, OperatingHours, RaffleState } from "@/lib/state-manager";
+import { shouldWarnTimezoneMismatch } from "@/lib/timezone-utils";
 
 type ActionPayload =
   | { action: "generate"; startNumber: number; endNumber: number; mode: Mode }
@@ -103,6 +104,7 @@ const AdminPage = () => {
   const [canRedo, setCanRedo] = React.useState(false);
   const [pendingHours, setPendingHours] = React.useState<OperatingHours | null>(null);
   const [pendingTimezone, setPendingTimezone] = React.useState<string>("America/Los_Angeles");
+  const [timezoneMismatchOpen, setTimezoneMismatchOpen] = React.useState(false);
   const browserOriginRef = React.useRef<string | null>(null);
 
   const refreshSnapshots = React.useCallback(async () => {
@@ -291,9 +293,23 @@ const AdminPage = () => {
     setResetPhrase("");
   };
 
-  const handleSaveOperatingHours = async () => {
+  const saveOperatingHours = React.useCallback(async () => {
     if (!pendingHours) return;
     await sendAction({ action: "setOperatingHours", hours: pendingHours, timezone: pendingTimezone });
+  }, [pendingHours, pendingTimezone, sendAction]);
+
+  const handleSaveOperatingHours = async () => {
+    if (!pendingHours) return;
+    if (shouldWarnTimezoneMismatch(pendingTimezone)) {
+      setTimezoneMismatchOpen(true);
+      return;
+    }
+    await saveOperatingHours();
+  };
+
+  const handleConfirmTimezoneMismatch = async () => {
+    setTimezoneMismatchOpen(false);
+    await saveOperatingHours();
   };
 
   const handleCleanup = async (days: number) => {
@@ -1336,6 +1352,26 @@ const AdminPage = () => {
               >
                 Save operating hours
               </Button>
+              <AlertDialog open={timezoneMismatchOpen} onOpenChange={setTimezoneMismatchOpen}>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Confirm timezone selection</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Your device timezone does not match the pantry timezone. The timezone should
+                      match the location of services. Continue anyway?
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel disabled={pendingAction !== null}>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleConfirmTimezoneMismatch}
+                      disabled={pendingAction !== null}
+                    >
+                      Continue and Save
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </CardContent>
           </Card>
         </div>
@@ -1352,7 +1388,7 @@ const AdminPage = () => {
                 </p>
                 <p className="flex items-center gap-2 text-xs uppercase tracking-wide text-status-success-text">
                   <Sparkles className="size-4" />
-                  Atomic writes • Backup snapshots • Auto-refresh every 5s
+                  Atomic writes • Backup snapshots
                 </p>
               </div>
             </CardContent>

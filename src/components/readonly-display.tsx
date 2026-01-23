@@ -48,6 +48,7 @@ const formatTimeRange = (openTime: string, closeTime: string): string => {
 };
 
 const POLL_ERROR_RETRY_MS = 30_000;
+const BURST_DURATION_MS = 2 * 60_000;
 
 const DAYS: DayOfWeek[] = [
   "sunday",
@@ -110,8 +111,9 @@ export const ReadOnlyDisplay = ({ ticketSearchRequest }: ReadOnlyDisplayProps) =
   const qrCanvasRef = React.useRef<HTMLCanvasElement | null>(null);
   const pollTimeoutRef = React.useRef<number | null>(null);
   const pollStateRef = React.useRef<() => void>(() => {});
-  const pollStepRef = React.useRef(0);
-  const lastTimestampRef = React.useRef<number | null>(null);
+  const lastSeenTimestampRef = React.useRef<number | null>(null);
+  const lastChangeAtRef = React.useRef<number | null>(null);
+  const burstUntilRef = React.useRef<number | null>(null);
   const lastSearchRequestRef = React.useRef(0);
 
   const formattedDate = formatDate(language);
@@ -149,20 +151,24 @@ export const ReadOnlyDisplay = ({ ticketSearchRequest }: ReadOnlyDisplayProps) =
       setState(payload);
       setStatus(`${t("lastChecked")}: ${formatTime(new Date(), language)}`);
 
+      const nowMs = Date.now();
       const nextTimestamp =
-        typeof payload.timestamp === "number" ? payload.timestamp : Date.now();
-      if (lastTimestampRef.current === null || lastTimestampRef.current !== nextTimestamp) {
-        lastTimestampRef.current = nextTimestamp;
-        pollStepRef.current = 0;
-      } else {
-        pollStepRef.current += 1;
+        typeof payload.timestamp === "number" ? payload.timestamp : nowMs;
+      const changeDetected =
+        lastSeenTimestampRef.current === null ||
+        lastSeenTimestampRef.current !== nextTimestamp;
+      lastSeenTimestampRef.current = nextTimestamp;
+      if (changeDetected) {
+        lastChangeAtRef.current = nowMs;
+        burstUntilRef.current = nowMs + BURST_DURATION_MS;
       }
 
       const { delayMs } = getPollingIntervalMs({
-        now: new Date(),
-        lastChangeAt: lastTimestampRef.current,
+        now: new Date(nowMs),
+        lastChangeAt: lastChangeAtRef.current,
+        burstUntil: burstUntilRef.current,
         operatingHours: payload.operatingHours,
-        pollStep: pollStepRef.current,
+        timeZone: payload.timezone,
       });
       scheduleNextPoll(delayMs);
     } catch (error) {
@@ -184,7 +190,9 @@ export const ReadOnlyDisplay = ({ ticketSearchRequest }: ReadOnlyDisplayProps) =
         clearPollTimeout();
         return;
       }
-      pollStepRef.current = 0;
+      lastSeenTimestampRef.current = null;
+      lastChangeAtRef.current = null;
+      burstUntilRef.current = null;
       void pollState();
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);

@@ -1,18 +1,21 @@
+import { fromZonedTime, toZonedTime } from "date-fns-tz";
+
 import type { DayOfWeek, OperatingHours } from "./state-types";
+import { resolveTimeZone } from "./timezone-utils";
 
 const SECOND_MS = 1_000;
 const MINUTE_MS = 60 * SECOND_MS;
 
-const OPEN_ACTIVE_LADDER_MS = [10, 20, 30, 45, 60, 120].map((seconds) => seconds * SECOND_MS);
-const OPEN_IDLE_LADDERS = [
-  { minIdleMs: 120 * MINUTE_MS, ladder: [60, 120].map((m) => m * MINUTE_MS), name: "open-idle-120m" },
-  { minIdleMs: 60 * MINUTE_MS, ladder: [45, 60].map((m) => m * MINUTE_MS), name: "open-idle-60m" },
-  { minIdleMs: 30 * MINUTE_MS, ladder: [15, 30].map((m) => m * MINUTE_MS), name: "open-idle-30m" },
-  { minIdleMs: 10 * MINUTE_MS, ladder: [5, 10].map((m) => m * MINUTE_MS), name: "open-idle-10m" },
-];
-const CLOSED_LADDER_MS = [5, 10, 20, 45, 60, 120].map((m) => m * MINUTE_MS);
-const CLOSED_MAX_MS = 120 * MINUTE_MS;
-const DEFAULT_SLACK_MINUTES = 15;
+const PRE_OPEN_SLACK_MINUTES = 30;
+const POST_CLOSE_SLACK_MINUTES = 30;
+
+const BASELINE_CLOSED_MS = 30 * MINUTE_MS;
+const BASELINE_PRE_OPEN_MS = 5 * MINUTE_MS;
+const BASELINE_OPEN_MS = 5 * MINUTE_MS;
+const OPEN_MAX_MS = 15 * MINUTE_MS;
+const BURST_INTERVAL_MS = 30 * SECOND_MS;
+
+export type PollingWindow = "closed" | "pre-open" | "open";
 
 const DAYS: DayOfWeek[] = [
   "sunday",
@@ -32,133 +35,160 @@ const parseTime = (time24: string) => {
   return { hours, minutes, seconds };
 };
 
-const withTime = (base: Date, time24: string) => {
-  const { hours, minutes, seconds } = parseTime(time24);
-  return new Date(
-    base.getFullYear(),
-    base.getMonth(),
-    base.getDate(),
-    hours,
-    minutes,
-    seconds,
-    0,
-  );
-};
-
 const addDays = (base: Date, days: number) => {
   const copy = new Date(base);
   copy.setDate(copy.getDate() + days);
   return copy;
 };
 
-const getNextOpenAt = (hours: OperatingHours, now: Date, slackMinutes: number) => {
-  const slackMs = slackMinutes * MINUTE_MS;
+const buildZonedDateTime = (baseZonedDate: Date, timeZone: string, time24: string) => {
+  const { hours, minutes, seconds } = parseTime(time24);
+  const local = new Date(
+    baseZonedDate.getFullYear(),
+    baseZonedDate.getMonth(),
+    baseZonedDate.getDate(),
+    hours,
+    minutes,
+    seconds,
+    0,
+  );
+  return fromZonedTime(local, timeZone);
+};
+
+const getNextPreOpenAt = (hours: OperatingHours, now: Date, timeZone: string) => {
+  const zonedNow = toZonedTime(now, timeZone);
+  const preSlackMs = PRE_OPEN_SLACK_MINUTES * MINUTE_MS;
   for (let offset = 1; offset <= 7; offset += 1) {
-    const candidate = addDays(now, offset);
+    const candidate = addDays(zonedNow, offset);
     const day = DAYS[candidate.getDay()];
     const config = hours[day];
     if (config?.isOpen) {
-      const openAt = withTime(candidate, config.openTime);
-      return new Date(openAt.getTime() - slackMs);
+      const openAt = buildZonedDateTime(candidate, timeZone, config.openTime);
+      return new Date(openAt.getTime() - preSlackMs);
     }
   }
   return null;
 };
 
 export type PollingWindowStatus = {
-  isOpenWindow: boolean;
-  nextOpenAt: Date | null;
+  window: PollingWindow;
+  nextPreOpenAt: Date | null;
 };
 
 export const getPollingWindowStatus = (
   hours: OperatingHours | null,
   now: Date,
-  slackMinutes = DEFAULT_SLACK_MINUTES,
+  timeZone?: string | null,
 ): PollingWindowStatus => {
   if (!hours) {
-    return { isOpenWindow: true, nextOpenAt: null };
+    return { window: "open", nextPreOpenAt: null };
   }
 
-  const today = DAYS[now.getDay()];
+  const resolvedTimeZone = resolveTimeZone(timeZone);
+  const zonedNow = toZonedTime(now, resolvedTimeZone);
+  const today = DAYS[zonedNow.getDay()];
   const config = hours[today];
-  const slackMs = slackMinutes * MINUTE_MS;
+  const preSlackMs = PRE_OPEN_SLACK_MINUTES * MINUTE_MS;
+  const postSlackMs = POST_CLOSE_SLACK_MINUTES * MINUTE_MS;
 
   if (config?.isOpen) {
-    const openAt = withTime(now, config.openTime);
-    const closeAt = withTime(now, config.closeTime);
-    const openStart = new Date(openAt.getTime() - slackMs);
-    const openEnd = new Date(closeAt.getTime() + slackMs);
+    const openAt = buildZonedDateTime(zonedNow, resolvedTimeZone, config.openTime);
+    const closeAt = buildZonedDateTime(zonedNow, resolvedTimeZone, config.closeTime);
+    const preOpenStart = new Date(openAt.getTime() - preSlackMs);
+    const postCloseEnd = new Date(closeAt.getTime() + postSlackMs);
 
-    if (now >= openStart && now <= openEnd) {
-      return { isOpenWindow: true, nextOpenAt: null };
+    if (now >= openAt && now <= postCloseEnd) {
+      return { window: "open", nextPreOpenAt: null };
     }
-    if (now < openStart) {
-      return { isOpenWindow: false, nextOpenAt: openStart };
+    if (now >= preOpenStart && now < openAt) {
+      return { window: "pre-open", nextPreOpenAt: null };
+    }
+    if (now < preOpenStart) {
+      return { window: "closed", nextPreOpenAt: preOpenStart };
     }
   }
 
-  return { isOpenWindow: false, nextOpenAt: getNextOpenAt(hours, now, slackMinutes) };
+  return {
+    window: "closed",
+    nextPreOpenAt: getNextPreOpenAt(hours, now, resolvedTimeZone),
+  };
 };
 
-const selectOpenLadder = (timeSinceChangeMs: number) => {
-  for (const tier of OPEN_IDLE_LADDERS) {
-    if (timeSinceChangeMs >= tier.minIdleMs) {
-      return { ladder: tier.ladder, name: tier.name };
-    }
+const getBaselineDelayMs = (window: PollingWindow) => {
+  switch (window) {
+    case "pre-open":
+      return BASELINE_PRE_OPEN_MS;
+    case "open":
+      return BASELINE_OPEN_MS;
+    default:
+      return BASELINE_CLOSED_MS;
   }
-  return { ladder: OPEN_ACTIVE_LADDER_MS, name: "open-active" };
+};
+
+const getActiveDelayMs = (timeSinceChangeMs: number, window: PollingWindow) => {
+  if (timeSinceChangeMs < 10 * MINUTE_MS) return 1 * MINUTE_MS;
+  if (timeSinceChangeMs < 30 * MINUTE_MS) return 2 * MINUTE_MS;
+  if (timeSinceChangeMs < 60 * MINUTE_MS) return 5 * MINUTE_MS;
+  if (timeSinceChangeMs < 240 * MINUTE_MS) return 10 * MINUTE_MS;
+  return window === "closed" ? 30 * MINUTE_MS : 15 * MINUTE_MS;
 };
 
 export type PollingIntervalInput = {
   now: Date;
   lastChangeAt: number | null;
+  burstUntil?: number | null;
   operatingHours: OperatingHours | null;
-  pollStep: number;
-  slackMinutes?: number;
+  timeZone?: string | null;
 };
 
 export type PollingIntervalResult = {
   delayMs: number;
-  ladder: string;
-  isOpenWindow: boolean;
-  capMs?: number;
+  window: PollingWindow;
+  nextPreOpenAt: Date | null;
 };
 
 export const getPollingIntervalMs = ({
   now,
   lastChangeAt,
+  burstUntil,
   operatingHours,
-  pollStep,
-  slackMinutes = DEFAULT_SLACK_MINUTES,
+  timeZone,
 }: PollingIntervalInput): PollingIntervalResult => {
-  const timeSinceChangeMs =
-    typeof lastChangeAt === "number" ? Math.max(0, now.getTime() - lastChangeAt) : 0;
-  const windowStatus = getPollingWindowStatus(operatingHours, now, slackMinutes);
+  const windowStatus = getPollingWindowStatus(operatingHours, now, timeZone);
+  const nowMs = now.getTime();
 
-  if (windowStatus.isOpenWindow) {
-    const { ladder, name } = selectOpenLadder(timeSinceChangeMs);
-    const stepIndex = Math.min(pollStep, ladder.length - 1);
+  if (typeof burstUntil === "number" && nowMs < burstUntil) {
     return {
-      delayMs: ladder[stepIndex],
-      ladder: name,
-      isOpenWindow: true,
+      delayMs: BURST_INTERVAL_MS,
+      window: windowStatus.window,
+      nextPreOpenAt: windowStatus.nextPreOpenAt,
     };
   }
 
-  const stepIndex = Math.min(pollStep, CLOSED_LADDER_MS.length - 1);
-  const baseDelay = CLOSED_LADDER_MS[stepIndex];
-  let capMs = CLOSED_MAX_MS;
-  if (windowStatus.nextOpenAt) {
-    const timeToOpenMs = windowStatus.nextOpenAt.getTime() - now.getTime();
-    if (timeToOpenMs > 0) {
-      capMs = Math.min(CLOSED_MAX_MS, Math.floor(timeToOpenMs / 2));
+  const timeSinceChangeMs =
+    typeof lastChangeAt === "number" ? Math.max(0, nowMs - lastChangeAt) : null;
+  let delayMs =
+    timeSinceChangeMs === null
+      ? getBaselineDelayMs(windowStatus.window)
+      : getActiveDelayMs(timeSinceChangeMs, windowStatus.window);
+
+  if (windowStatus.window === "pre-open") {
+    delayMs = Math.min(delayMs, BASELINE_PRE_OPEN_MS);
+  }
+  if (windowStatus.window === "open") {
+    delayMs = Math.min(delayMs, OPEN_MAX_MS);
+  }
+
+  if (windowStatus.window === "closed" && windowStatus.nextPreOpenAt) {
+    const timeToPreOpenMs = windowStatus.nextPreOpenAt.getTime() - nowMs;
+    if (timeToPreOpenMs > 0) {
+      delayMs = Math.min(delayMs, timeToPreOpenMs);
     }
   }
 
   return {
-    delayMs: Math.min(baseDelay, capMs),
-    ladder: "closed",
-    isOpenWindow: false,
-    capMs,
+    delayMs,
+    window: windowStatus.window,
+    nextPreOpenAt: windowStatus.nextPreOpenAt,
   };
 };
