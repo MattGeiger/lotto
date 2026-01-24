@@ -12,6 +12,11 @@
 
 ---
 
+## Operational Notes
+- 2026-01-22: Rolled back the experimental Blob snapshot caching and restored production to the polling + timezone warning revision.
+
+---
+
 ## Issue 1: Returned tickets are not skipped when advancing Draw Position
 
 ### Status

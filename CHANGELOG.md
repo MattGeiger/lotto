@@ -4,6 +4,9 @@
 ### Changed
 - Polished the public display header search cluster so the pill shares the same palette-based gradient, hover fill, and elevation as the language/theme toggles while keeping responsive text/icon scaling, extra horizontal padding, and digit-only input behavior.
 
+### Notes
+- 2026-01-22: Rolled back the experimental Blob snapshot caching and restored production to the polling + timezone warning revision.
+
 ## [1.1.3] - 2026-01-19
 - Added multilingual, mobile-friendly header search that launches the ticket detail modal or a “ticket not found” dialog so clients can find their number fast.
 
