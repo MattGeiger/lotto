@@ -1,3 +1,17 @@
+# William Temple House Digital Raffle System v1.2.1
+
+**Release Date:** February 3, 2026
+
+## Display Cadence
+
+- Open-window polling now clamps to a 5-minute maximum to keep the public display responsive during service hours, even after long idle periods.
+
+## Versioning
+
+- Bumped application version to **1.2.1**.
+
+---
+
 # William Temple House Digital Raffle System v1.2.0
 
 **Release Date:** January 20, 2026

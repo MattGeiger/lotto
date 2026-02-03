@@ -101,7 +101,7 @@ describe("polling strategy", () => {
     expect(result.delayMs).toBe(minutes(1));
   });
 
-  it("uses 15 minutes after long idle while open, 30 minutes while closed", () => {
+  it("uses 5 minutes after long idle while open, 30 minutes while closed", () => {
     const hours = buildHours();
     const openNow = new Date("2026-01-12T20:00:00Z"); // open
     const closedNow = new Date("2026-01-12T17:00:00Z"); // 9:00 AM LA
@@ -117,7 +117,7 @@ describe("polling strategy", () => {
       operatingHours: hours,
       timeZone,
     });
-    expect(openResult.delayMs).toBe(minutes(15));
+    expect(openResult.delayMs).toBe(minutes(5));
     expect(closedResult.delayMs).toBe(minutes(30));
   });
 });

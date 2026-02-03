@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.1] - 2026-02-03
+### Changed
+- Clamp open-window polling to a 5-minute maximum so the public display stays responsive during service hours even after long idle periods.
+
 ## [1.2.0] - 2026-01-20
 ### Changed
 - Polished the public display header search cluster so the pill shares the same palette-based gradient, hover fill, and elevation as the language/theme toggles while keeping responsive text/icon scaling, extra horizontal padding, and digit-only input behavior.

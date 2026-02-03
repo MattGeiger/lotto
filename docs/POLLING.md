@@ -5,29 +5,35 @@
   `getPollingIntervalMs` from `src/lib/polling-strategy.ts`.
 - Poll cadence is driven by:
   - `timeSinceChange` (based on `state.timestamp`),
-  - a `pollStep` counter that increments when no change is detected,
-  - operating-hours window logic with a 15-minute slack before/after open.
-- Open-window ladders:
-  - "open-active" (seconds): 10s, 20s, 30s, 45s, 60s, 120s.
-  - "open-idle" tiers (minutes) after 10/30/60/120 minutes idle:
-    5/10, 15/30, 45/60, 60/120 minutes.
-- Closed-window ladder (minutes): 5, 10, 20, 45, 60, 120; capped so it does not
-  overshoot the next open window.
-- Polling pauses when the tab is hidden and resumes on visibility changes.
+  - a burst window (30-second polling for 2 minutes after a change),
+  - operating-hours windows with a 30-minute slack before/after open,
+  - visibility pause (hidden tabs stop polling).
+- Windows are derived from `state.timezone`: `closed`, `pre-open`, `open`.
+- Baselines when no change has been detected in this session:
+  - Closed: every 30 minutes.
+  - Pre-open: every 5 minutes.
+  - Open: every 5 minutes.
+- Active cadence after a change (time since last change):
+  - <10 minutes: every 1 minute.
+  - 10-30 minutes: every 2 minutes.
+  - 30-60 minutes: every 5 minutes.
+  - 60-240 minutes: every 10 minutes.
+  - >=240 minutes: every 15 minutes (open/pre-open) or 30 minutes (closed).
+- Clamps:
+  - Pre-open never slower than 5 minutes.
+  - Open never slower than 5 minutes to avoid long idle gaps during service hours.
+  - Closed never overshoots the next pre-open start.
+- Polling pauses when the tab is hidden and resumes immediately on visibility
+  return (with change tracking reset).
 - Errors retry every 30 seconds.
 
-## Shortcomings Observed
-- A fresh session before opening can inherit a very old `state.timestamp`, which
-  immediately selects the slowest open-idle tier (60-120 minutes).
-  This leads to stale displays right as the pantry opens.
-- There is no explicit "poll at open" or "pre-open ramp" trigger, so a long
-  closed cadence can skip the early open period.
-- Open-window idle tiers can stretch to hour-level polling even while open.
-- The schedule relies on the client device clock/timezone, which can drift from
-  the configured pantry timezone.
-- There is no explicit burst mode for rapid sequences of updates.
+## Rationale for Open-Window Clamp
+During service hours, long idle gaps make the board feel unresponsive and
+undermine trust. Clamping open-window polling to 5 minutes ensures the display
+refreshes reliably even after overnight idle, so changes show up quickly once
+the pantry opens.
 
-## Proposed Revision (Draft)
+## Implementation Details (as of today)
 ### Goals
 - Ensure the display is responsive at and just before opening.
 - Provide a short, high-frequency burst when changes occur, then back off
@@ -48,7 +54,7 @@
 - `timezone`: use `state.timezone` for window calculations; fall back to the
   device local clock if unavailable.
 
-### Scheduling Rules (Proposed)
+### Scheduling Rules
 1. Visibility:
    - If the tab is hidden, stop polling.
    - On visibility return, poll immediately.
@@ -75,7 +81,7 @@
 7. Cadence selection:
    - If `sessionLastChangeAt` is `null`, use the window baseline.
    - Otherwise, use the active cadence table.
-   - While open, never allow a cadence slower than 15 minutes.
+   - While open, never allow a cadence slower than 5 minutes.
    - While pre-open, never allow a cadence slower than 5 minutes.
 
 ### Decisions Confirmed

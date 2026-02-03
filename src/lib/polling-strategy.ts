@@ -12,7 +12,6 @@ const POST_CLOSE_SLACK_MINUTES = 30;
 const BASELINE_CLOSED_MS = 30 * MINUTE_MS;
 const BASELINE_PRE_OPEN_MS = 5 * MINUTE_MS;
 const BASELINE_OPEN_MS = 5 * MINUTE_MS;
-const OPEN_MAX_MS = 15 * MINUTE_MS;
 const BURST_INTERVAL_MS = 30 * SECOND_MS;
 
 export type PollingWindow = "closed" | "pre-open" | "open";
@@ -176,7 +175,7 @@ export const getPollingIntervalMs = ({
     delayMs = Math.min(delayMs, BASELINE_PRE_OPEN_MS);
   }
   if (windowStatus.window === "open") {
-    delayMs = Math.min(delayMs, OPEN_MAX_MS);
+    delayMs = Math.min(delayMs, BASELINE_OPEN_MS);
   }
 
   if (windowStatus.window === "closed" && windowStatus.nextPreOpenAt) {
