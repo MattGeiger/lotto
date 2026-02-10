@@ -71,7 +71,8 @@ type ActionPayload =
   | { action: "undo" }
   | { action: "redo" }
   | { action: "restoreSnapshot"; id: string }
-  | { action: "setOperatingHours"; hours: OperatingHours; timezone: string };
+  | { action: "setOperatingHours"; hours: OperatingHours; timezone: string }
+  | { action: "generateBatch"; startNumber: number; endNumber: number; batchSize: number };
 
 type Snapshot = {
   id: string;
@@ -86,6 +87,7 @@ const AdminPage = () => {
   const [rangeForm, setRangeForm] = React.useState({ startNumber: "", endNumber: "" });
   const [mode, setMode] = React.useState<Mode>("random");
   const [appendEnd, setAppendEnd] = React.useState("");
+  const [batchSize, setBatchSize] = React.useState("10");
   const [returnedTicket, setReturnedTicket] = React.useState("");
   const [unclaimedTicket, setUnclaimedTicket] = React.useState("");
   const [modeConfirmOpen, setModeConfirmOpen] = React.useState(false);
@@ -256,6 +258,26 @@ const AdminPage = () => {
       throw new Error("Invalid input");
     }
     await sendAction({ action: "generate", startNumber: start, endNumber: end, mode });
+  };
+
+  const handleGenerateBatch = async () => {
+    const size = Number(batchSize);
+    const start = Number(rangeForm.startNumber);
+    const end = Number(rangeForm.endNumber);
+    if (!Number.isInteger(size) || size <= 0) {
+      toast.error("Batch size must be a positive whole number.");
+      throw new Error("Invalid input");
+    }
+    if (!Number.isInteger(start) || !Number.isInteger(end)) {
+      toast.error("Start and end must be whole numbers.");
+      throw new Error("Invalid input");
+    }
+    await sendAction({
+      action: "generateBatch",
+      startNumber: start,
+      endNumber: end,
+      batchSize: size,
+    });
   };
 
   const handleAppend = async () => {
@@ -517,6 +539,22 @@ const AdminPage = () => {
   // Uses the same 2.2 min/ticket constant as the public display (readonly-display.tsx:307)
   const MINUTES_PER_TICKET = 2.2;
   const maxWaitMinutes = peopleWaiting > 0 ? Math.round(peopleWaiting * MINUTES_PER_TICKET) : null;
+
+  // Undrawn count: tickets in range NOT yet in generatedOrder
+  const undrawnCount = (() => {
+    if (!state || (state.startNumber === 0 && state.endNumber === 0)) {
+      const s = Number(rangeForm.startNumber);
+      const e = Number(rangeForm.endNumber);
+      if (Number.isInteger(s) && Number.isInteger(e) && e >= s) return e - s + 1;
+      return 0;
+    }
+    const drawn = new Set(state.generatedOrder);
+    let count = 0;
+    for (let i = state.startNumber; i <= state.endNumber; i++) {
+      if (!drawn.has(i)) count++;
+    }
+    return count;
+  })();
 
   const appendMin = (state?.endNumber ?? 0) + 1;
   const parsedAppendValue = Number(appendEnd);
@@ -849,7 +887,7 @@ const AdminPage = () => {
                 </AlertDialogContent>
               </AlertDialog>
 
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap items-end gap-3">
                 <ConfirmAction
                   triggerLabel="Generate order"
                   actionLabel="Generate"
@@ -863,6 +901,39 @@ const AdminPage = () => {
                       : undefined
                   }
                 />
+                <div className="flex items-end gap-2">
+                  <div className="space-y-1">
+                    <Label htmlFor="batch-size" className="text-xs text-muted-foreground">
+                      Batch size
+                    </Label>
+                    <Input
+                      id="batch-size"
+                      type="text"
+                      inputMode="numeric"
+                      pattern="\d*"
+                      maxLength={4}
+                      value={batchSize}
+                      onChange={(e) => setBatchSize(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                      className="w-20 appearance-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                    />
+                    <p className="text-xs text-muted-foreground">{undrawnCount} undrawn</p>
+                  </div>
+                  <ConfirmAction
+                    triggerLabel="Generate batch"
+                    actionLabel="Draw batch"
+                    title="Generate batch from undrawn pool"
+                    description={`Randomly select ${batchSize} ticket(s) from the ${undrawnCount} remaining undrawn tickets and append to the draw order. Existing positions will not change.`}
+                    onConfirm={handleGenerateBatch}
+                    disabled={
+                      loading ||
+                      pendingAction !== null ||
+                      undrawnCount === 0 ||
+                      Number(batchSize) <= 0 ||
+                      Number(batchSize) > undrawnCount
+                    }
+                    variant="default"
+                  />
+                </div>
               </div>
 
               <Separator />
@@ -871,7 +942,7 @@ const AdminPage = () => {
                 <div className="space-y-2 sm:col-span-2">
                   <Label
                     htmlFor="append"
-                    className="flex items-center gap-2 text-lg font-semibold text-foreground"
+                    className="flex items-center gap-2 text-sm font-medium text-foreground"
                   >
                     <TicketPlus className="size-4 text-muted-foreground" />
                     Append additional tickets

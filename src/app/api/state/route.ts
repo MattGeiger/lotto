@@ -51,6 +51,12 @@ const actionSchema = z.discriminatedUnion("action", [
     endNumber: z.number().int().positive(),
   }),
   z.object({
+    action: z.literal("generateBatch"),
+    startNumber: z.number().int().positive(),
+    endNumber: z.number().int().positive(),
+    batchSize: z.number().int().positive(),
+  }),
+  z.object({
     action: z.literal("setMode"),
     mode: z.custom<Mode>((value) => value === "random" || value === "sequential"),
   }),
@@ -167,6 +173,14 @@ export async function POST(request: Request) {
         );
       case "append":
         return NextResponse.json(await stateManager.appendTickets(payload.endNumber));
+      case "generateBatch":
+        return NextResponse.json(
+          await stateManager.generateBatch({
+            startNumber: payload.startNumber,
+            endNumber: payload.endNumber,
+            batchSize: payload.batchSize,
+          }),
+        );
       case "setMode":
         return NextResponse.json(await stateManager.setMode(payload.mode));
       case "updateServing":

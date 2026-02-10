@@ -164,6 +164,60 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
     });
   };
 
+  const generateBatch = async (input: {
+    startNumber: number;
+    endNumber: number;
+    batchSize: number;
+  }) => {
+    const current = await safeReadState();
+    const { batchSize } = input;
+
+    if (!Number.isInteger(batchSize) || batchSize <= 0) {
+      throw new Error("Batch size must be a positive integer.");
+    }
+
+    // Determine effective range: use current if set, otherwise set from input
+    const hasRange = current.startNumber !== 0 || current.endNumber !== 0;
+    let effectiveStart = current.startNumber;
+    let effectiveEnd = current.endNumber;
+
+    if (!hasRange) {
+      validateRange(input.startNumber, input.endNumber);
+      effectiveStart = input.startNumber;
+      effectiveEnd = input.endNumber;
+    }
+
+    // Compute undrawn pool: tickets in range NOT already in generatedOrder
+    const drawn = new Set(current.generatedOrder);
+    const pool = buildRange(effectiveStart, effectiveEnd).filter(
+      (ticket) => !drawn.has(ticket),
+    );
+
+    if (pool.length === 0) {
+      throw new Error("All tickets in the range have already been drawn.");
+    }
+
+    if (batchSize > pool.length) {
+      throw new Error(
+        `Batch size (${batchSize}) exceeds remaining undrawn tickets (${pool.length}).`,
+      );
+    }
+
+    // Random: shuffle pool and take first N. Sequential: take lowest N.
+    const selected =
+      current.mode === "random"
+        ? shuffle(pool).slice(0, batchSize)
+        : pool.slice(0, batchSize);
+
+    return persist({
+      ...current,
+      startNumber: effectiveStart,
+      endNumber: effectiveEnd,
+      generatedOrder: [...current.generatedOrder, ...selected],
+      orderLocked: true,
+    });
+  };
+
   const setMode = async (mode: Mode) => {
     const current = await safeReadState();
     const hasRange = current.startNumber !== 0 || current.endNumber !== 0;
@@ -445,6 +499,7 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
   return {
     loadState,
     generateState,
+    generateBatch,
     appendTickets,
     setMode,
     updateCurrentlyServing,

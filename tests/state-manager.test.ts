@@ -301,4 +301,103 @@ describe("state manager", () => {
     const redone = await manager.redo();
     expect(redone.currentlyServing).toBe(6);
   });
+
+  describe("generateBatch", () => {
+    it("draws a batch from a fresh range as the first action", async () => {
+      const result = await manager.generateBatch({
+        startNumber: 1,
+        endNumber: 50,
+        batchSize: 10,
+      });
+
+      expect(result.generatedOrder).toHaveLength(10);
+      expect(result.orderLocked).toBe(true);
+      expect(result.startNumber).toBe(1);
+      expect(result.endNumber).toBe(50);
+      for (const ticket of result.generatedOrder) {
+        expect(ticket).toBeGreaterThanOrEqual(1);
+        expect(ticket).toBeLessThanOrEqual(50);
+      }
+      expect(new Set(result.generatedOrder).size).toBe(10);
+    });
+
+    it("appends a second batch without changing existing positions", async () => {
+      const first = await manager.generateBatch({
+        startNumber: 1,
+        endNumber: 20,
+        batchSize: 5,
+      });
+      const firstOrder = [...first.generatedOrder];
+
+      const second = await manager.generateBatch({
+        startNumber: 1,
+        endNumber: 20,
+        batchSize: 5,
+      });
+
+      expect(second.generatedOrder).toHaveLength(10);
+      expect(second.generatedOrder.slice(0, 5)).toEqual(firstOrder);
+      expect(new Set(second.generatedOrder).size).toBe(10);
+    });
+
+    it("draws sequential batches in sequential mode", async () => {
+      await manager.setMode("sequential");
+
+      const first = await manager.generateBatch({
+        startNumber: 1,
+        endNumber: 20,
+        batchSize: 5,
+      });
+      expect(first.generatedOrder).toEqual([1, 2, 3, 4, 5]);
+
+      const second = await manager.generateBatch({
+        startNumber: 1,
+        endNumber: 20,
+        batchSize: 5,
+      });
+      expect(second.generatedOrder).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    });
+
+    it("rejects batch size exceeding remaining pool", async () => {
+      await manager.generateBatch({
+        startNumber: 1,
+        endNumber: 10,
+        batchSize: 8,
+      });
+
+      await expect(
+        manager.generateBatch({
+          startNumber: 1,
+          endNumber: 10,
+          batchSize: 5,
+        }),
+      ).rejects.toThrow(/exceeds remaining/i);
+    });
+
+    it("rejects when all tickets are already drawn", async () => {
+      await manager.generateBatch({
+        startNumber: 1,
+        endNumber: 3,
+        batchSize: 3,
+      });
+
+      await expect(
+        manager.generateBatch({
+          startNumber: 1,
+          endNumber: 3,
+          batchSize: 1,
+        }),
+      ).rejects.toThrow(/already been drawn/i);
+    });
+
+    it("rejects zero or negative batch size", async () => {
+      await expect(
+        manager.generateBatch({
+          startNumber: 1,
+          endNumber: 10,
+          batchSize: 0,
+        }),
+      ).rejects.toThrow(/positive integer/i);
+    });
+  });
 });
