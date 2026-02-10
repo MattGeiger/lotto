@@ -41,8 +41,9 @@ export async function POST(request: Request) {
     { status: 400 },
   );
   } catch (error) {
+    console.error("[State] Cleanup failed:", error);
     return NextResponse.json(
-      { error: "Cleanup failed", details: String(error) },
+      { error: "Cleanup failed. Please try again." },
       { status: 500 },
     );
   }

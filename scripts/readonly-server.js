@@ -473,7 +473,7 @@ const sendHtml = (res) => {
 };
 
 const tryServeStatic = async (pathname, res) => {
-  const safePath = path.normalize(pathname).replace(/^(\.\.[/\\])+/, "");
+  const safePath = path.normalize(pathname);
   const filePath = path.join(publicDir, safePath);
   if (!filePath.startsWith(publicDir)) return false;
   try {

@@ -174,7 +174,10 @@ export const { handlers: authHandlers, auth } = NextAuth(() => {
           console.log("[Auth] signIn bypass");
           return true;
         }
-        console.log("[Auth] signIn callback", { email: user.email });
+        const maskedEmail = user.email
+          ? `${user.email.slice(0, 2)}***@${user.email.split("@")[1]}`
+          : "unknown";
+        console.log("[Auth] signIn callback", { email: maskedEmail });
         const email = user.email?.toLowerCase();
         if (allowedDomain && email && email.endsWith(`@${allowedDomain}`)) {
           console.log("[Auth] signIn approved");
@@ -185,7 +188,7 @@ export const { handlers: authHandlers, auth } = NextAuth(() => {
       },
     },
     session: { strategy: "jwt" },
-    trustHost: true,
+    trustHost: !!process.env.VERCEL,
     debug: process.env.NODE_ENV === "development",
   };
 

@@ -15,6 +15,12 @@ export async function proxy(request: NextRequest) {
     isApiState && !["GET", "HEAD", "OPTIONS"].includes(request.method.toUpperCase());
   const authBypass = process.env.AUTH_BYPASS === "true";
 
+  if (authBypass && process.env.NODE_ENV === "production") {
+    throw new Error(
+      "AUTH_BYPASS must not be enabled in production. Remove AUTH_BYPASS from your environment variables.",
+    );
+  }
+
   if ((isAdmin || isWriteApi) && !authBypass) {
     const session = await auth();
     if (!session) {

@@ -5,6 +5,40 @@ import { stateManager, type Mode, type OperatingHours } from "@/lib/state-manage
 
 export const runtime = "nodejs";
 
+const VALID_TIMEZONES = new Set(Intl.supportedValuesOf("timeZone"));
+
+const dayScheduleSchema = z.object({
+  isOpen: z.boolean(),
+  openTime: z.string(),
+  closeTime: z.string(),
+});
+
+const operatingHoursSchema = z.object({
+  sunday: dayScheduleSchema,
+  monday: dayScheduleSchema,
+  tuesday: dayScheduleSchema,
+  wednesday: dayScheduleSchema,
+  thursday: dayScheduleSchema,
+  friday: dayScheduleSchema,
+  saturday: dayScheduleSchema,
+});
+
+const httpUrlSchema = z
+  .string()
+  .max(64)
+  .url()
+  .refine(
+    (value) => {
+      try {
+        const parsed = new URL(value);
+        return parsed.protocol === "https:" || parsed.protocol === "http:";
+      } catch {
+        return false;
+      }
+    },
+    { message: "URL must use https:// or http:// scheme" },
+  );
+
 const actionSchema = z.discriminatedUnion("action", [
   z.object({
     action: z.literal("generate"),
@@ -54,31 +88,64 @@ const actionSchema = z.discriminatedUnion("action", [
   }),
   z.object({
     action: z.literal("setDisplayUrl"),
-    url: z.string().max(64).url().nullable(),
+    url: httpUrlSchema.nullable(),
   }),
   z.object({
     action: z.literal("getDisplayUrl"),
   }),
   z.object({
     action: z.literal("setOperatingHours"),
-    hours: z.custom<OperatingHours>((value) => Boolean(value)),
-    timezone: z.string(),
+    hours: operatingHoursSchema,
+    timezone: z.string().min(1).refine(
+      (value) => VALID_TIMEZONES.has(value) || value === "UTC",
+      { message: "Must be a valid IANA timezone identifier" },
+    ),
   }),
 ]);
+
+// --- Rate limiting ---
+
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX_REQUESTS = 30;
+
+const requestLog: number[] = [];
+
+const isRateLimited = () => {
+  const now = Date.now();
+  // Prune entries older than the window
+  while (requestLog.length > 0 && requestLog[0] < now - RATE_LIMIT_WINDOW_MS) {
+    requestLog.shift();
+  }
+  if (requestLog.length >= RATE_LIMIT_MAX_REQUESTS) {
+    return true;
+  }
+  requestLog.push(now);
+  return false;
+};
+
+// --- Handlers ---
 
 export async function GET() {
   try {
     const state = await stateManager.loadState();
     return NextResponse.json(state, { status: 200 });
   } catch (error) {
+    console.error("[State] GET failed:", error);
     return NextResponse.json(
-      { error: "Unable to load state", details: String(error) },
+      { error: "Unable to load state. Please try again shortly." },
       { status: 500 },
     );
   }
 }
 
 export async function POST(request: Request) {
+  if (isRateLimited()) {
+    return NextResponse.json(
+      { error: "Too many requests. Please wait before trying again." },
+      { status: 429 },
+    );
+  }
+
   try {
     const parsed = actionSchema.safeParse(await request.json());
     if (!parsed.success) {
@@ -140,8 +207,9 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "Unsupported action" }, { status: 400 });
     }
   } catch (error) {
+    console.error("[State] POST failed:", error);
     return NextResponse.json(
-      { error: "Unable to process request", details: String(error) },
+      { error: "Unable to process request. Please try again." },
       { status: 500 },
     );
   }

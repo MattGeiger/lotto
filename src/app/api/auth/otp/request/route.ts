@@ -128,7 +128,8 @@ export async function POST(request: Request) {
       });
     }
 
-    console.log("[OTP] Code issued", { email });
+    const maskedEmail = `${email.slice(0, 2)}***@${email.split("@")[1]}`;
+    console.log("[OTP] Code issued", { email: maskedEmail });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("[OTP] Failed to issue code:", error);
