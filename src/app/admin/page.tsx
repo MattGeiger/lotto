@@ -905,7 +905,7 @@ const AdminPage = () => {
               <AlertDialog open={batchDialogOpen} onOpenChange={(open) => {
                 if (!batchDrawing) setBatchDialogOpen(open);
               }}>
-                <AlertDialogContent>
+                <AlertDialogContent className="overflow-x-hidden">
                   <AlertDialogHeader>
                     <AlertDialogTitle>Generate batch from undrawn pool</AlertDialogTitle>
                     <AlertDialogDescription>
@@ -1032,7 +1032,7 @@ const AdminPage = () => {
                   <AlertDialog open={appendDialogOpen} onOpenChange={(open) => {
                     if (!appendBusy) setAppendDialogOpen(open);
                   }}>
-                    <AlertDialogContent>
+                    <AlertDialogContent className="overflow-x-hidden">
                       <AlertDialogHeader>
                         <AlertDialogTitle>Append tickets</AlertDialogTitle>
                         <AlertDialogDescription>
@@ -1040,26 +1040,11 @@ const AdminPage = () => {
                           Choose whether to also add the new tickets to the draw queue.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel disabled={appendBusy}>Cancel</AlertDialogCancel>
-                        <Button
-                          variant="outline"
-                          disabled={appendBusy}
-                          onClick={async () => {
-                            setAppendBusy(true);
-                            try {
-                              await handleExtendRange();
-                            } finally {
-                              setAppendBusy(false);
-                              setAppendDialogOpen(false);
-                            }
-                          }}
-                        >
-                          {appendBusy ? "Working..." : "Append ticket range only"}
-                        </Button>
+                      <AlertDialogFooter className="flex-col gap-2 sm:flex-col">
                         <Button
                           variant="default"
                           disabled={appendBusy}
+                          className="w-full"
                           onClick={async () => {
                             setAppendBusy(true);
                             try {
@@ -1072,6 +1057,23 @@ const AdminPage = () => {
                         >
                           {appendBusy ? "Working..." : "Append and draw tickets"}
                         </Button>
+                        <Button
+                          variant="outline"
+                          disabled={appendBusy}
+                          className="w-full"
+                          onClick={async () => {
+                            setAppendBusy(true);
+                            try {
+                              await handleExtendRange();
+                            } finally {
+                              setAppendBusy(false);
+                              setAppendDialogOpen(false);
+                            }
+                          }}
+                        >
+                          {appendBusy ? "Working..." : "Append ticket range only"}
+                        </Button>
+                        <AlertDialogCancel disabled={appendBusy} className="w-full">Cancel</AlertDialogCancel>
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
