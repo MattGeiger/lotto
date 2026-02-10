@@ -56,6 +56,7 @@ import { Switch } from "@/components/ui/switch";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import type { Mode, OperatingHours, RaffleState } from "@/lib/state-manager";
+import { formatWaitTime } from "@/lib/time-format";
 import { shouldWarnTimezoneMismatch } from "@/lib/timezone-utils";
 
 type ActionPayload =
@@ -485,6 +486,38 @@ const AdminPage = () => {
     currentIndex === -1 ? getNextNonReturnedIndex(-1, 1) : getNextNonReturnedIndex(currentIndex, -1);
   const canAdvanceNext = totalTickets > 0 && nextServingIndex !== -1;
   const canAdvancePrev = totalTickets > 0 && prevServingIndex !== -1;
+
+  // Tickets called: count from index 0 through currentIndex, excluding returned
+  const ticketsCalled = (() => {
+    if (!state?.generatedOrder || currentIndex < 0) return 0;
+    let count = 0;
+    for (let i = 0; i <= currentIndex; i++) {
+      const ticket = state.generatedOrder[i];
+      if (state.ticketStatus?.[ticket] !== "returned") {
+        count++;
+      }
+    }
+    return count;
+  })();
+
+  // People waiting: tickets after currentlyServing that are not returned
+  const peopleWaiting = (() => {
+    if (!state?.generatedOrder || currentIndex < 0) return totalTickets;
+    let count = 0;
+    for (let i = currentIndex + 1; i < state.generatedOrder.length; i++) {
+      const ticket = state.generatedOrder[i];
+      if (state.ticketStatus?.[ticket] !== "returned") {
+        count++;
+      }
+    }
+    return count;
+  })();
+
+  // Max wait time: ETA for the last person in the queue
+  // Uses the same 2.2 min/ticket constant as the public display (readonly-display.tsx:307)
+  const MINUTES_PER_TICKET = 2.2;
+  const maxWaitMinutes = peopleWaiting > 0 ? Math.round(peopleWaiting * MINUTES_PER_TICKET) : null;
+
   const appendMin = (state?.endNumber ?? 0) + 1;
   const parsedAppendValue = Number(appendEnd);
   const resolvedAppendValue =
@@ -1050,32 +1083,54 @@ const AdminPage = () => {
                 </Badge>
               )}
             </CardHeader>
-            <CardContent className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-1 rounded-lg border border-border bg-gradient-card-accent p-3">
+            <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
+              {/* Row 1: 3 columns */}
+              <div className="space-y-1 rounded-lg border border-border bg-gradient-card-accent p-3 lg:col-span-2">
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">Range</p>
                 <p className="text-lg font-semibold text-status-success-text">
                   {state?.startNumber || "—"} – {state?.endNumber || "—"}
                 </p>
               </div>
-              <div className="space-y-1 rounded-lg border border-border bg-gradient-card-accent p-3">
+              <div className="space-y-1 rounded-lg border border-border bg-gradient-card-accent p-3 lg:col-span-2">
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">Tickets issued</p>
                 <p className="text-lg font-semibold text-status-success-text">
                   {state ? state.endNumber - state.startNumber + 1 : "—"}
                 </p>
               </div>
-              <div className="space-y-1 rounded-lg border border-border bg-gradient-card-accent p-3">
+              <div className="space-y-1 rounded-lg border border-border bg-gradient-card-accent p-3 sm:col-span-2 lg:col-span-2">
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">Current mode</p>
                 <p className="text-lg font-semibold text-status-success-text capitalize">
                   {state?.mode}
                 </p>
               </div>
-              <div className="space-y-1 rounded-lg border border-border bg-gradient-card-accent p-3">
+              {/* Row 2: 2 columns */}
+              <div className="space-y-1 rounded-lg border border-border bg-gradient-card-accent p-3 lg:col-span-3">
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">Now serving</p>
                 <p className="text-lg font-semibold text-status-success-text">
                   {state?.currentlyServing ?? "—"}
                 </p>
               </div>
-              <div className="space-y-1 rounded-lg border border-border bg-gradient-card-accent p-3 sm:col-span-2">
+              <div className="space-y-1 rounded-lg border border-border bg-gradient-card-accent p-3 lg:col-span-3">
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">Max wait time</p>
+                <p className="text-lg font-semibold text-status-success-text">
+                  {maxWaitMinutes !== null ? formatWaitTime(maxWaitMinutes, "en") : "—"}
+                </p>
+              </div>
+              {/* Row 3: 2 columns */}
+              <div className="space-y-1 rounded-lg border border-border bg-gradient-card-accent p-3 lg:col-span-3">
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">Tickets called</p>
+                <p className="text-lg font-semibold text-status-success-text">
+                  {state?.generatedOrder?.length ? ticketsCalled : "—"}
+                </p>
+              </div>
+              <div className="space-y-1 rounded-lg border border-border bg-gradient-card-accent p-3 lg:col-span-3">
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">People waiting</p>
+                <p className="text-lg font-semibold text-status-success-text">
+                  {state?.generatedOrder?.length ? peopleWaiting : "—"}
+                </p>
+              </div>
+              {/* Row 4: full width */}
+              <div className="space-y-1 rounded-lg border border-border bg-gradient-card-accent p-3 sm:col-span-2 lg:col-span-6">
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">Next up</p>
                 <div className="flex flex-wrap gap-2">
                     {nextFive?.length
@@ -1087,7 +1142,8 @@ const AdminPage = () => {
                     : "—"}
                 </div>
               </div>
-              <div className="space-y-1 rounded-lg border border-[var(--status-danger-border)] bg-[var(--status-danger-bg)] p-3 sm:col-span-2">
+              {/* Row 5: full width */}
+              <div className="space-y-1 rounded-lg border border-[var(--status-danger-border)] bg-[var(--status-danger-bg)] p-3 sm:col-span-2 lg:col-span-6">
                 <p className="text-xs uppercase tracking-wide text-[var(--status-danger-text)]">Returned tickets</p>
                 <div className="flex flex-wrap gap-2">
                     {returnedTickets.length
@@ -1099,7 +1155,8 @@ const AdminPage = () => {
                     : "—"}
                 </div>
               </div>
-              <div className="space-y-1 rounded-lg border border-[var(--status-warning-border)] bg-[var(--status-warning-bg)] p-3 sm:col-span-2">
+              {/* Row 6: full width */}
+              <div className="space-y-1 rounded-lg border border-[var(--status-warning-border)] bg-[var(--status-warning-bg)] p-3 sm:col-span-2 lg:col-span-6">
                 <p className="text-xs uppercase tracking-wide text-[var(--status-warning-text)]">Unclaimed tickets</p>
                 <div className="flex flex-wrap gap-2">
                     {unclaimedTickets.length
