@@ -51,6 +51,10 @@ const actionSchema = z.discriminatedUnion("action", [
     endNumber: z.number().int().positive(),
   }),
   z.object({
+    action: z.literal("extendRange"),
+    endNumber: z.number().int().positive(),
+  }),
+  z.object({
     action: z.literal("generateBatch"),
     startNumber: z.number().int().positive(),
     endNumber: z.number().int().positive(),
@@ -173,6 +177,8 @@ export async function POST(request: Request) {
         );
       case "append":
         return NextResponse.json(await stateManager.appendTickets(payload.endNumber));
+      case "extendRange":
+        return NextResponse.json(await stateManager.extendRange(payload.endNumber));
       case "generateBatch":
         return NextResponse.json(
           await stateManager.generateBatch({

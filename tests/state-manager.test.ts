@@ -400,4 +400,29 @@ describe("state manager", () => {
       ).rejects.toThrow(/positive integer/i);
     });
   });
+
+  describe("extendRange", () => {
+    it("extends range without modifying generatedOrder", async () => {
+      await manager.generateState({ startNumber: 1, endNumber: 50, mode: "random" });
+      const before = await manager.loadState();
+      const originalOrder = [...before.generatedOrder];
+
+      const result = await manager.extendRange(65);
+
+      expect(result.endNumber).toBe(65);
+      expect(result.startNumber).toBe(1);
+      expect(result.generatedOrder).toEqual(originalOrder);
+    });
+
+    it("rejects newEnd less than or equal to currentEnd", async () => {
+      await manager.generateState({ startNumber: 1, endNumber: 50, mode: "random" });
+
+      await expect(manager.extendRange(50)).rejects.toThrow(/greater than/i);
+      await expect(manager.extendRange(30)).rejects.toThrow(/greater than/i);
+    });
+
+    it("rejects when no range is set", async () => {
+      await expect(manager.extendRange(65)).rejects.toThrow();
+    });
+  });
 });

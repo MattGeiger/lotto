@@ -164,6 +164,18 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
     });
   };
 
+  const extendRange = async (newEndNumber: number) => {
+    const current = await safeReadState();
+    ensureHasRange(current);
+    if (newEndNumber <= current.endNumber) {
+      throw new Error("New end number must be greater than the current end number.");
+    }
+    return persist({
+      ...current,
+      endNumber: newEndNumber,
+    });
+  };
+
   const generateBatch = async (input: {
     startNumber: number;
     endNumber: number;
@@ -501,6 +513,7 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
     generateState,
     generateBatch,
     appendTickets,
+    extendRange,
     setMode,
     updateCurrentlyServing,
     advanceServing,

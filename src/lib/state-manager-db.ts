@@ -181,6 +181,18 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
     });
   };
 
+  const extendRange = async (newEndNumber: number) => {
+    const current = await safeReadState();
+    ensureHasRange(current);
+    if (newEndNumber <= current.endNumber) {
+      throw new Error("New end number must be greater than the current end number.");
+    }
+    return persist({
+      ...current,
+      endNumber: newEndNumber,
+    });
+  };
+
   const generateBatch = async (input: {
     startNumber: number;
     endNumber: number;
@@ -495,6 +507,7 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
     generateState,
     generateBatch,
     appendTickets,
+    extendRange,
     setMode,
     updateCurrentlyServing,
     advanceServing,
