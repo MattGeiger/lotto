@@ -96,6 +96,8 @@ There is no runtime guard that prevents this variable from being set in producti
 **Impact:** Without CSP, any XSS vulnerability (current or future) has unrestricted access to execute arbitrary scripts, exfiltrate data, or redirect users.
 **Recommendation:** Add a strict CSP via Next.js `headers()` config, restricting `script-src`, `style-src`, and `connect-src` to trusted origins.
 
+**Implementation note:** Next.js requires `'unsafe-inline'` for both `script-src` and `style-src` because the framework injects inline scripts for hydration and inline styles for component rendering. A nonce-based approach (`'nonce-<random>'`) would be stricter but requires custom Next.js middleware to inject a fresh nonce per request. The current policy uses `'unsafe-inline'` as a pragmatic baseline.
+
 ---
 
 ### M4. Weak Validation on `OperatingHours` and `timezone` Inputs ✅ Approved
