@@ -88,6 +88,8 @@ const AdminPage = () => {
   const [mode, setMode] = React.useState<Mode>("random");
   const [appendEnd, setAppendEnd] = React.useState("");
   const [batchSize, setBatchSize] = React.useState("10");
+  const [batchDialogOpen, setBatchDialogOpen] = React.useState(false);
+  const [batchDrawing, setBatchDrawing] = React.useState(false);
   const [returnedTicket, setReturnedTicket] = React.useState("");
   const [unclaimedTicket, setUnclaimedTicket] = React.useState("");
   const [modeConfirmOpen, setModeConfirmOpen] = React.useState(false);
@@ -887,6 +889,58 @@ const AdminPage = () => {
                 </AlertDialogContent>
               </AlertDialog>
 
+              <AlertDialog open={batchDialogOpen} onOpenChange={(open) => {
+                if (!batchDrawing) setBatchDialogOpen(open);
+              }}>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Generate batch from undrawn pool</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Draw a subset of tickets from the {undrawnCount} remaining undrawn tickets
+                      and append to the draw order. Existing positions will not change.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <div className="space-y-2 py-2">
+                    <Label htmlFor="batch-size" className="text-sm font-medium">
+                      Batch size
+                    </Label>
+                    <Input
+                      id="batch-size"
+                      type="text"
+                      inputMode="numeric"
+                      pattern="\d*"
+                      maxLength={4}
+                      value={batchSize}
+                      onChange={(e) => setBatchSize(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                      className="w-28 appearance-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                    />
+                    <p className="text-xs text-muted-foreground">{undrawnCount} tickets remaining</p>
+                  </div>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel disabled={batchDrawing}>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={async () => {
+                        setBatchDrawing(true);
+                        try {
+                          await handleGenerateBatch();
+                        } finally {
+                          setBatchDrawing(false);
+                          setBatchDialogOpen(false);
+                        }
+                      }}
+                      disabled={
+                        batchDrawing ||
+                        Number(batchSize) <= 0 ||
+                        !Number.isInteger(Number(batchSize)) ||
+                        Number(batchSize) > undrawnCount
+                      }
+                    >
+                      {batchDrawing ? "Working..." : "Draw batch"}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+
               <div className="flex flex-wrap items-end gap-3">
                 <ConfirmAction
                   triggerLabel="Generate order"
@@ -901,39 +955,13 @@ const AdminPage = () => {
                       : undefined
                   }
                 />
-                <div className="flex items-end gap-2">
-                  <div className="space-y-1">
-                    <Label htmlFor="batch-size" className="text-xs text-muted-foreground">
-                      Batch size
-                    </Label>
-                    <Input
-                      id="batch-size"
-                      type="text"
-                      inputMode="numeric"
-                      pattern="\d*"
-                      maxLength={4}
-                      value={batchSize}
-                      onChange={(e) => setBatchSize(e.target.value.replace(/\D/g, "").slice(0, 4))}
-                      className="w-20 appearance-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                    />
-                    <p className="text-xs text-muted-foreground">{undrawnCount} undrawn</p>
-                  </div>
-                  <ConfirmAction
-                    triggerLabel="Generate batch"
-                    actionLabel="Draw batch"
-                    title="Generate batch from undrawn pool"
-                    description={`Randomly select ${batchSize} ticket(s) from the ${undrawnCount} remaining undrawn tickets and append to the draw order. Existing positions will not change.`}
-                    onConfirm={handleGenerateBatch}
-                    disabled={
-                      loading ||
-                      pendingAction !== null ||
-                      undrawnCount === 0 ||
-                      Number(batchSize) <= 0 ||
-                      Number(batchSize) > undrawnCount
-                    }
-                    variant="default"
-                  />
-                </div>
+                <Button
+                  variant="default"
+                  disabled={loading || pendingAction !== null || undrawnCount === 0}
+                  onClick={() => setBatchDialogOpen(true)}
+                >
+                  Generate batch
+                </Button>
               </div>
 
               <Separator />
