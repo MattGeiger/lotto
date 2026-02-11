@@ -966,7 +966,7 @@ const AdminPage = () => {
                   }}
                 >
                   <ConfirmAction
-                    triggerLabel="Generate order"
+                    triggerLabel="Generate full"
                     actionLabel="Generate"
                     title="Generate ticket order"
                     description="Creates a fresh order for the selected range and mode."
