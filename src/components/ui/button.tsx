@@ -1,6 +1,6 @@
 import * as React from "react"
-import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
+import { Button as AnimateUIButton } from "@/components/animate-ui/primitives/buttons/button"
 
 import { cn } from "@/lib/utils"
 
@@ -45,11 +45,12 @@ function Button({
 }: React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean
+    hoverScale?: number
+    tapScale?: number
+    disableScaleAnimation?: boolean
   }) {
-  const Comp = asChild ? Slot : "button"
-
   return (
-    <Comp
+    <AnimateUIButton
       data-slot="button"
       className={cn(buttonVariants({ variant, size }), className)}
       {...props}

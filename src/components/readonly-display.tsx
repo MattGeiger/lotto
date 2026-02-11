@@ -347,7 +347,7 @@ export const ReadOnlyDisplay = ({ ticketSearchRequest }: ReadOnlyDisplayProps) =
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.92 }}
                   transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-                  className="bg-gradient-serving-text bg-clip-text text-[96px] font-extrabold leading-[1.22] text-transparent"
+                  className="inline-block overflow-visible bg-gradient-serving-text bg-clip-text pb-[0.08em] text-[96px] font-extrabold leading-[1.28] text-transparent"
                   aria-label="Currently serving ticket number"
                 >
                   {currentlyServing ?? t("waiting")}
