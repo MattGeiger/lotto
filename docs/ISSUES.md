@@ -244,6 +244,26 @@ The "Add tickets" confirmation button in the Append workflow performed two actio
 
 ---
 
+## Issue 8: Admin page shows stale state after tab switch
+
+### Status
+- Fixed in production.
+
+### Observed
+When staff switch to another browser tab and return, the admin page displays stale state. Any changes made by other admins or system events are not reflected until the staff member performs an action or manually refreshes the page.
+
+### Root Cause
+- The admin page only fetches state on initial mount and after user-triggered actions via `sendAction()`.
+- No `visibilitychange` listener to detect tab focus return.
+- The public display page (`readonly-display.tsx`) already has this pattern — adaptive polling with visibility pause/resume — but the admin page was missing it entirely.
+
+### Fix
+- Added a `visibilitychange` event listener that calls `fetchState()` when `document.visibilityState` changes to `"visible"`.
+- Reuses the existing `fetchState` callback which loads both state and snapshots in parallel.
+- Cleanup removes the listener on unmount.
+
+---
+
 ## Manual Test Checklist (for later implementation)
 - **Returned skip:** Mark a mid-queue ticket returned, then advance Next; verify the returned ticket is skipped. Repeat with Prev.
 - **Modal close:** Mark returned/unclaimed with successful response; modal closes immediately. Simulate a failed network response and confirm modal behavior matches the chosen approach.

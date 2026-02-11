@@ -177,6 +177,17 @@ const AdminPage = () => {
     fetchState();
   }, [fetchState]);
 
+  // Re-fetch state when the tab regains focus (e.g., staff switching back from another tab)
+  React.useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        fetchState();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [fetchState]);
+
   React.useEffect(() => {
     if (state?.displayUrl) {
       setCustomDisplayUrl(state.displayUrl);
