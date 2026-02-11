@@ -72,8 +72,7 @@ type ActionPayload =
   | { action: "redo" }
   | { action: "restoreSnapshot"; id: string }
   | { action: "setOperatingHours"; hours: OperatingHours; timezone: string }
-  | { action: "generateBatch"; startNumber: number; endNumber: number; batchSize: number }
-  | { action: "extendRange"; endNumber: number };
+  | { action: "generateBatch"; startNumber: number; endNumber: number; batchSize: number };
 
 type Snapshot = {
   id: string;
@@ -91,8 +90,6 @@ const AdminPage = () => {
   const [batchSize, setBatchSize] = React.useState("10");
   const [batchDialogOpen, setBatchDialogOpen] = React.useState(false);
   const [batchDrawing, setBatchDrawing] = React.useState(false);
-  const [appendDialogOpen, setAppendDialogOpen] = React.useState(false);
-  const [appendBusy, setAppendBusy] = React.useState(false);
   const [returnedTicket, setReturnedTicket] = React.useState("");
   const [unclaimedTicket, setUnclaimedTicket] = React.useState("");
   const [modeConfirmOpen, setModeConfirmOpen] = React.useState(false);
@@ -303,15 +300,6 @@ const AdminPage = () => {
       throw new Error("Invalid input");
     }
     await sendAction({ action: "append", endNumber: newEnd });
-  };
-
-  const handleExtendRange = async () => {
-    const newEnd = Number(appendEnd);
-    if (!Number.isInteger(newEnd)) {
-      toast.error("Append value must be a whole number.");
-      throw new Error("Invalid input");
-    }
-    await sendAction({ action: "extendRange", endNumber: newEnd });
   };
 
   const handleAppendStep = (delta: number) => {
@@ -582,6 +570,7 @@ const AdminPage = () => {
     return count;
   })();
 
+  const canAppend = !!state && !!appendEnd && !loading && undrawnCount === 0;
   const appendMin = (state?.endNumber ?? 0) + 1;
   const parsedAppendValue = Number(appendEnd);
   const resolvedAppendValue =
@@ -1007,6 +996,7 @@ const AdminPage = () => {
                       value={appendEnd}
                       onChange={(e) => setAppendEnd(e.target.value)}
                       placeholder="New ending number"
+                      disabled={!state || undrawnCount > 0}
                       className="w-28 flex-none appearance-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none sm:w-40"
                     />
                     <Button
@@ -1014,9 +1004,9 @@ const AdminPage = () => {
                       variant="outline"
                       size="icon"
                       onClick={() => handleAppendStep(-1)}
-                      disabled={!state}
+                      disabled={!state || undrawnCount > 0}
                       aria-label="Decrease append end"
-                      className={!state || resolvedAppendValue <= appendMin ? "flex-none opacity-50" : "flex-none"}
+                      className={!state || undrawnCount > 0 || resolvedAppendValue <= appendMin ? "flex-none opacity-50" : "flex-none"}
                     >
                       <ChevronLeft className="size-4" />
                     </Button>
@@ -1025,69 +1015,33 @@ const AdminPage = () => {
                       variant="outline"
                       size="icon"
                       onClick={() => handleAppendStep(1)}
-                      disabled={!state}
+                      disabled={!state || undrawnCount > 0}
                       aria-label="Increase append end"
                       className="flex-none"
                     >
                       <ChevronRight className="size-4" />
                     </Button>
                   </div>
-                  <Button
-                    variant="default"
-                    disabled={!appendEnd || loading || !state}
-                    onClick={() => setAppendDialogOpen(true)}
+                  <div
+                    className="inline-flex"
+                    onClick={() => {
+                      if (undrawnCount > 0) {
+                        toast.error(
+                          `All tickets must be drawn before appending. ${undrawnCount} ticket${undrawnCount === 1 ? " remains" : "s remain"} undrawn.`,
+                        );
+                      }
+                    }}
                   >
-                    Append
-                  </Button>
-
-                  <AlertDialog open={appendDialogOpen} onOpenChange={(open) => {
-                    if (!appendBusy) setAppendDialogOpen(open);
-                  }}>
-                    <AlertDialogContent className="overflow-x-hidden">
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Append tickets</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Extend the ticket range from {state?.endNumber ?? "?"} to {appendEnd || "?"}.
-                          Choose whether to also add the new tickets to the draw queue.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter className="flex-col gap-2 sm:flex-col">
-                        <Button
-                          variant="default"
-                          disabled={appendBusy}
-                          className="w-full"
-                          onClick={async () => {
-                            setAppendBusy(true);
-                            try {
-                              await handleAppend();
-                            } finally {
-                              setAppendBusy(false);
-                              setAppendDialogOpen(false);
-                            }
-                          }}
-                        >
-                          {appendBusy ? "Working..." : "Append and draw tickets"}
-                        </Button>
-                        <Button
-                          variant="outline"
-                          disabled={appendBusy}
-                          className="w-full"
-                          onClick={async () => {
-                            setAppendBusy(true);
-                            try {
-                              await handleExtendRange();
-                            } finally {
-                              setAppendBusy(false);
-                              setAppendDialogOpen(false);
-                            }
-                          }}
-                        >
-                          {appendBusy ? "Working..." : "Append ticket range only"}
-                        </Button>
-                        <AlertDialogCancel disabled={appendBusy} className="w-full">Cancel</AlertDialogCancel>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                    <ConfirmAction
+                      triggerLabel="Append"
+                      actionLabel="Append and draw tickets"
+                      title="Append tickets"
+                      description={`Extend the ticket range from ${state?.endNumber ?? "?"} to ${appendEnd || "?"}. Tickets will be added to the queue ${state?.mode === "sequential" ? "sequentially" : "randomly"}.`}
+                      onConfirm={handleAppend}
+                      disabled={!canAppend}
+                      variant="default"
+                    />
+                  </div>
                 </div>
               </div>
             </CardContent>

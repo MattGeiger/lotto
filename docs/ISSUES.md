@@ -264,6 +264,26 @@ When staff switch to another browser tab and return, the admin page displays sta
 
 ---
 
+## Issue 9: Append allows unfair ticket ordering during partial batch draws
+
+### Status
+- Fixed in production.
+
+### Observed
+With the batch generation feature (v1.2.3), staff can partially draw tickets from a range (e.g., draw 30 of 50), then Append new tickets. The appended tickets get added to the draw order before earlier tickets still sitting in the undrawn pool. This violates the fairness principle: people who arrived first should be drawn before late arrivals.
+
+### Root Cause
+- The Append button had no guard for `undrawnCount > 0` — it only checked that state existed and the input field had a value.
+- `appendTickets()` extends the range AND adds new tickets to `generatedOrder`, which meant late-arriving tickets could leapfrog earlier undrawn tickets in the queue.
+
+### Fix
+- Disabled the entire Append section (input, stepper buttons, and Append button) when `undrawnCount > 0`.
+- Added a toast-on-disabled-tap pattern: tapping the disabled Append button shows a Sonner error explaining why it's unavailable and how many tickets remain undrawn. Works on both touch and desktop (parent div catches the tap since disabled elements don't fire events).
+- Simplified the Append confirmation modal from 3 buttons to 2 (removed "Append ticket range only"), and updated the description to show the current mode (randomly/sequentially).
+- Removed the `extendRange` UI path from the admin page (backend method retained).
+
+---
+
 ## Manual Test Checklist (for later implementation)
 - **Returned skip:** Mark a mid-queue ticket returned, then advance Next; verify the returned ticket is skipped. Repeat with Prev.
 - **Modal close:** Mark returned/unclaimed with successful response; modal closes immediately. Simulate a failed network response and confirm modal behavior matches the chosen approach.
