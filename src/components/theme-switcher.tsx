@@ -1,6 +1,9 @@
 "use client";
 
-import { Eye, Moon, Sun, SunMoon } from "lucide-react";
+import { Eye, Moon as LucideMoon, Sun as LucideSun } from "lucide-react";
+import { Sun } from "@/components/animate-ui/icons/sun";
+import { Moon } from "@/components/animate-ui/icons/moon";
+import { SunMoon } from "@/components/animate-ui/icons/sun-moon";
 import { useTheme } from "next-themes";
 
 import { useContrastMode } from "@/components/theme-provider";
@@ -36,8 +39,8 @@ export function ThemeSwitcher() {
             <Eye className="size-[1.8rem]" />
           ) : (
             <>
-              <Sun className="size-[1.8rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-              <Moon className="absolute size-[1.8rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+              <LucideSun className="size-[1.8rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+              <LucideMoon className="absolute size-[1.8rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
             </>
           )}
           <span className="sr-only">Theme options</span>
@@ -45,15 +48,15 @@ export function ThemeSwitcher() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuCheckboxItem checked={!hiVizEnabled && selectedTheme === "light"} onSelect={() => setBaseTheme("light")}>
-          <Sun className="size-4" />
+          <Sun size={16} animateOnHover />
           Light
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem checked={!hiVizEnabled && selectedTheme === "dark"} onSelect={() => setBaseTheme("dark")}>
-          <Moon className="size-4" />
+          <Moon size={16} animateOnHover />
           Dark
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem checked={!hiVizEnabled && selectedTheme === "system"} onSelect={() => setBaseTheme("system")}>
-          <SunMoon className="size-4" />
+          <SunMoon size={16} animateOnHover />
           System
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem checked={hiVizEnabled} onSelect={setHiVizTheme}>

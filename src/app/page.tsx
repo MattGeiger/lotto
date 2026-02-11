@@ -5,7 +5,7 @@ import { ReadOnlyDisplay } from "@/components/readonly-display";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
-import { Search } from "lucide-react";
+import { Search } from "@/components/animate-ui/icons/search";
 import { useLanguage } from "@/contexts/language-context";
 import { Button } from "@/components/ui/button";
 
@@ -66,7 +66,7 @@ export default function DisplayPage() {
                 className="!h-[3.375rem] !w-[3.375rem] !border-0 !rounded-full bg-card/80 hover:bg-accent hover:text-accent-foreground shadow-[var(--base-shadow-lg)]"
                 onClick={handleSearchSubmit}
               >
-                <Search className="size-5" />
+                <Search size={20} animateOnTap />
                 <span className="sr-only">{t("searchButtonLabel")}</span>
               </Button>
             </div>
