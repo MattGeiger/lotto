@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.4.0] - 2026-02-11
+### Added
+- Added a persisted high-contrast mode (`Hi-viz`) layered alongside existing light/dark/system color-scheme selection.
+- Added `ThemeProvider` contrast context and root-class synchronization (`html.hi-viz`) for token-based accessibility theme overrides.
+- Added integration tests for theme menu options, Hi-viz persistence, and switching back to standard themes.
+
+### Changed
+- Updated the theme switcher dropdown to show iconized menu items: Light, Dark, System, and Hi-viz.
+- Added high-contrast token overrides in `globals.css` for both light and dark system contexts.
+
 ## [1.2.1] - 2026-02-03
 ### Changed
 - Clamp open-window polling to a 5-minute maximum so the public display stays responsive during service hours even after long idle periods.
