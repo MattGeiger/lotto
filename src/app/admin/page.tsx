@@ -571,6 +571,22 @@ const AdminPage = () => {
   })();
 
   const canAppend = !!state && !!appendEnd && !loading && undrawnCount === 0;
+  const parsedStartNumber = Number(rangeForm.startNumber);
+  const parsedEndNumber = Number(rangeForm.endNumber);
+  const hasGenerateRangeInputs =
+    rangeForm.startNumber.trim() !== "" && rangeForm.endNumber.trim() !== "";
+  const hasValidGenerateRange =
+    hasGenerateRangeInputs &&
+    Number.isInteger(parsedStartNumber) &&
+    Number.isInteger(parsedEndNumber) &&
+    parsedStartNumber > 0 &&
+    parsedEndNumber > 0 &&
+    parsedEndNumber >= parsedStartNumber;
+  const canGenerateFull =
+    hasValidGenerateRange &&
+    !state?.orderLocked &&
+    !loading &&
+    pendingAction === null;
   const appendMin = (state?.endNumber ?? 0) + 1;
   const parsedAppendValue = Number(appendEnd);
   const resolvedAppendValue =
@@ -747,17 +763,17 @@ const AdminPage = () => {
           <Image
             src="/wth-logo-horizontal.png"
             alt="William Temple House"
-            width={900}
-            height={240}
-            className="h-auto w-full max-w-[400px] dark:hidden"
+            width={2314}
+            height={606}
+            className="block h-auto w-full max-w-[320px] dark:hidden"
             priority
           />
           <Image
             src="/wth-logo-horizontal-reverse.png"
             alt="William Temple House"
-            width={900}
-            height={240}
-            className="hidden h-auto w-full max-w-[400px] dark:block"
+            width={2333}
+            height={641}
+            className="hidden h-auto w-full max-w-[320px] dark:block"
           />
         </div>
         <div className="flex items-center gap-3">
@@ -962,7 +978,30 @@ const AdminPage = () => {
                       toast.error(
                         "Drawing order is locked. Use \"Reset for New Day\" to start a fresh lottery.",
                       );
+                      return;
                     }
+
+                    if (loading || pendingAction !== null || canGenerateFull) {
+                      return;
+                    }
+
+                    if (!hasGenerateRangeInputs) {
+                      toast.error(
+                        "Enter both Start Number and End Number before generating the draw order.",
+                      );
+                      return;
+                    }
+
+                    if (parsedEndNumber < parsedStartNumber) {
+                      toast.error(
+                        "End Number must be greater than or equal to Start Number.",
+                      );
+                      return;
+                    }
+
+                    toast.error(
+                      "Start Number and End Number must be whole numbers greater than 0.",
+                    );
                   }}
                 >
                   <ConfirmAction
@@ -971,11 +1010,17 @@ const AdminPage = () => {
                     title="Generate ticket order"
                     description="Creates a fresh order for the selected range and mode."
                     onConfirm={handleGenerate}
-                    disabled={state?.orderLocked || loading || pendingAction !== null}
+                    disabled={!canGenerateFull}
                     triggerTitle={
                       state?.orderLocked
                         ? "Order locked. Use Reset to start new lottery."
-                        : undefined
+                        : !hasGenerateRangeInputs
+                          ? "Enter both Start Number and End Number first."
+                          : parsedEndNumber < parsedStartNumber
+                            ? "End Number must be greater than or equal to Start Number."
+                            : !hasValidGenerateRange
+                              ? "Start and End must be whole numbers greater than 0."
+                              : undefined
                     }
                   />
                 </div>
