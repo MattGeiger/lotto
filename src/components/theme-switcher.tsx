@@ -1,6 +1,6 @@
 "use client";
 
-import { Eye, Moon as LucideMoon, Sun as LucideSun } from "lucide-react";
+import { Eye } from "lucide-react";
 import { Sun } from "@/components/animate-ui/icons/sun";
 import { Moon } from "@/components/animate-ui/icons/moon";
 import { SunMoon } from "@/components/animate-ui/icons/sun-moon";
@@ -34,13 +34,21 @@ export function ThemeSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon" className="relative !h-[3.375rem] !w-[3.375rem]">
+        <Button variant="outline" size="icon" className="group relative !h-[3.375rem] !w-[3.375rem]">
           {hiVizEnabled ? (
-            <Eye className="size-[1.8rem]" />
+            <Eye className="size-[1.8rem] transition-transform duration-200 ease-out group-hover:scale-110 group-active:scale-95" />
           ) : (
             <>
-              <LucideSun className="size-[1.8rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-              <LucideMoon className="absolute size-[1.8rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+              <Sun
+                animateOnHover
+                animateOnTap
+                className="size-[1.8rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"
+              />
+              <Moon
+                animateOnHover
+                animateOnTap
+                className="absolute size-[1.8rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"
+              />
             </>
           )}
           <span className="sr-only">Theme options</span>

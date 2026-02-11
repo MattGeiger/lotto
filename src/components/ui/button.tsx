@@ -36,27 +36,28 @@ const buttonVariants = cva(
   }
 )
 
-function Button({
-  className,
-  variant,
-  size,
-  asChild = false,
-  ...props
-}: React.ComponentProps<"button"> &
-  VariantProps<typeof buttonVariants> & {
-    asChild?: boolean
-    hoverScale?: number
-    tapScale?: number
-    disableScaleAnimation?: boolean
-  }) {
+const Button = React.forwardRef<
+  HTMLButtonElement,
+  React.ComponentProps<"button"> &
+    VariantProps<typeof buttonVariants> & {
+      asChild?: boolean
+      hoverScale?: number
+      tapScale?: number
+      disableScaleAnimation?: boolean
+    }
+>(({ className, variant, size, asChild = false, ...props }, ref) => {
   return (
     <AnimateUIButton
+      ref={ref}
+      asChild={asChild}
       data-slot="button"
       className={cn(buttonVariants({ variant, size }), className)}
       {...props}
     />
   )
-}
+})
+
+Button.displayName = "Button"
 
 export { Button, buttonVariants }
 export type ButtonProps = React.ComponentProps<typeof Button>

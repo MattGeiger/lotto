@@ -33,6 +33,8 @@ const Button = React.forwardRef<HTMLButtonElement, MotionButtonProps>(
     },
     ref,
   ) => {
+    const prefersReducedMotion = useReducedMotion();
+
     if (asChild) {
       return (
         <Slot
@@ -45,7 +47,6 @@ const Button = React.forwardRef<HTMLButtonElement, MotionButtonProps>(
       );
     }
 
-    const prefersReducedMotion = useReducedMotion();
     const shouldAnimate = !disableScaleAnimation && !prefersReducedMotion && !disabled;
     const motionProps = props as unknown as Omit<HTMLMotionProps<"button">, "ref">;
 
