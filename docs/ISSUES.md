@@ -185,6 +185,65 @@ Combine (1) and (2): adaptive polling based on time since last change, with oper
 
 ---
 
+## Issue 5: CSP blocking Next.js inline scripts (v1.2.2 → hotfix)
+
+### Status
+- Fixed in production (commit `2745636`).
+
+### Observed
+After deploying the security audit fixes (v1.2.2), the admin page was stuck on "Loading state from datastore..." and "Loading hours..." — React hydration failed silently.
+
+### Root Cause
+- Security fix H3 set `script-src 'self'` in Content Security Policy, which blocked Next.js inline scripts required for hydration.
+- `next.config.ts` → CSP header.
+
+### Fix
+- Changed `script-src 'self'` to `script-src 'self' 'unsafe-inline'` (required by Next.js).
+- Added implementation note to `docs/SECURITY.md` explaining the trade-off.
+
+---
+
+## Issue 6: Modal button overflow on narrow viewports
+
+### Status
+- Fixed in production (commit `7889d98`).
+
+### Observed
+The Append confirmation modal (with 3 buttons: Cancel, "Append ticket range only", "Append and draw tickets") overflowed past the modal boundaries on mobile/narrow screens.
+
+### Root Cause
+- `AlertDialogFooter` defaults to horizontal layout (`sm:flex-row`) which cannot accommodate 3 buttons with long labels.
+- No `overflow-x-hidden` on `AlertDialogContent` to enforce boundary clipping.
+
+### Fix
+- Added `overflow-x-hidden` to `AlertDialogContent` on both append and batch dialogs.
+- Stacked append modal buttons vertically (`flex-col` + `w-full`) so all 3 buttons fit cleanly.
+- Pattern documented in `/Users/russbook/zev_app/zev_dashboard/docs/modal-overflow-fix.md`.
+
+---
+
+## Issue 7: Append action silently adds tickets to draw queue
+
+### Status
+- Fixed in production (commit `e78adb1`).
+
+### Observed
+The "Add tickets" confirmation button in the Append workflow performed two actions simultaneously — extending the ticket range AND adding new tickets to the draw queue — without staff awareness. This could cause confusion when staff only intended to register new ticket numbers.
+
+### Root Cause
+- `appendTickets()` in both state managers always extends range AND appends to `generatedOrder` in a single operation.
+- The `ConfirmAction` component only supports a single action button, offering no way to separate the two behaviors.
+
+### Fix
+- Added `extendRange()` method to both state managers (range-only, no draw).
+- Added `extendRange` API action with Zod validation.
+- Replaced `ConfirmAction` with a raw `AlertDialog` offering 3 discrete buttons:
+  - **Cancel** — dismisses modal
+  - **Append ticket range only** — extends range without drawing (new tickets go to undrawn pool)
+  - **Append and draw tickets** — existing behavior (extends range + draws)
+
+---
+
 ## Manual Test Checklist (for later implementation)
 - **Returned skip:** Mark a mid-queue ticket returned, then advance Next; verify the returned ticket is skipped. Repeat with Prev.
 - **Modal close:** Mark returned/unclaimed with successful response; modal closes immediately. Simulate a failed network response and confirm modal behavior matches the chosen approach.
