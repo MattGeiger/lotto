@@ -36,20 +36,15 @@ const buttonVariants = cva(
   }
 )
 
+type MotionButtonProps = React.ComponentPropsWithoutRef<typeof AnimateUIButton>
+
 const Button = React.forwardRef<
   HTMLButtonElement,
-  React.ComponentProps<"button"> &
-    VariantProps<typeof buttonVariants> & {
-      asChild?: boolean
-      hoverScale?: number
-      tapScale?: number
-      disableScaleAnimation?: boolean
-    }
->(({ className, variant, size, asChild = false, ...props }, ref) => {
+  MotionButtonProps & VariantProps<typeof buttonVariants>
+>(({ className, variant, size, ...props }, ref) => {
   return (
     <AnimateUIButton
       ref={ref}
-      asChild={asChild}
       data-slot="button"
       className={cn(buttonVariants({ variant, size }), className)}
       {...props}

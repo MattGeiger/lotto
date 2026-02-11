@@ -107,19 +107,28 @@ TabsList.displayName = TabsPrimitive.List.displayName;
 
 const TabsTrigger = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
->(({ className, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger> & {
+    whileTap?: HTMLMotionProps<'button'>['whileTap'];
+  }
+>(({ className, whileTap, children, ...props }, ref) => (
   <TabsPrimitive.Trigger
     ref={ref}
-    className={cn(
-      'relative z-10 inline-flex min-w-[100px] items-center justify-center whitespace-nowrap rounded-sm px-3 py-1 text-sm font-medium transition-all',
-      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-      'disabled:pointer-events-none disabled:opacity-50',
-      'data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none',
-      className,
-    )}
+    asChild
     {...props}
-  />
+  >
+    <motion.button
+      whileTap={whileTap ?? { scale: 0.95 }}
+      className={cn(
+        'relative z-10 inline-flex min-w-[100px] items-center justify-center whitespace-nowrap rounded-sm px-3 py-1 text-sm font-medium transition-all',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+        'disabled:pointer-events-none disabled:opacity-50',
+        'data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none',
+        className,
+      )}
+    >
+      {children}
+    </motion.button>
+  </TabsPrimitive.Trigger>
 ));
 TabsTrigger.displayName = TabsPrimitive.Trigger.displayName;
 
@@ -173,7 +182,8 @@ const TabsHighlightItem = React.forwardRef<HTMLDivElement, TabsHighlightItemProp
 );
 TabsHighlightItem.displayName = 'TabsHighlightItem';
 
-type TabsContentsProps = React.ComponentPropsWithoutRef<'div'> & {
+type TabsContentsProps = Omit<HTMLMotionProps<'div'>, 'children'> & {
+  children?: React.ReactNode;
   transition?: Transition;
 };
 
@@ -195,21 +205,98 @@ function TabsContents({
   );
 
   const slideIndex = activeIndex >= 0 ? activeIndex : 0;
+  const containerRef = React.useRef<HTMLDivElement | null>(null);
+  const itemRefs = React.useRef<Array<HTMLDivElement | null>>([]);
+  const [height, setHeight] = React.useState(0);
+  const roRef = React.useRef<ResizeObserver | null>(null);
+
+  const measure = React.useCallback((index: number) => {
+    const pane = itemRefs.current[index];
+    const container = containerRef.current;
+    if (!pane || !container) return 0;
+
+    const base = pane.getBoundingClientRect().height || 0;
+
+    const cs = getComputedStyle(container);
+    const isBorderBox = cs.boxSizing === 'border-box';
+    const paddingY =
+      (parseFloat(cs.paddingTop || '0') || 0) +
+      (parseFloat(cs.paddingBottom || '0') || 0);
+    const borderY =
+      (parseFloat(cs.borderTopWidth || '0') || 0) +
+      (parseFloat(cs.borderBottomWidth || '0') || 0);
+
+    let total = base + (isBorderBox ? paddingY + borderY : 0);
+
+    const dpr =
+      typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
+    total = Math.ceil(total * dpr) / dpr;
+
+    return total;
+  }, []);
+
+  React.useEffect(() => {
+    if (roRef.current) {
+      roRef.current.disconnect();
+      roRef.current = null;
+    }
+
+    if (activeIndex < 0) return;
+
+    const pane = itemRefs.current[activeIndex];
+    const container = containerRef.current;
+    if (!pane || !container) return;
+
+    setHeight(measure(activeIndex));
+
+    const ro = new ResizeObserver(() => {
+      const next = measure(activeIndex);
+      requestAnimationFrame(() => setHeight(next));
+    });
+
+    ro.observe(pane);
+    ro.observe(container);
+
+    roRef.current = ro;
+    return () => {
+      ro.disconnect();
+      roRef.current = null;
+    };
+  }, [activeIndex, childrenArray.length, measure]);
+
+  React.useLayoutEffect(() => {
+    if (height === 0 && activeIndex >= 0) {
+      const next = measure(activeIndex);
+      if (next !== 0) setHeight(next);
+    }
+  }, [activeIndex, height, measure]);
 
   return (
-    <div className={cn('relative mt-4 overflow-hidden', className)} {...props}>
+    <motion.div
+      ref={containerRef}
+      className={cn('relative mt-4 overflow-hidden', className)}
+      animate={{ height }}
+      transition={transition}
+      {...props}
+    >
       <motion.div
         className="flex -mx-2"
         animate={{ x: `${slideIndex * -100}%` }}
         transition={transition}
       >
         {childrenArray.map((child, index) => (
-          <div key={index} className="w-full shrink-0 px-2">
+          <div
+            key={index}
+            ref={(element) => {
+              itemRefs.current[index] = element;
+            }}
+            className="h-full w-full shrink-0 px-2"
+          >
             {child}
           </div>
         ))}
       </motion.div>
-    </div>
+    </motion.div>
   );
 }
 

@@ -1,10 +1,10 @@
 'use client';
 
 import * as React from "react";
-import { Slot } from "@radix-ui/react-slot";
 import { motion, useReducedMotion, type HTMLMotionProps } from "motion/react";
 
 import { cn } from "@/lib/utils";
+import { Slot } from "@/components/animate-ui/primitives/animate/slot";
 
 type MotionButtonProps = React.ComponentPropsWithoutRef<"button"> & {
   asChild?: boolean;
@@ -34,25 +34,13 @@ const Button = React.forwardRef<HTMLButtonElement, MotionButtonProps>(
     ref,
   ) => {
     const prefersReducedMotion = useReducedMotion();
-
-    if (asChild) {
-      return (
-        <Slot
-          ref={ref}
-          className={cn(className)}
-          {...props}
-        >
-          {children}
-        </Slot>
-      );
-    }
-
     const shouldAnimate = !disableScaleAnimation && !prefersReducedMotion && !disabled;
-    const motionProps = props as unknown as Omit<HTMLMotionProps<"button">, "ref">;
+    const Component = asChild ? Slot : motion.button;
+    const motionProps = props as unknown as Omit<HTMLMotionProps<"button">, "ref" | "className">;
 
     return (
-      <motion.button
-        ref={ref}
+      <Component
+        ref={ref as never}
         className={cn(className)}
         disabled={disabled}
         whileHover={shouldAnimate ? (whileHover ?? { scale: hoverScale }) : undefined}
@@ -61,7 +49,7 @@ const Button = React.forwardRef<HTMLButtonElement, MotionButtonProps>(
         {...motionProps}
       >
         {children}
-      </motion.button>
+      </Component>
     );
   },
 );

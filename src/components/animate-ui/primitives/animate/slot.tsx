@@ -20,6 +20,20 @@ type SlotProps<T extends HTMLElement = HTMLElement> = {
   children?: any;
 } & DOMMotionProps<T>;
 
+const motionComponentCache = new Map<React.ElementType, React.ElementType>();
+
+function getMotionComponent(type: React.ElementType): React.ElementType {
+  const cached = motionComponentCache.get(type);
+  if (cached) return cached;
+
+  const component = isMotionComponent(type)
+    ? type
+    : motion.create(type);
+
+  motionComponentCache.set(type, component);
+  return component;
+}
+
 function mergeRefs<T>(
   ...refs: (React.Ref<T> | undefined)[]
 ): React.RefCallback<T> {
@@ -58,25 +72,15 @@ function mergeProps<T extends HTMLElement>(
   return merged;
 }
 
+/* eslint-disable react-hooks/static-components */
 function Slot<T extends HTMLElement = HTMLElement>({
   children,
   ref,
   ...props
 }: SlotProps<T>) {
-  const isAlreadyMotion =
-    typeof children.type === 'object' &&
-    children.type !== null &&
-    isMotionComponent(children.type);
-
-  const Base = React.useMemo(
-    () =>
-      isAlreadyMotion
-        ? (children.type as React.ElementType)
-        : motion.create(children.type as React.ElementType),
-    [isAlreadyMotion, children.type],
-  );
-
   if (!React.isValidElement(children)) return null;
+
+  const Base = getMotionComponent(children.type as React.ElementType);
 
   const { ref: childRef, ...childProps } = children.props as AnyProps;
 
@@ -86,6 +90,7 @@ function Slot<T extends HTMLElement = HTMLElement>({
     <Base {...mergedProps} ref={mergeRefs(childRef as React.Ref<T>, ref)} />
   );
 }
+/* eslint-enable react-hooks/static-components */
 
 export {
   Slot,

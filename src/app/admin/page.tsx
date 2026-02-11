@@ -1252,7 +1252,7 @@ const AdminPage = () => {
                   <Tickets className="size-4 text-muted-foreground" />
                   Live State
                 </CardTitle>
-                <CardDescription>Summary status for today's raffle drawing.</CardDescription>
+                <CardDescription>Summary status for today&apos;s raffle drawing.</CardDescription>
               </div>
               {state?.timestamp && (
                 <Badge
