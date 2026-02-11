@@ -955,19 +955,30 @@ const AdminPage = () => {
               </AlertDialog>
 
               <div className="flex flex-wrap items-end gap-3">
-                <ConfirmAction
-                  triggerLabel="Generate order"
-                  actionLabel="Generate"
-                  title="Generate ticket order"
-                  description="Creates a fresh order for the selected range and mode."
-                  onConfirm={handleGenerate}
-                  disabled={state?.orderLocked || loading || pendingAction !== null}
-                  triggerTitle={
-                    state?.orderLocked
-                      ? "Order locked. Use Reset to start new lottery."
-                      : undefined
-                  }
-                />
+                <div
+                  className="inline-flex"
+                  onClick={() => {
+                    if (state?.orderLocked) {
+                      toast.error(
+                        "Drawing order is locked. Use \"Reset for New Day\" to start a fresh lottery.",
+                      );
+                    }
+                  }}
+                >
+                  <ConfirmAction
+                    triggerLabel="Generate order"
+                    actionLabel="Generate"
+                    title="Generate ticket order"
+                    description="Creates a fresh order for the selected range and mode."
+                    onConfirm={handleGenerate}
+                    disabled={state?.orderLocked || loading || pendingAction !== null}
+                    triggerTitle={
+                      state?.orderLocked
+                        ? "Order locked. Use Reset to start new lottery."
+                        : undefined
+                    }
+                  />
+                </div>
                 <Button
                   variant="default"
                   disabled={loading || pendingAction !== null || undrawnCount === 0}
