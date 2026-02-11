@@ -10,6 +10,7 @@
 - Added an Animate UI button primitive and wired `src/components/ui/button.tsx` to use hover/tap scale motion by default (`+5%/-5%`), with reduced-motion support and opt-out props.
 - Updated `AlertDialogAction` and `AlertDialogCancel` wrappers to compose the shared animated `Button`, so modal footer buttons now inherit button motion.
 - Restored theme switcher trigger icon sizing after animated icon migration and fixed `Button` `asChild` forwarding so icon+label button layouts remain aligned.
+- Animated the login page OTP/Magic tabs with demo-style motion: spring sliding highlight, subtle blur/glass overlay, and smooth content transitions using local Animate UI-style tab primitives.
 
 ## [1.4.0] - 2026-02-11
 ### Added

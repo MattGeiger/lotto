@@ -8,11 +8,19 @@ import { KeyRound, Mail } from "lucide-react";
 import { toast } from "sonner";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Tabs,
+  TabsContent,
+  TabsContents,
+  TabsHighlight,
+  TabsHighlightItem,
+  TabsList,
+  TabsTrigger,
+} from "@/components/animate-ui/primitives/animate/tabs";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const LoginForm = () => {
   const searchParams = useSearchParams();
@@ -110,55 +118,32 @@ const LoginForm = () => {
 
       <CardContent>
         <Tabs defaultValue="otp" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="otp" className="flex items-center gap-2">
-              <KeyRound className="size-4" />
-              OTP Code
-            </TabsTrigger>
-            <TabsTrigger value="magic" className="flex items-center gap-2">
-              <Mail className="size-4" />
-              Magic Link
-            </TabsTrigger>
-          </TabsList>
+          <TabsHighlight className="absolute inset-0 rounded-[calc(var(--radius)-7px)] border border-border/45 bg-background/80 shadow-sm backdrop-blur-sm supports-[backdrop-filter]:bg-background/55">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsHighlightItem value="otp">
+                <TabsTrigger value="otp" className="flex w-full items-center gap-2">
+                  <KeyRound className="size-4" />
+                  OTP Code
+                </TabsTrigger>
+              </TabsHighlightItem>
+              <TabsHighlightItem value="magic">
+                <TabsTrigger value="magic" className="flex w-full items-center gap-2">
+                  <Mail className="size-4" />
+                  Magic Link
+                </TabsTrigger>
+              </TabsHighlightItem>
+            </TabsList>
+          </TabsHighlight>
 
-          <TabsContent value="magic" className="mt-4 space-y-4">
-            <form onSubmit={handleMagicLink} className="space-y-3">
-              <div className="space-y-2">
-                <label htmlFor="email-magic" className="text-sm font-medium">
-                  Work email
-                </label>
-                <Input
-                  id="email-magic"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@williamtemple.org"
-                  required
-                />
-              </div>
-              <Button type="submit" className="w-full" disabled={magicStatus === "sending"}>
-                {magicStatus === "sending" ? "Sending..." : "Send magic link"}
-              </Button>
-            </form>
-
-            {magicStatus === "sent" && (
-              <Alert>
-                <AlertDescription>
-                  Check your email for the sign-in link. It expires in 10 minutes.
-                </AlertDescription>
-              </Alert>
-            )}
-          </TabsContent>
-
-          <TabsContent value="otp" className="mt-4 space-y-4">
-            {otpStatus === "idle" || otpStatus === "requesting" ? (
-              <div className="space-y-3">
+          <TabsContents>
+            <TabsContent value="magic" className="space-y-4">
+              <form onSubmit={handleMagicLink} className="space-y-3">
                 <div className="space-y-2">
-                  <label htmlFor="email-otp" className="text-sm font-medium">
+                  <label htmlFor="email-magic" className="text-sm font-medium">
                     Work email
                   </label>
                   <Input
-                    id="email-otp"
+                    id="email-magic"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -166,62 +151,93 @@ const LoginForm = () => {
                     required
                   />
                 </div>
-                <Button
-                  type="button"
-                  onClick={handleRequestOTP}
-                  className="w-full"
-                  disabled={otpStatus === "requesting" || email.trim().length === 0}
-                >
-                  {otpStatus === "requesting" ? "Sending..." : "Send 6-digit code"}
+                <Button type="submit" className="w-full" disabled={magicStatus === "sending"}>
+                  {magicStatus === "sending" ? "Sending..." : "Send magic link"}
                 </Button>
-              </div>
-            ) : (
-              <>
-                <form onSubmit={handleVerifyOTP} className="space-y-4">
+              </form>
+
+              {magicStatus === "sent" && (
+                <Alert>
+                  <AlertDescription>
+                    Check your email for the sign-in link. It expires in 10 minutes.
+                  </AlertDescription>
+                </Alert>
+              )}
+            </TabsContent>
+
+            <TabsContent value="otp" className="space-y-4">
+              {otpStatus === "idle" || otpStatus === "requesting" ? (
+                <div className="space-y-3">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Enter code</label>
-                    <InputOTP
-                      maxLength={6}
-                      value={otpCode}
-                      onChange={(value) => setOtpCode(value)}
-                      className="w-full"
-                    >
-                      <InputOTPGroup className="gap-2.5">
-                        {[0, 1, 2, 3, 4, 5].map((idx) => (
-                          <InputOTPSlot
-                            key={idx}
-                            index={idx}
-                            className="data-[active]:border-primary"
-                          />
-                        ))}
-                      </InputOTPGroup>
-                    </InputOTP>
-                    <p className="text-xs text-muted-foreground">Code sent to {email}</p>
+                    <label htmlFor="email-otp" className="text-sm font-medium">
+                      Work email
+                    </label>
+                    <Input
+                      id="email-otp"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="you@williamtemple.org"
+                      required
+                    />
                   </div>
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        setOtpStatus("idle");
-                        setOtpCode("");
-                      }}
-                      className="flex-1"
-                    >
-                      Change email
-                    </Button>
-                    <Button
-                      type="submit"
-                      className="flex-1"
-                      disabled={otpStatus === "verifying" || otpCode.length !== 6}
-                    >
-                      {otpStatus === "verifying" ? "Verifying..." : "Verify"}
-                    </Button>
-                  </div>
-                </form>
-              </>
-            )}
-          </TabsContent>
+                  <Button
+                    type="button"
+                    onClick={handleRequestOTP}
+                    className="w-full"
+                    disabled={otpStatus === "requesting" || email.trim().length === 0}
+                  >
+                    {otpStatus === "requesting" ? "Sending..." : "Send 6-digit code"}
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <form onSubmit={handleVerifyOTP} className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Enter code</label>
+                      <InputOTP
+                        maxLength={6}
+                        value={otpCode}
+                        onChange={(value) => setOtpCode(value)}
+                        className="w-full"
+                      >
+                        <InputOTPGroup className="gap-2.5">
+                          {[0, 1, 2, 3, 4, 5].map((idx) => (
+                            <InputOTPSlot
+                              key={idx}
+                              index={idx}
+                              className="data-[active]:border-primary"
+                            />
+                          ))}
+                        </InputOTPGroup>
+                      </InputOTP>
+                      <p className="text-xs text-muted-foreground">Code sent to {email}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setOtpStatus("idle");
+                          setOtpCode("");
+                        }}
+                        className="flex-1"
+                      >
+                        Change email
+                      </Button>
+                      <Button
+                        type="submit"
+                        className="flex-1"
+                        disabled={otpStatus === "verifying" || otpCode.length !== 6}
+                      >
+                        {otpStatus === "verifying" ? "Verifying..." : "Verify"}
+                      </Button>
+                    </div>
+                  </form>
+                </>
+              )}
+            </TabsContent>
+          </TabsContents>
         </Tabs>
       </CardContent>
     </Card>
