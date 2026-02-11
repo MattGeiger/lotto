@@ -41,7 +41,7 @@
   --sidebar-ring: oklch(0.708 0 0);
 
   /* Radius */
-  --radius: 0.5rem;
+  --radius: 1.25rem;
 
   /* Shadow values - OKLCH format */
   --base-shadow-color: oklch(0 0 0);
@@ -159,7 +159,7 @@
   --sidebar-ring: oklch(0.556 0 0);
 
   /* Radius */
-  --radius: 0.5rem;
+  --radius: 1.25rem;
 
   /* Shadow values - dark mode OKLCH */
   --base-shadow-color: oklch(0.746 0.16 232.661);

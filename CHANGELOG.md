@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.4.1] - 2026-02-11
+### Changed
+- Increased base light/dark radius tokens to `1.25rem` in `globals.css` per updated design direction.
+- Updated Admin “Generate full” UX so the action stays disabled until Start/End inputs are valid, with wrapped disabled-tap Sonner guidance (ASK style).
+- Reduced the Admin header William Temple wordmark to match the display page logo footprint.
+- Fixed destructive confirmation button styling so “Yes, Reset Lottery” remains destructive-filled and transitions to destructive-outline on hover (no mixed primary styles).
+- Fixed Hi-viz “Pending” descender clipping in the Now Serving header by using a loaded weight and increased line-height.
+
 ## [1.4.0] - 2026-02-11
 ### Added
 - Added a persisted high-contrast mode (`Hi-viz`) layered alongside existing light/dark/system color-scheme selection.
@@ -21,8 +29,6 @@
 - Updated Admin “Mark ticket as returned/unclaimed” cards to reuse the same `ticket-returned` and `ticket-unclaimed` status styles used by the display legend/key.
 - Updated Admin Live State “Next up” sub-card to use the same success/green status token styling used across themes.
 - Mapped the latest `docs/HC_UI.md` updates into Hi-viz tokens in `globals.css`, including the updated light card surface value and the revised 3px/4px shadow model for both light and dark Hi-viz variants.
-- Updated Admin “Generate full” UX so the action stays disabled until Start/End inputs are valid, and added a wrapped disabled-tap Sonner error message explaining what to fix (ASK style).
-- Reduced the Admin header William Temple wordmark to match the display page logo footprint and image ratio.
 
 ## [1.2.1] - 2026-02-03
 ### Changed

@@ -119,12 +119,14 @@ function AlertDialogDescription({
 }
 
 function AlertDialogAction({
+  asChild,
   className,
   ...props
 }: React.ComponentProps<typeof AlertDialogPrimitive.Action>) {
   return (
     <AlertDialogPrimitive.Action
-      className={cn(buttonVariants(), className)}
+      asChild={asChild}
+      className={cn(asChild ? "" : buttonVariants(), className)}
       {...props}
     />
   )
