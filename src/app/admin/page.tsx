@@ -980,7 +980,7 @@ const AdminPage = () => {
                   />
                 </div>
                 <Button
-                  variant="default"
+                  variant="outline"
                   disabled={loading || pendingAction !== null || undrawnCount === 0}
                   onClick={() => setBatchDialogOpen(true)}
                 >
