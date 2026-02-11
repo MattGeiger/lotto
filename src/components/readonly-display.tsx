@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { AnimatePresence, motion } from "motion/react";
 import Image from "next/image";
 import QRCode from "qrcode";
 
@@ -339,12 +340,19 @@ export const ReadOnlyDisplay = ({ ticketSearchRequest }: ReadOnlyDisplayProps) =
           <div className="flex justify-center">
             <div className="text-center">
               <p className="mb-1 text-lg uppercase tracking-[0.14em] text-muted-foreground">{t("nowServing")}</p>
-              <p
-                className="bg-gradient-serving-text bg-clip-text text-[96px] font-black leading-[1.15] text-transparent"
-                aria-label="Currently serving ticket number"
-              >
-                {currentlyServing ?? t("waiting")}
-              </p>
+              <AnimatePresence mode="wait">
+                <motion.p
+                  key={currentlyServing ?? "waiting"}
+                  initial={{ opacity: 0, scale: 0.92 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.92 }}
+                  transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+                  className="bg-gradient-serving-text bg-clip-text text-[96px] font-black leading-[1.15] text-transparent"
+                  aria-label="Currently serving ticket number"
+                >
+                  {currentlyServing ?? t("waiting")}
+                </motion.p>
+              </AnimatePresence>
             </div>
           </div>
 
@@ -362,7 +370,7 @@ export const ReadOnlyDisplay = ({ ticketSearchRequest }: ReadOnlyDisplayProps) =
         </div>
 
         <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-3 sm:gap-4">
-          <Card className="border-border/80 bg-card/80 text-start">
+          <Card className="border-border/80 bg-card/80 text-start animate-slide-in-up" style={{ animationDelay: "100ms" }}>
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between gap-2">
               <CardTitle className="text-lg uppercase tracking-[0.14em] text-muted-foreground">
@@ -374,7 +382,7 @@ export const ReadOnlyDisplay = ({ ticketSearchRequest }: ReadOnlyDisplayProps) =
               <p className="text-2xl font-semibold text-foreground">{formattedDate}</p>
             </CardContent>
           </Card>
-          <Card className="border-border/80 bg-card/80 text-center">
+          <Card className="border-border/80 bg-card/80 text-center animate-slide-in-up" style={{ animationDelay: "200ms" }}>
             <CardHeader className="pb-2">
               <CardTitle className="text-lg uppercase tracking-[0.14em] text-muted-foreground">
                 {t("ticketsIssuedToday")}
@@ -386,7 +394,7 @@ export const ReadOnlyDisplay = ({ ticketSearchRequest }: ReadOnlyDisplayProps) =
               </p>
             </CardContent>
           </Card>
-          <Card className="border-border/80 bg-card/80 text-center">
+          <Card className="border-border/80 bg-card/80 text-center animate-slide-in-up" style={{ animationDelay: "300ms" }}>
             <CardHeader className="pb-2">
               <CardTitle className="text-lg uppercase tracking-[0.14em] text-muted-foreground">
                 {t("totalTicketsIssued")}
@@ -517,7 +525,8 @@ export const ReadOnlyDisplay = ({ ticketSearchRequest }: ReadOnlyDisplayProps) =
                 return (
                   <div
                     key={value}
-                    className={`${baseClasses} ${stateClass}`}
+                    className={`${baseClasses} ${stateClass} animate-fade-in`}
+                    style={{ animationDelay: `${Math.min(index * 20, 1000)}ms` }}
                     role="button"
                     tabIndex={0}
                     onClick={() => setSelectedTicket(value)}

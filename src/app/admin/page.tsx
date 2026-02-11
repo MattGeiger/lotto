@@ -770,7 +770,7 @@ const AdminPage = () => {
           {pendingAction && (
             <Badge
               variant="success"
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 animate-pulse-subtle"
             >
               <Loader2 className="size-3 animate-spin" />
               {pendingAction}...
@@ -1269,8 +1269,8 @@ const AdminPage = () => {
                 <p className="text-xs uppercase tracking-wide text-status-success-text">Next up</p>
                 <div className="flex flex-wrap gap-2">
                     {nextFive?.length
-                    ? nextFive.map((ticket) => (
-                        <Badge key={ticket} variant="success">
+                    ? nextFive.map((ticket, idx) => (
+                        <Badge key={ticket} variant="success" className="animate-fade-in" style={{ animationDelay: `${idx * 50}ms` }}>
                           #{ticket}
                         </Badge>
                       ))
@@ -1282,8 +1282,8 @@ const AdminPage = () => {
                 <p className="text-xs uppercase tracking-wide text-[var(--status-danger-text)]">Returned tickets</p>
                 <div className="flex flex-wrap gap-2">
                     {returnedTickets.length
-                    ? returnedTickets.map((ticket) => (
-                        <Badge key={ticket} variant="danger">
+                    ? returnedTickets.map((ticket, idx) => (
+                        <Badge key={ticket} variant="danger" className="animate-fade-in" style={{ animationDelay: `${idx * 50}ms` }}>
                           #{ticket}
                         </Badge>
                       ))
@@ -1295,8 +1295,8 @@ const AdminPage = () => {
                 <p className="text-xs uppercase tracking-wide text-[var(--status-warning-text)]">Unclaimed tickets</p>
                 <div className="flex flex-wrap gap-2">
                     {unclaimedTickets.length
-                    ? unclaimedTickets.map((ticket) => (
-                        <Badge key={ticket} variant="warning">
+                    ? unclaimedTickets.map((ticket, idx) => (
+                        <Badge key={ticket} variant="warning" className="animate-fade-in" style={{ animationDelay: `${idx * 50}ms` }}>
                           #{ticket}
                         </Badge>
                       ))
