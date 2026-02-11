@@ -11,6 +11,8 @@ import { getPool } from "./db";
 const allowedDomain = process.env.ADMIN_EMAIL_DOMAIN?.toLowerCase();
 const fromAddress = process.env.EMAIL_FROM ?? "login@williamtemple.app";
 const resendApiKey = process.env.RESEND_API_KEY;
+const hasResendApiKey =
+  typeof resendApiKey === "string" && resendApiKey.trim().startsWith("re_");
 
 const emailServer = {
   host: process.env.EMAIL_SERVER_HOST ?? "localhost",
@@ -24,10 +26,18 @@ const emailServer = {
 } as const;
 
 export const { handlers: authHandlers, auth } = NextAuth(() => {
-  const bypassAuth = process.env.AUTH_BYPASS === "true";
   const isProduction = process.env.NODE_ENV === "production";
+  const isLocalDevelopment = process.env.NODE_ENV === "development" && !process.env.VERCEL;
+  const bypassAuth = process.env.AUTH_BYPASS === "true" || isLocalDevelopment;
   const databaseUrl = process.env.DATABASE_URL;
-  const useResend = Boolean(resendApiKey);
+  const useResend = hasResendApiKey;
+  const trustHost = process.env.AUTH_TRUST_HOST === "true" || !!process.env.VERCEL;
+
+  if (process.env.AUTH_BYPASS === "true" && isProduction) {
+    throw new Error(
+      "AUTH_BYPASS must not be enabled in production. Remove AUTH_BYPASS from your environment variables.",
+    );
+  }
 
   if (!databaseUrl) {
     throw new Error(
@@ -43,7 +53,11 @@ export const { handlers: authHandlers, auth } = NextAuth(() => {
     );
   }
 
-  if (!useResend) {
+  if (resendApiKey && !hasResendApiKey) {
+    console.warn(
+      "[Auth] RESEND_API_KEY is set but does not look valid; falling back to SMTP/MailDev configuration.",
+    );
+  } else if (!useResend) {
     console.warn("[Auth] RESEND_API_KEY not set; falling back to SMTP/MailDev configuration.");
   }
 
@@ -188,7 +202,7 @@ export const { handlers: authHandlers, auth } = NextAuth(() => {
       },
     },
     session: { strategy: "jwt" },
-    trustHost: !!process.env.VERCEL,
+    trustHost,
     debug: process.env.NODE_ENV === "development",
   };
 

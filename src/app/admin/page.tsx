@@ -1119,13 +1119,13 @@ const AdminPage = () => {
               </div>
             </div>
 
-            <div className="space-y-3 rounded-lg border border-[var(--status-danger-border)] bg-gradient-card-danger p-4">
+            <div className="ticket-returned space-y-3 rounded-lg border p-4">
               <div>
-                <p className="flex items-center gap-2 text-xs uppercase tracking-wide text-[var(--status-danger-text)]">
+                <p className="flex items-center gap-2 text-xs uppercase tracking-wide text-current">
                   <TicketX className="size-4" />
                   Mark ticket as returned
                 </p>
-                <p className="text-xs text-[var(--status-danger-text)]">
+                <p className="text-xs text-current">
                   Use when a client returns their ticket and leaves the line. You can undo this action.
                 </p>
               </div>
@@ -1157,13 +1157,13 @@ const AdminPage = () => {
               </div>
             </div>
 
-            <div className="space-y-3 rounded-lg border border-[var(--status-warning-border)] bg-gradient-card-warning p-4">
+            <div className="ticket-unclaimed space-y-3 rounded-lg border p-4">
               <div>
-                <p className="flex items-center gap-2 text-xs uppercase tracking-wide text-[var(--status-warning-text)]">
+                <p className="flex items-center gap-2 text-xs uppercase tracking-wide text-current">
                   <TicketSlash className="size-4" />
                   Mark ticket as unclaimed
                 </p>
-                <p className="text-xs text-[var(--status-warning-text)]">
+                <p className="text-xs text-current">
                   Use when no client has claimed a ticket after it was called. You can undo this action.
                 </p>
               </div>
@@ -1265,8 +1265,8 @@ const AdminPage = () => {
                 </p>
               </div>
               {/* Row 4: full width */}
-              <div className="space-y-1 rounded-lg border border-border bg-gradient-card-accent p-3 sm:col-span-2 lg:col-span-6">
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">Next up</p>
+              <div className="space-y-1 rounded-lg border border-status-success-border bg-status-success-bg p-3 sm:col-span-2 lg:col-span-6">
+                <p className="text-xs uppercase tracking-wide text-status-success-text">Next up</p>
                 <div className="flex flex-wrap gap-2">
                     {nextFive?.length
                     ? nextFive.map((ticket) => (
@@ -1274,7 +1274,7 @@ const AdminPage = () => {
                           #{ticket}
                         </Badge>
                       ))
-                    : "—"}
+                    : <span className="text-status-success-text">—</span>}
                 </div>
               </div>
               {/* Row 5: full width */}

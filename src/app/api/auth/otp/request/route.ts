@@ -47,6 +47,9 @@ export async function POST(request: Request) {
 
     const fromAddress = process.env.EMAIL_FROM ?? "login@localhost";
     const resendApiKey = process.env.RESEND_API_KEY;
+    const hasResendApiKey =
+      typeof resendApiKey === "string" && resendApiKey.trim().startsWith("re_");
+    const isProduction = process.env.NODE_ENV === "production";
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
     const code = generateCode();
     const token = hashToken(code);
@@ -92,23 +95,9 @@ export async function POST(request: Request) {
     );
 
     const htmlContent = await render(React.createElement(OtpCode, { code }));
+    const maskedEmail = `${email.slice(0, 2)}***@${email.split("@")[1]}`;
 
-    if (resendApiKey) {
-      const resend = new Resend(resendApiKey);
-      const { error } = await resend.emails.send({
-        from: fromAddress,
-        to: [email],
-        subject: "Your William Temple House login code",
-        html: htmlContent,
-      });
-      if (error) {
-        console.error("[OTP] Resend error:", error);
-        return NextResponse.json(
-          { error: "Unable to send code. Please try again." },
-          { status: 500 },
-        );
-      }
-    } else {
+    const sendWithSmtp = async () => {
       const transporter = nodemailer.createTransport({
         host: process.env.EMAIL_SERVER_HOST ?? "localhost",
         port: Number(process.env.EMAIL_SERVER_PORT ?? "1025"),
@@ -126,15 +115,92 @@ export async function POST(request: Request) {
         subject: "Your William Temple House login code",
         html: htmlContent,
       });
+    };
+
+    let delivered = false;
+
+    if (hasResendApiKey) {
+      try {
+        const resend = new Resend(resendApiKey);
+        const { error } = await resend.emails.send({
+          from: fromAddress,
+          to: [email],
+          subject: "Your William Temple House login code",
+          html: htmlContent,
+        });
+        if (error) {
+          console.error("[OTP] Resend error:", error);
+          if (isProduction) {
+            return NextResponse.json(
+              { error: "Unable to send code. Please try again." },
+              { status: 500 },
+            );
+          }
+          console.warn("[OTP] Falling back to SMTP/MailDev delivery (non-production).");
+          try {
+            await sendWithSmtp();
+            delivered = true;
+          } catch (smtpError) {
+            console.warn("[OTP] SMTP/MailDev fallback failed.", smtpError);
+          }
+        } else {
+          delivered = true;
+        }
+      } catch (resendError) {
+        if (isProduction) {
+          console.error("[OTP] Resend request failed:", resendError);
+          return NextResponse.json(
+            { error: "Unable to send code. Please try again." },
+            { status: 500 },
+          );
+        }
+        console.warn("[OTP] Resend request failed; falling back to SMTP/MailDev.", resendError);
+        try {
+          await sendWithSmtp();
+          delivered = true;
+        } catch (smtpError) {
+          console.warn("[OTP] SMTP/MailDev fallback failed.", smtpError);
+        }
+      }
+    } else {
+      if (resendApiKey) {
+        console.warn(
+          "[OTP] RESEND_API_KEY is set but does not look valid; using SMTP/MailDev delivery.",
+        );
+      }
+      try {
+        await sendWithSmtp();
+        delivered = true;
+      } catch (smtpError) {
+        if (isProduction) {
+          throw smtpError;
+        }
+        console.warn("[OTP] SMTP/MailDev delivery failed in non-production.", smtpError);
+      }
     }
 
-    const maskedEmail = `${email.slice(0, 2)}***@${email.split("@")[1]}`;
+    if (!delivered) {
+      if (isProduction) {
+        return NextResponse.json(
+          { error: "Unable to send code. Please try again." },
+          { status: 500 },
+        );
+      }
+      console.warn("[OTP] Delivery unavailable; using development fallback.");
+      console.info("[OTP] Development code issued", { email: maskedEmail, code });
+      return NextResponse.json({ success: true, devCode: code, delivery: "development-fallback" });
+    }
+
     console.log("[OTP] Code issued", { email: maskedEmail });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("[OTP] Failed to issue code:", error);
+    const isProduction = process.env.NODE_ENV === "production";
+    const errorMessage = isProduction
+      ? "Unable to issue code. Please try again."
+      : "Unable to issue code. Start MailDev (`docker compose up --build`) or configure a valid RESEND_API_KEY and EMAIL_FROM.";
     return NextResponse.json(
-      { error: "Unable to issue code. Please try again." },
+      { error: errorMessage },
       { status: 500 },
     );
   }

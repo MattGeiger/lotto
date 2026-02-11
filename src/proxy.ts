@@ -13,9 +13,10 @@ export async function proxy(request: NextRequest) {
   const isApiState = pathname.startsWith("/api/state");
   const isWriteApi =
     isApiState && !["GET", "HEAD", "OPTIONS"].includes(request.method.toUpperCase());
-  const authBypass = process.env.AUTH_BYPASS === "true";
+  const isLocalDevelopment = process.env.NODE_ENV === "development" && !process.env.VERCEL;
+  const authBypass = process.env.AUTH_BYPASS === "true" || isLocalDevelopment;
 
-  if (authBypass && process.env.NODE_ENV === "production") {
+  if (process.env.AUTH_BYPASS === "true" && process.env.NODE_ENV === "production") {
     throw new Error(
       "AUTH_BYPASS must not be enabled in production. Remove AUTH_BYPASS from your environment variables.",
     );

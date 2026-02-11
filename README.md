@@ -132,7 +132,8 @@ NODE_ENV=production
 
 ## Local development (no external deps)
 - `docker-compose` runs the app, Postgres, and MailDev (SMTP + web UI). Default `.env.local` uses `DATABASE_URL=postgresql://postgres:postgres@db:5432/neondb?sslmode=disable`, `EMAIL_SERVER_HOST=maildev`, `EMAIL_SERVER_PORT=1025`.
-- Fully offline: leave `RESEND_API_KEY` unset, keep `EMAIL_FROM=login@localhost`, and optionally set `AUTH_BYPASS=true` to skip auth.
+- Local `npm run dev` on localhost bypasses auth automatically (no OTP required) unless you are on Vercel.
+- Fully offline: leave `RESEND_API_KEY` unset and keep `EMAIL_FROM=login@localhost`.
 - To exercise the full email flow locally, keep `AUTH_BYPASS=false`, start docker, and open magic links from MailDev at `http://localhost:1080`.
 
 ## Environment Setup
@@ -153,7 +154,7 @@ NODE_ENV=production
    - `EMAIL_FROM=login@localhost`, `EMAIL_SERVER_HOST=maildev`, `EMAIL_SERVER_PORT=1025`
    - `ADMIN_EMAIL_DOMAIN` (optional; restrict sign-ins)
    - Optional: `RESEND_API_KEY` + production `EMAIL_FROM` when testing Resend instead of MailDev
-   - Optional: `AUTH_BYPASS=true` to skip auth during UI work
+   - Optional: `AUTH_BYPASS=true` to bypass auth outside localhost dev (for example, custom non-production environments)
 4. Required services:
    - Provided by docker compose: app, Postgres, MailDev (open http://localhost:1080 to view emails)
    - Neon/Resend are only needed for production or remote testing
@@ -168,7 +169,7 @@ See `.env.example` for the full list. Critical vars:
 - `ADMIN_EMAIL_DOMAIN` — restricts login to your domain
 
 Local options:
-- Set `AUTH_BYPASS=true` to bypass login during UI work (still requires `DATABASE_URL` for server start).
+- Localhost dev already bypasses auth automatically; set `AUTH_BYPASS=true` only when you need bypass in non-localhost non-production environments.
 - Add `RESEND_API_KEY` and a production `EMAIL_FROM` to test Resend instead of MailDev.
 
 ## Run in Docker

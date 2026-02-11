@@ -114,8 +114,9 @@
   --icon-emerald: oklch(0.58 0.16 165);
 
   /* Fonts */
-  --font-sans: var(--font-lato);
-  --font-mono: var(--font-geist-mono);
+  --app-font-sans: var(--font-lato);
+  --app-font-serif: var(--font-lato);
+  --app-font-mono: var(--font-geist-mono);
 }
 
 .dark {
@@ -228,15 +229,16 @@
   --icon-emerald: oklch(0.68 0.14 165);
 
   /* Fonts */
-  --font-sans: var(--font-lato);
-  --font-mono: var(--font-geist-mono);
+  --app-font-sans: var(--font-lato);
+  --app-font-serif: var(--font-lato);
+  --app-font-mono: var(--font-geist-mono);
 }
 
 /* High-contrast overrides */
 :root.hi-viz {
   --background: oklch(0.9850 0 0);
   --foreground: oklch(0.1410 0.0050 285.8230);
-  --card: oklch(0.9670 0.0010 286.3750);
+  --card: oklch(0.9850 0 0);
   --card-foreground: oklch(0.1410 0.0050 285.8230);
   --popover: oklch(0.9850 0 0);
   --popover-foreground: oklch(0.1410 0.0050 285.8230);
@@ -269,7 +271,17 @@
   --sidebar-border: oklch(0.1410 0.0050 285.8230);
   --sidebar-ring: oklch(0.6090 0.1260 221.7230);
 
-  --base-shadow-color: oklch(0.1410 0.0050 285.8230);
+  --radius: 1.25rem;
+
+  --base-shadow-color: #1a1a1a;
+  --base-shadow-2xs: 3px 4px 0px -1.5px hsl(0 0% 10.1961% / 0.25);
+  --base-shadow-xs: 3px 4px 0px -1.5px hsl(0 0% 10.1961% / 0.25);
+  --base-shadow-sm: 3px 4px 0px -1.5px hsl(0 0% 10.1961% / 0.50), 3px 1px 2px -2.5px hsl(0 0% 10.1961% / 0.50);
+  --base-shadow: 3px 4px 0px -1.5px hsl(0 0% 10.1961% / 0.50), 3px 1px 2px -2.5px hsl(0 0% 10.1961% / 0.50);
+  --base-shadow-md: 3px 4px 0px -1.5px hsl(0 0% 10.1961% / 0.50), 3px 2px 4px -2.5px hsl(0 0% 10.1961% / 0.50);
+  --base-shadow-lg: 3px 4px 0px -1.5px hsl(0 0% 10.1961% / 0.50), 3px 4px 6px -2.5px hsl(0 0% 10.1961% / 0.50);
+  --base-shadow-xl: 3px 4px 0px -1.5px hsl(0 0% 10.1961% / 0.50), 3px 8px 10px -2.5px hsl(0 0% 10.1961% / 0.50);
+  --base-shadow-2xl: 3px 4px 0px -1.5px hsl(0 0% 10.1961% / 1.25);
 
   --status-success-bg: oklch(0.9000 0.1400 150.0000);
   --status-success-border: oklch(0.4800 0.1400 150.0000);
@@ -284,25 +296,24 @@
   --status-neutral-border: oklch(0.4200 0.0100 286.0000);
   --status-neutral-text: oklch(0.2000 0.0100 286.0000);
 
-  --ticket-serving: linear-gradient(135deg, oklch(0.6090 0.1260 221.7230), oklch(0.5635 0.2408 260.8178));
-  --ticket-serving-border: oklch(0.4200 0.1700 248.0000);
-  --ticket-serving-text: oklch(0.9850 0 0);
+  --ticket-serving: linear-gradient(135deg, oklch(0.62 0.21 255), oklch(0.7 0.22 255));
+  --ticket-serving-border: oklch(0.56 0.18 255);
+  --ticket-serving-text: oklch(0.98 0 0);
   --ticket-served: linear-gradient(135deg, oklch(0.8500 0.1200 160.0000), oklch(0.9200 0.1000 190.0000));
   --ticket-served-border: oklch(0.4600 0.1200 168.0000);
   --ticket-served-text: oklch(0.1410 0.0050 285.8230);
   --ticket-upcoming: oklch(0.9200 0.0040 286.0000);
   --ticket-upcoming-border: oklch(0.1410 0.0050 285.8230);
-  --serving-text-gradient: linear-gradient(135deg, oklch(0.6090 0.1260 221.7230), oklch(0.5460 0.2450 262.8810));
-
-  --gradient-display-bg:
-    radial-gradient(circle at 20% 20%, oklch(0.6090 0.1260 221.7230 / 0.18), transparent 34%),
-    radial-gradient(circle at 80% 0%, oklch(0.5460 0.2450 262.8810 / 0.14), transparent 30%),
-    linear-gradient(145deg, oklch(0.9850 0 0), oklch(0.9400 0.0100 286.0000) 45%, oklch(0.9850 0 0));
+  --serving-text-gradient: linear-gradient(135deg, oklch(0.62 0.21 255), oklch(0.7 0.22 255));
 
   --gradient-card-info: linear-gradient(135deg, oklch(0.9750 0.0020 286.0000), oklch(0.9450 0.0080 286.0000));
   --gradient-card-accent: linear-gradient(135deg, oklch(0.9750 0.0020 286.0000), oklch(0.9500 0.0200 240.0000));
   --card-title-color: var(--foreground);
   --card-icon-color: var(--foreground);
+
+  --app-font-sans: var(--font-open-sans), ui-sans-serif, sans-serif, system-ui;
+  --app-font-serif: var(--font-bodoni-moda-sc), ui-serif, serif;
+  --app-font-mono: var(--font-ibm-plex-mono), ui-monospace, monospace;
 }
 
 :root.dark.hi-viz {
@@ -312,9 +323,9 @@
   --card-foreground: oklch(0.9850 0 0);
   --popover: oklch(0.2740 0.0060 286.0330);
   --popover-foreground: oklch(0.9850 0 0);
-  --primary: oklch(0.8550 0.1380 181.0710);
+  --primary: oklch(0.7890 0.1540 211.5300);
   --primary-foreground: oklch(0.1410 0.0050 285.8230);
-  --secondary: oklch(0.9691 0.2005 109.6228);
+  --secondary: oklch(0.9050 0.1820 98.1110);
   --secondary-foreground: oklch(0.1410 0.0050 285.8230);
   --muted: oklch(0.2100 0.0060 285.8850);
   --muted-foreground: oklch(0.8710 0.0060 286.2860);
@@ -327,7 +338,7 @@
   --ring: oklch(0.8550 0.1380 181.0710);
 
   --chart-1: oklch(0.8550 0.1380 181.0710);
-  --chart-2: oklch(0.9691 0.2005 109.6228);
+  --chart-2: oklch(0.9050 0.1820 98.1110);
   --chart-3: oklch(0.6850 0.1690 237.3230);
   --chart-4: oklch(0.7660 0.2457 142.7037);
   --chart-5: oklch(0.6289 0.2673 328.1930);
@@ -341,7 +352,17 @@
   --sidebar-border: oklch(0.9850 0 0);
   --sidebar-ring: oklch(0.8550 0.1380 181.0710);
 
+  --radius: 1.25rem;
+
   --base-shadow-color: oklch(0.9560 0.0450 203.3880);
+  --base-shadow-2xs: 3px 4px 0px -1.5px hsl(185.1090 96.4326% 90.2904% / 0.25);
+  --base-shadow-xs: 3px 4px 0px -1.5px hsl(185.1090 96.4326% 90.2904% / 0.25);
+  --base-shadow-sm: 3px 4px 0px -1.5px hsl(185.1090 96.4326% 90.2904% / 0.50), 3px 1px 2px -2.5px hsl(185.1090 96.4326% 90.2904% / 0.50);
+  --base-shadow: 3px 4px 0px -1.5px hsl(185.1090 96.4326% 90.2904% / 0.50), 3px 1px 2px -2.5px hsl(185.1090 96.4326% 90.2904% / 0.50);
+  --base-shadow-md: 3px 4px 0px -1.5px hsl(185.1090 96.4326% 90.2904% / 0.50), 3px 2px 4px -2.5px hsl(185.1090 96.4326% 90.2904% / 0.50);
+  --base-shadow-lg: 3px 4px 0px -1.5px hsl(185.1090 96.4326% 90.2904% / 0.50), 3px 4px 6px -2.5px hsl(185.1090 96.4326% 90.2904% / 0.50);
+  --base-shadow-xl: 3px 4px 0px -1.5px hsl(185.1090 96.4326% 90.2904% / 0.50), 3px 8px 10px -2.5px hsl(185.1090 96.4326% 90.2904% / 0.50);
+  --base-shadow-2xl: 3px 4px 0px -1.5px hsl(185.1090 96.4326% 90.2904% / 1.25);
 
   --status-success-bg: oklch(0.2400 0.0500 150.0000);
   --status-success-border: oklch(0.7600 0.1400 150.0000);
@@ -356,25 +377,24 @@
   --status-neutral-border: oklch(0.8800 0.0100 286.0000);
   --status-neutral-text: oklch(0.9400 0.0060 286.0000);
 
-  --ticket-serving: linear-gradient(135deg, oklch(0.8550 0.1380 181.0710), oklch(0.9691 0.2005 109.6228));
-  --ticket-serving-border: oklch(0.9800 0.1300 112.0000);
-  --ticket-serving-text: oklch(0.1410 0.0050 285.8230);
+  --ticket-serving: linear-gradient(135deg, oklch(0.72 0.18 85), oklch(0.82 0.2 80));
+  --ticket-serving-border: oklch(0.65 0.16 85);
+  --ticket-serving-text: oklch(0.18 0 0);
   --ticket-served: linear-gradient(135deg, oklch(0.3300 0.0800 165.0000), oklch(0.3800 0.1100 188.0000));
   --ticket-served-border: oklch(0.8100 0.1300 170.0000);
   --ticket-served-text: oklch(0.9850 0 0);
   --ticket-upcoming: oklch(0.2100 0.0060 286.0000);
   --ticket-upcoming-border: oklch(0.9850 0 0);
-  --serving-text-gradient: linear-gradient(135deg, oklch(0.8550 0.1380 181.0710), oklch(0.9691 0.2005 109.6228));
-
-  --gradient-display-bg:
-    radial-gradient(circle at 20% 20%, oklch(0.8550 0.1380 181.0710 / 0.25), transparent 34%),
-    radial-gradient(circle at 80% 0%, oklch(0.6850 0.1690 237.3230 / 0.20), transparent 30%),
-    linear-gradient(145deg, oklch(0.1410 0.0050 285.8230), oklch(0.1850 0.0150 252.0000) 45%, oklch(0.1410 0.0050 285.8230));
+  --serving-text-gradient: linear-gradient(135deg, oklch(0.72 0.18 85), oklch(0.82 0.2 80));
 
   --gradient-card-info: linear-gradient(135deg, oklch(0.2200 0.0100 286.0000), oklch(0.1800 0.0200 248.0000));
   --gradient-card-accent: linear-gradient(135deg, oklch(0.2200 0.0100 286.0000), oklch(0.1800 0.0250 237.0000));
   --card-title-color: var(--foreground);
   --card-icon-color: var(--foreground);
+
+  --app-font-sans: var(--font-open-sans), ui-sans-serif, sans-serif, system-ui;
+  --app-font-serif: var(--font-bodoni-moda-sc), ui-serif, serif;
+  --app-font-mono: var(--font-ibm-plex-mono), ui-monospace, monospace;
 }
 
 @theme inline {
@@ -449,13 +469,14 @@
   --shadow-2xl: var(--base-shadow-2xl);
 
   /* Fonts */
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-mono);
+  --font-sans: var(--app-font-sans);
+  --font-serif: var(--app-font-serif);
+  --font-mono: var(--app-font-mono);
 }
 
 body {
   margin: 0;
-  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  font-family: var(--app-font-sans), system-ui, -apple-system, sans-serif;
 }
 
 a {

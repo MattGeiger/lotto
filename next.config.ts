@@ -1,5 +1,21 @@
 import type { NextConfig } from "next";
 
+const enableTweakcnPreview = process.env.VERCEL !== "1";
+const speedInsightsScriptHost = "https://va.vercel-scripts.com";
+const speedInsightsConnectHost = "https://vitals.vercel-insights.com";
+
+const scriptSrc = enableTweakcnPreview
+  ? `script-src 'self' 'unsafe-inline' ${speedInsightsScriptHost} https://tweakcn.com https://*.tweakcn.com`
+  : `script-src 'self' 'unsafe-inline' ${speedInsightsScriptHost}`;
+
+const connectSrc = enableTweakcnPreview
+  ? `connect-src 'self' ${speedInsightsConnectHost} ${speedInsightsScriptHost} https://tweakcn.com https://*.tweakcn.com`
+  : `connect-src 'self' ${speedInsightsConnectHost} ${speedInsightsScriptHost}`;
+
+const frameAncestors = enableTweakcnPreview
+  ? "frame-ancestors 'self' https://tweakcn.com https://*.tweakcn.com"
+  : "frame-ancestors 'none'";
+
 const nextConfig: NextConfig = {
   productionBrowserSourceMaps: false,
   turbopack: {},
@@ -18,12 +34,12 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline'",
+              scriptSrc,
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob:",
               "font-src 'self'",
-              "connect-src 'self'",
-              "frame-ancestors 'none'",
+              connectSrc,
+              frameAncestors,
               "base-uri 'self'",
               "form-action 'self'",
             ].join("; "),

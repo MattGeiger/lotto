@@ -8,7 +8,10 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  if (process.env.AUTH_BYPASS === "true") {
+  const isLocalDevelopment = process.env.NODE_ENV === "development" && !process.env.VERCEL;
+  const authBypass = process.env.AUTH_BYPASS === "true" || isLocalDevelopment;
+
+  if (authBypass) {
     return <>{children}</>;
   }
 

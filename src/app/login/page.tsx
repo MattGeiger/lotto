@@ -63,11 +63,19 @@ const LoginForm = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
+      const data = await response.json().catch(() => ({}));
       if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
         throw new Error(data?.error || "Unable to send code. Please try again.");
       }
       setOtpStatus("sent");
+      if (
+        process.env.NODE_ENV !== "production" &&
+        data &&
+        typeof data.devCode === "string" &&
+        data.devCode.length > 0
+      ) {
+        toast(`Development OTP code: ${data.devCode}`);
+      }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Unable to send code. Please try again.");
       setOtpStatus("error");

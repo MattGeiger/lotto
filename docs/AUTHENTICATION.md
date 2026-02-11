@@ -5,6 +5,11 @@
 - One-Time Passcode (OTP) (email-based)
 - Magic Link (email-based)
 
+## Local Development Behavior
+
+- On localhost development (`npm run dev`), authentication is bypassed automatically.
+- OTP and Magic Link flows are required in production deployments.
+
 ## Email Restriction
 
 - Only `@williamtemple.org` email addresses are accepted.

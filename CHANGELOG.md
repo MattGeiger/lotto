@@ -9,6 +9,18 @@
 ### Changed
 - Updated the theme switcher dropdown to show iconized menu items: Light, Dark, System, and Hi-viz.
 - Added high-contrast token overrides in `globals.css` for both light and dark system contexts.
+- Updated Hi-viz custom fonts to Open Sans, Bodoni Moda SC, and IBM Plex Mono (via `next/font/google`) and wired Hi-viz font tokens to the loaded font variables.
+- Refined Hi-viz tokens from `docs/HC_UI.md`, and kept both “Now Serving” text and legend serving state on the existing light/dark gradient palette values.
+- Fixed font token recursion in `@theme inline` by mapping Tailwind font tokens to separate app font variables, so local render now applies the configured fonts instead of falling back to default sans.
+- Updated CSP allowlist for Vercel Speed Insights script/connect hosts to prevent local browser blocks from `va.vercel-scripts.com`.
+- Updated NextAuth `trustHost` logic to honor explicit `AUTH_TRUST_HOST=true` (while still trusting Vercel automatically), preventing local `UntrustedHost` failures in development.
+- Hardened email provider selection so Resend is only used when `RESEND_API_KEY` matches expected key format, and OTP requests now fall back to SMTP/MailDev in non-production when Resend delivery fails.
+- Added a non-production OTP fallback path that still issues a code when email delivery is unavailable and surfaces the development code in the login UI for local testing.
+- Enabled automatic auth bypass for localhost development (`NODE_ENV=development` and non-Vercel), so `/admin` and write APIs do not require OTP/login in local dev while production keeps strict auth requirements.
+- Fixed Hi-viz font variable resolution by moving Next font variable classes to the root `<html>` element, so `:root.hi-viz` font tokens resolve correctly.
+- Updated Admin “Mark ticket as returned/unclaimed” cards to reuse the same `ticket-returned` and `ticket-unclaimed` status styles used by the display legend/key.
+- Updated Admin Live State “Next up” sub-card to use the same success/green status token styling used across themes.
+- Mapped the latest `docs/HC_UI.md` updates into Hi-viz tokens in `globals.css`, including the updated light card surface value and the revised 3px/4px shadow model for both light and dark Hi-viz variants.
 
 ## [1.2.1] - 2026-02-03
 ### Changed
