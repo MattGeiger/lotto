@@ -99,6 +99,10 @@ Custom WTH tokens (status, ticket gradients, display/admin gradients) live along
 - Serving headline uses `bg-gradient-serving-text`; blue gradient in light mode, gold gradient in dark mode for readability and brand fit.
 - Public display "Now Serving" value transitions use the local Animate UI `MorphingText` primitive with bottom-up insert/sweep motion and per-character stagger.
 - Translated display copy uses `LanguageMorphText` (wrapper over `MorphingText`) so language switches animate consistently while still wrapping by **word** boundaries (`wordWrap="word"`), not per character.
+- Motion timing standard after v1.4 calibration:
+  - "Now Serving" spring: `stiffness: 80`, `damping: 16`, `mass: 0.45` (roughly ~0.66s settle).
+  - `LanguageMorphText` spring: `stiffness: 90`, `damping: 16`, `mass: 0.4` (roughly ~0.59s settle).
+  - A slower follow-up pass (`36/11/0.45` and `40/11/0.4`) was intentionally rolled back as too sluggish for live board readability.
 - Polling status copy (`refreshing`, `last checked`, transient error line) should remain static to avoid constant re-animation during periodic fetches.
 
 ### Adding Custom Colors (Tailwind v4)

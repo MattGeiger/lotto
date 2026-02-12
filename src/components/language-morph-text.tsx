@@ -9,8 +9,8 @@ type LanguageMorphTextProps = Omit<MorphingTextProps, "text"> & {
 
 const DEFAULT_TRANSITION = {
   type: "spring",
-  stiffness: 200,
-  damping: 24,
+  stiffness: 90,
+  damping: 16,
   mass: 0.4,
 } as const;
 

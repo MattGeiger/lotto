@@ -2,7 +2,7 @@
 
 import { motion, useAnimation } from "motion/react";
 import type { HTMLAttributes } from "react";
-import { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -13,12 +13,30 @@ export interface EyeIconHandle {
 
 interface EyeIconProps extends HTMLAttributes<HTMLDivElement> {
   size?: number;
+  animateOnView?: boolean;
+  animateOnHover?: boolean;
+  animateOnTap?: boolean;
 }
 
 const EyeIcon = forwardRef<EyeIconHandle, EyeIconProps>(
-  ({ onMouseEnter, onMouseLeave, className, size = 28, ...props }, ref) => {
+  (
+    {
+      onMouseEnter,
+      onMouseLeave,
+      onPointerDown,
+      className,
+      size = 28,
+      animateOnView = false,
+      animateOnHover = false,
+      animateOnTap = false,
+      ...props
+    },
+    ref,
+  ) => {
     const controls = useAnimation();
     const isControlledRef = useRef(false);
+    const hasExplicitTriggers = animateOnView || animateOnHover || animateOnTap;
+    const shouldAnimateOnHover = animateOnHover || !hasExplicitTriggers;
 
     useImperativeHandle(ref, () => {
       isControlledRef.current = true;
@@ -28,26 +46,57 @@ const EyeIcon = forwardRef<EyeIconHandle, EyeIconProps>(
       };
     });
 
+    const playDefaultAnimation = useCallback(() => {
+      void controls.set("normal");
+      void controls.start("animate");
+    }, [controls]);
+
+    useEffect(() => {
+      void controls.set("normal");
+    }, [controls]);
+
+    useEffect(() => {
+      if (isControlledRef.current || !animateOnView) return;
+      playDefaultAnimation();
+    }, [animateOnView, playDefaultAnimation]);
+
     const handleMouseEnter = useCallback(
       (e: React.MouseEvent<HTMLDivElement>) => {
         if (isControlledRef.current) {
           onMouseEnter?.(e);
-        } else {
-          controls.start("animate");
+          return;
         }
+        if (shouldAnimateOnHover) {
+          playDefaultAnimation();
+        }
+        onMouseEnter?.(e);
       },
-      [controls, onMouseEnter]
+      [onMouseEnter, playDefaultAnimation, shouldAnimateOnHover]
     );
 
     const handleMouseLeave = useCallback(
       (e: React.MouseEvent<HTMLDivElement>) => {
         if (isControlledRef.current) {
           onMouseLeave?.(e);
-        } else {
-          controls.start("normal");
+          return;
         }
+        onMouseLeave?.(e);
       },
-      [controls, onMouseLeave]
+      [onMouseLeave]
+    );
+
+    const handlePointerDown = useCallback(
+      (e: React.PointerEvent<HTMLDivElement>) => {
+        if (isControlledRef.current) {
+          onPointerDown?.(e);
+          return;
+        }
+        if (animateOnTap) {
+          playDefaultAnimation();
+        }
+        onPointerDown?.(e);
+      },
+      [animateOnTap, onPointerDown, playDefaultAnimation]
     );
 
     return (
@@ -55,6 +104,7 @@ const EyeIcon = forwardRef<EyeIconHandle, EyeIconProps>(
         className={cn(className)}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
+        onPointerDown={handlePointerDown}
         {...props}
       >
         <svg

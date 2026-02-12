@@ -25,9 +25,13 @@
 - Enabled one-character-at-a-time sequencing for display “Now Serving” transitions by adding per-character stagger support to `MorphingText`.
 - Applied the same per-character bottom-up morph style to display-page translated labels/messages (including the ticket detail and not-found dialogs) so visible text animates on language switches.
 - Added word-aware wrapping mode to `MorphingText` and made `LanguageMorphText` use it by default, preventing per-character line breaks (for example, Spanish display labels no longer orphan trailing letters).
+- Reverted an over-slow text morph timing experiment and restored the approved v1.4 spring baseline for display readability (`Now Serving`: `80/16/0.45`, `LanguageMorphText`: `90/16/0.4`).
 - Updated the public display search icon trigger mapping to use `path` on initial view load, `find` on hover, and `default` on tap/click.
 - Updated display search icon wiring to use `AnimateIcon` wrapper triggers with `completeOnStop`, ensuring tap/click runs visibly while preserving `path` (load) and `find` (hover) behavior.
 - Set display search icon size parity to `1.8rem` to match language/theme switch button glyph sizing.
+- Updated `/admin` icon behavior split: interactive control icons (`ArrowLeft`, `ChevronLeft/Right`, `Undo2`, `Redo2`) remain load/hover/tap animated, while visual/status card iconography is now static.
+- Updated mode switcher icon behavior so Light (`Sun`), Dark (`Moon`), System (`SunMoon`), and Hi-viz (`Eye`) all animate on load/hover/tap using default animations, and retrigger default motion when switching between mode icons.
+- Fixed ThemeSwitcher hydration mismatch by rendering a mount-safe SSR fallback icon state before resolving client theme/contrast mode.
 
 ## [1.4.0] - 2026-02-11
 ### Added

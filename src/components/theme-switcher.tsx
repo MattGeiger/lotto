@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { Sun } from "@/components/animate-ui/icons/sun";
 import { Moon } from "@/components/animate-ui/icons/moon";
 import { SunMoon } from "@/components/animate-ui/icons/sun-moon";
@@ -18,8 +19,19 @@ import {
 export function ThemeSwitcher() {
   const { theme, setTheme } = useTheme();
   const { contrastMode, setContrastMode } = useContrastMode();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const selectedTheme = theme ?? "system";
   const hiVizEnabled = contrastMode === "hi-viz";
+  const resolvedTheme =
+    selectedTheme === "light" || selectedTheme === "dark" || selectedTheme === "system"
+      ? selectedTheme
+      : "system";
+  const activeMode = mounted ? (hiVizEnabled ? "hi-viz" : resolvedTheme) : "system";
 
   const setBaseTheme = (nextTheme: "light" | "dark" | "system") => {
     setContrastMode("default");
@@ -37,45 +49,72 @@ export function ThemeSwitcher() {
         <Button
           variant="outline"
           size="icon"
-          className="group relative !h-[3.375rem] !w-[3.375rem] [&_svg]:!size-[1.8rem]"
+          className="!h-[3.375rem] !w-[3.375rem] [&_svg]:!size-[1.8rem]"
         >
-          {hiVizEnabled ? (
-            <EyeIcon
+          {activeMode === "light" ? (
+            <Sun
+              key="trigger-light"
               size={29}
-              className="inline-flex text-current transition-transform duration-200 ease-out group-hover:scale-110 group-active:scale-95"
+              animation="default"
+              animateOnView="default"
+              animateOnHover="default"
+              animateOnTap="default"
+              className="inline-flex text-current"
+            />
+          ) : activeMode === "dark" ? (
+            <Moon
+              key="trigger-dark"
+              size={29}
+              animation="default"
+              animateOnView="default"
+              animateOnHover="default"
+              animateOnTap="default"
+              className="inline-flex text-current"
+            />
+          ) : activeMode === "system" ? (
+            <SunMoon
+              key="trigger-system"
+              size={29}
+              animation="default"
+              animateOnView="default"
+              animateOnHover="default"
+              animateOnTap="default"
+              className="inline-flex text-current"
             />
           ) : (
-            <>
-              <Sun
-                animateOnHover
-                animateOnTap
-                className="rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"
-              />
-              <Moon
-                animateOnHover
-                animateOnTap
-                className="absolute rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"
-              />
-            </>
+            <EyeIcon
+              key="trigger-hi-viz"
+              size={29}
+              className="inline-flex text-current"
+              animateOnView
+              animateOnHover
+              animateOnTap
+            />
           )}
           <span className="sr-only">Theme options</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuCheckboxItem checked={!hiVizEnabled && selectedTheme === "light"} onSelect={() => setBaseTheme("light")}>
-          <Sun size={16} animateOnHover />
+          <Sun size={16} animation="default" animateOnView="default" animateOnHover="default" animateOnTap="default" />
           Light
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem checked={!hiVizEnabled && selectedTheme === "dark"} onSelect={() => setBaseTheme("dark")}>
-          <Moon size={16} animateOnHover />
+          <Moon size={16} animation="default" animateOnView="default" animateOnHover="default" animateOnTap="default" />
           Dark
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem checked={!hiVizEnabled && selectedTheme === "system"} onSelect={() => setBaseTheme("system")}>
-          <SunMoon size={16} animateOnHover />
+          <SunMoon size={16} animation="default" animateOnView="default" animateOnHover="default" animateOnTap="default" />
           System
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem checked={hiVizEnabled} onSelect={setHiVizTheme}>
-          <EyeIcon size={16} className="inline-flex text-current" />
+          <EyeIcon
+            size={16}
+            className="inline-flex text-current"
+            animateOnView
+            animateOnHover
+            animateOnTap
+          />
           Hi-viz
         </DropdownMenuCheckboxItem>
       </DropdownMenuContent>
