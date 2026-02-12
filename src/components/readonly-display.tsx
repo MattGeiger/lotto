@@ -363,7 +363,7 @@ export const ReadOnlyDisplay = ({ ticketSearchRequest }: ReadOnlyDisplayProps) =
                   text={nowServingDisplayText}
                   className="inline-block overflow-visible pb-[0.08em] text-[96px] font-extrabold leading-[1.28]"
                   characterClassName="bg-gradient-serving-text bg-clip-text text-transparent"
-                  transition={{ duration: 0.5, ease: "easeOut", delay: 0.1 }}
+                  transition={{ duration: 0.75, ease: "easeOut", delay: 0.15 }}
                   aria-label="Currently serving ticket number"
                 />
               )}
