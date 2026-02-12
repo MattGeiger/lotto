@@ -1,6 +1,9 @@
 "use client";
 
-import { Clock, Info, ListOrdered, Users, X } from "lucide-react";
+import { Info, ListOrdered } from "lucide-react";
+import { Clock } from "@/components/animate-ui/icons/clock";
+import { Users } from "@/components/animate-ui/icons/users";
+import { X } from "@/components/animate-ui/icons/x";
 
 import { useLanguage, type Language } from "@/contexts/language-context";
 import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -51,7 +54,7 @@ export function TicketDetailDialog({
           </DialogTitle>
         </DialogHeader>
         <DialogClose className="absolute end-4 top-4 rounded-full p-1 text-muted-foreground transition hover:bg-muted/40">
-          <X className="h-4 w-4" />
+          <X className="h-4 w-4" animateOnHover />
           <span className="sr-only">{t("close")}</span>
         </DialogClose>
 
@@ -78,7 +81,10 @@ export function TicketDetailDialog({
               </div>
 
               <div className="flex items-center gap-3 rounded-lg border bg-card p-4">
-                <Users className="h-6 w-6 text-primary dark:text-[color:var(--ticket-serving-border)]" />
+                <Users
+                  className="h-6 w-6 text-primary dark:text-[color:var(--ticket-serving-border)]"
+                  animateOnHover
+                />
                 <div className="flex-1">
                   <p className="text-sm font-medium text-muted-foreground">{t("ticketsAhead")}</p>
                   <p className="text-2xl font-bold text-foreground">{ticketsAhead}</p>
@@ -86,7 +92,10 @@ export function TicketDetailDialog({
               </div>
 
               <div className="flex items-center gap-3 rounded-lg border bg-card p-4">
-                <Clock className="h-6 w-6 text-primary dark:text-[color:var(--ticket-serving-border)]" />
+                <Clock
+                  className="h-6 w-6 text-primary dark:text-[color:var(--ticket-serving-border)]"
+                  animateOnHover
+                />
                 <div className="flex-1">
                   <p className="text-sm font-medium text-muted-foreground">{t("estimatedWait")}</p>
                   <p className="text-2xl font-bold text-foreground">

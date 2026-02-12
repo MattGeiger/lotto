@@ -13,6 +13,13 @@
 - Animated the login page OTP/Magic tabs with demo-style motion: spring sliding highlight, subtle blur/glass overlay, and smooth content transitions using local Animate UI-style tab primitives.
 - Restored demo-parity motion for `Button` `asChild` usage by routing `src/components/animate-ui/primitives/buttons/button.tsx` through the motion-capable animate `Slot`.
 - Upgraded local animate tabs primitive to demo-parity sequencing (horizontal panel track + auto-height animation + trigger tap-scale), and documented the full parity audit in `docs/V1.4_PLANNED_FEATURES.md`.
+- Replaced static icons with animated variants wherever available from Animate UI and lucide-animated (admin/staff/theme/language/dialog/ui primitives), while keeping unsupported icons static.
+- Fixed Hi-viz theme trigger icon sizing by forcing `EyeIcon` SVG size to match Sun/Moon in the mode switch control.
+- Updated `/staff` CTA button icons to animate reliably on initial page load, hover, and tap/click by driving icon motion from button interaction events.
+- Updated `/staff` footer attribution text to include individual links for Matt Geiger, Temple Consulting, Claude, and Codex.
+- Updated admin page icon behavior so static Lucide icons now animate on initial page load, hover, and tap/click using a shared `AdminAnimatedIcon` wrapper; enhanced existing animated icons with tap and load triggers.
+- Replaced the admin “Live State” title icon with animated `MonitorCheckIcon` (`lucide-animated`) for parity with the v1.4 motion direction.
+- Updated admin “Draw position” card hierarchy so the large value is the ticket number, while draw position is shown as smaller text with position-of-total context.
 
 ## [1.4.0] - 2026-02-11
 ### Added

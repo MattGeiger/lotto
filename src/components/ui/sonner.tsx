@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import {
-  CircleCheckIcon,
   InfoIcon,
   Loader2Icon,
   OctagonXIcon,
@@ -10,6 +9,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Toaster as Sonner, type ToasterProps } from "sonner";
+import { CircleCheck } from "@/components/animate-ui/icons/circle-check";
 
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = "system" } = useTheme();
@@ -19,7 +19,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
       icons={{
-        success: <CircleCheckIcon className="size-4" />,
+        success: <CircleCheck className="size-4" animate />,
         info: <InfoIcon className="size-4" />,
         warning: <TriangleAlertIcon className="size-4" />,
         error: <OctagonXIcon className="size-4" />,

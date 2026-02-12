@@ -1,7 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Eye, Lock, QrCode } from "lucide-react";
+import { QrCode } from "lucide-react";
 import { version } from "../../../package.json";
+import { Lock } from "@/components/animate-ui/icons/lock";
+import { StaffCtaButtons } from "@/components/staff-cta-buttons";
 
 import {
   Card,
@@ -9,7 +11,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
 export default function Home() {
@@ -37,25 +38,14 @@ export default function Home() {
               and display the board on phones or a wall screen.
             </p>
           </div>
-          <div className="flex flex-wrap gap-3">
-            <Button asChild size="lg">
-              <Link href="/admin">
-                Open Staff Dashboard <ArrowRight className="size-4" />
-              </Link>
-            </Button>
-            <Button asChild variant="secondary" size="lg">
-              <Link href="/">
-                View Public Board <Eye className="size-4" />
-              </Link>
-            </Button>
-          </div>
+          <StaffCtaButtons />
         </div>
         <Separator />
         <div className="grid gap-4 sm:grid-cols-2">
           <Card className="bg-gradient-card-blue">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-card-title">
-                <Lock className="size-4 text-icon-blue" />
+                <Lock className="size-4 text-icon-blue" animateOnHover />
                 Error-safe controls
               </CardTitle>
               <CardDescription>
@@ -76,16 +66,30 @@ export default function Home() {
             </CardHeader>
           </Card>
         </div>
-	        <div className="space-y-1 text-xs text-muted-foreground">
-	          <p className="font-semibold text-foreground">v{version}</p>
-	          <p>
-	            Created by{" "}
+        <div className="space-y-1 text-xs text-muted-foreground">
+          <p className="font-semibold text-foreground">v{version}</p>
+          <p>
+            Created by{" "}
             <Link href="https://github.com/MattGeiger" className="underline underline-offset-4">
-              Matt Geiger, Temple Consulting, LLC.
+              Matt Geiger
+            </Link>
+            ,{" "}
+            <Link href="https://templepdx.com/" className="underline underline-offset-4">
+              Temple Consulting, LLC.
             </Link>{" "}
             2025.
           </p>
-          <p>Built with Claude and Codex.</p>
+          <p>
+            Built with{" "}
+            <Link href="https://claude.com/product/claude-code" className="underline underline-offset-4">
+              Claude
+            </Link>{" "}
+            and{" "}
+            <Link href="https://openai.com/codex/" className="underline underline-offset-4">
+              Codex
+            </Link>
+            .
+          </p>
         </div>
       </div>
     </main>

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Languages } from "lucide-react";
+import { LanguagesIcon } from "@/components/lucide-animated/languages";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -30,8 +30,12 @@ export function LanguageSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon" className="!h-[3.375rem] !w-[3.375rem]">
-          <Languages className="size-[1.8rem]" />
+        <Button
+          variant="outline"
+          size="icon"
+          className="!h-[3.375rem] !w-[3.375rem] [&_svg]:!size-[1.8rem]"
+        >
+          <LanguagesIcon size={28} className="inline-flex text-current" />
           <span className="sr-only">Change language</span>
         </Button>
       </DropdownMenuTrigger>

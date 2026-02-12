@@ -1,9 +1,9 @@
 "use client";
 
-import { Eye } from "lucide-react";
 import { Sun } from "@/components/animate-ui/icons/sun";
 import { Moon } from "@/components/animate-ui/icons/moon";
 import { SunMoon } from "@/components/animate-ui/icons/sun-moon";
+import { EyeIcon } from "@/components/lucide-animated/eye";
 import { useTheme } from "next-themes";
 
 import { useContrastMode } from "@/components/theme-provider";
@@ -34,20 +34,27 @@ export function ThemeSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon" className="group relative !h-[3.375rem] !w-[3.375rem]">
+        <Button
+          variant="outline"
+          size="icon"
+          className="group relative !h-[3.375rem] !w-[3.375rem] [&_svg]:!size-[1.8rem]"
+        >
           {hiVizEnabled ? (
-            <Eye className="size-[1.8rem] transition-transform duration-200 ease-out group-hover:scale-110 group-active:scale-95" />
+            <EyeIcon
+              size={29}
+              className="inline-flex text-current transition-transform duration-200 ease-out group-hover:scale-110 group-active:scale-95"
+            />
           ) : (
             <>
               <Sun
                 animateOnHover
                 animateOnTap
-                className="size-[1.8rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"
+                className="rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"
               />
               <Moon
                 animateOnHover
                 animateOnTap
-                className="absolute size-[1.8rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"
+                className="absolute rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"
               />
             </>
           )}
@@ -68,7 +75,7 @@ export function ThemeSwitcher() {
           System
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem checked={hiVizEnabled} onSelect={setHiVizTheme}>
-          <Eye className="size-4" />
+          <EyeIcon size={16} className="inline-flex text-current" />
           Hi-viz
         </DropdownMenuCheckboxItem>
       </DropdownMenuContent>

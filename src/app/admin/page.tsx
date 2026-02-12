@@ -5,27 +5,28 @@ import Link from "next/link";
 import Image from "next/image";
 import QRCode from "react-qr-code";
 import {
-  ArrowLeft,
   CalendarClock,
   CheckCircle2,
-  ChevronLeft,
-  ChevronRight,
   DatabaseZap,
-  History,
 	Loader2,
   ScanQrCode,
-	Sparkles,
   HandPlatter,
   Ticket,
   TicketCheck,
   TicketPlus,
   TicketSlash,
-  Tickets,
   TicketX,
 	Undo2,
 	Redo2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { ArrowLeft } from "@/components/animate-ui/icons/arrow-left";
+import { ChevronLeft } from "@/components/animate-ui/icons/chevron-left";
+import { ChevronRight } from "@/components/animate-ui/icons/chevron-right";
+import { Sparkles } from "@/components/animate-ui/icons/sparkles";
+import { HistoryIcon } from "@/components/lucide-animated/history";
+import { MonitorCheckIcon } from "@/components/lucide-animated/monitor-check";
+import { AdminAnimatedIcon } from "@/components/admin-animated-icon";
 
 import { ConfirmAction } from "@/components/confirm-action";
 import { OperatingHoursEditor } from "@/components/operating-hours-editor";
@@ -779,7 +780,7 @@ const AdminPage = () => {
         <div className="flex items-center gap-3">
           <Button asChild variant="outline" size="sm">
             <Link href="/staff">
-              <ArrowLeft className="mr-2 size-4" />
+              <ArrowLeft className="mr-2 size-4" animateOnHover animateOnTap animateOnView />
               Back
             </Link>
           </Button>
@@ -788,7 +789,9 @@ const AdminPage = () => {
               variant="success"
               className="flex items-center gap-2 animate-pulse-subtle"
             >
-              <Loader2 className="size-3 animate-spin" />
+              <AdminAnimatedIcon>
+                <Loader2 className="size-3 animate-spin" />
+              </AdminAnimatedIcon>
               {pendingAction}...
             </Badge>
           )}
@@ -803,7 +806,9 @@ const AdminPage = () => {
             <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <CardTitle className="flex items-center gap-2">
-                  <Ticket className="size-4 text-muted-foreground" />
+                  <AdminAnimatedIcon>
+                    <Ticket className="size-4 text-muted-foreground" />
+                  </AdminAnimatedIcon>
                   Ticket Range & Order
                 </CardTitle>
                 <CardDescription>
@@ -815,7 +820,9 @@ const AdminPage = () => {
             <CardContent className="space-y-4">
               {state?.orderLocked && (
                 <Alert className="flex items-start gap-3">
-                  <CheckCircle2 className="mt-0.5 size-4" />
+                  <AdminAnimatedIcon>
+                    <CheckCircle2 className="mt-0.5 size-4" />
+                  </AdminAnimatedIcon>
                   <div className="space-y-1">
                     <AlertTitle>Lottery Active</AlertTitle>
                     <AlertDescription>
@@ -1041,7 +1048,9 @@ const AdminPage = () => {
                     htmlFor="append"
                     className="flex items-center gap-2 text-sm font-medium text-foreground"
                   >
-                    <TicketPlus className="size-4 text-muted-foreground" />
+                    <AdminAnimatedIcon>
+                      <TicketPlus className="size-4 text-muted-foreground" />
+                    </AdminAnimatedIcon>
                     Append additional tickets
                   </Label>
                   <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
@@ -1064,7 +1073,7 @@ const AdminPage = () => {
                       aria-label="Decrease append end"
                       className={!state || undrawnCount > 0 || resolvedAppendValue <= appendMin ? "flex-none opacity-50" : "flex-none"}
                     >
-                      <ChevronLeft className="size-4" />
+                      <ChevronLeft className="size-4" animateOnHover animateOnTap animateOnView />
                     </Button>
                     <Button
                       type="button"
@@ -1075,7 +1084,7 @@ const AdminPage = () => {
                       aria-label="Increase append end"
                       className="flex-none"
                     >
-                      <ChevronRight className="size-4" />
+                      <ChevronRight className="size-4" animateOnHover animateOnTap animateOnView />
                     </Button>
                   </div>
                   <div
@@ -1106,7 +1115,9 @@ const AdminPage = () => {
           <Card className="bg-card space-y-4">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <HandPlatter className="size-4 text-muted-foreground" />
+                <AdminAnimatedIcon>
+                  <HandPlatter className="size-4 text-muted-foreground" />
+                </AdminAnimatedIcon>
                 Now Serving
               </CardTitle>
               <CardDescription>
@@ -1117,14 +1128,16 @@ const AdminPage = () => {
               <div className="flex flex-col gap-3 rounded-lg border border-border bg-gradient-card-info p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="space-y-1">
                   <p className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-                    <TicketCheck className="size-4" />
+                    <AdminAnimatedIcon>
+                      <TicketCheck className="size-4" />
+                    </AdminAnimatedIcon>
                     Draw position
                   </p>
                   <p className="text-2xl font-semibold text-foreground">
-                    {currentDrawNumber ? formatOrdinal(currentDrawNumber) : "Not started"}
+                    Ticket {currentTicket ? `#${currentTicket}` : "—"}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    Ticket {currentTicket ? `#${currentTicket}` : "—"} of{" "}
+                    Draw position {currentDrawNumber ? formatOrdinal(currentDrawNumber) : "—"} of{" "}
                     {totalTickets || "—"}
                   </p>
                 </div>
@@ -1138,7 +1151,7 @@ const AdminPage = () => {
                   aria-label="Previous draw"
                   className={!canAdvancePrev ? "opacity-50" : ""}
                 >
-                  <ChevronLeft className="size-4" />
+                  <ChevronLeft className="size-4" animateOnHover animateOnTap animateOnView />
                 </Button>
                 <Button
                   type="button"
@@ -1149,7 +1162,7 @@ const AdminPage = () => {
                   aria-label="Next draw"
                   className={!canAdvanceNext ? "opacity-50" : ""}
                 >
-                  <ChevronRight className="size-4" />
+                  <ChevronRight className="size-4" animateOnHover animateOnTap animateOnView />
                 </Button>
                 <ConfirmAction
                   triggerLabel="Clear"
@@ -1167,7 +1180,9 @@ const AdminPage = () => {
             <div className="ticket-returned space-y-3 rounded-lg border p-4">
               <div>
                 <p className="flex items-center gap-2 text-xs uppercase tracking-wide text-current">
-                  <TicketX className="size-4" />
+                  <AdminAnimatedIcon>
+                    <TicketX className="size-4" />
+                  </AdminAnimatedIcon>
                   Mark ticket as returned
                 </p>
                 <p className="text-xs text-current">
@@ -1205,7 +1220,9 @@ const AdminPage = () => {
             <div className="ticket-unclaimed space-y-3 rounded-lg border p-4">
               <div>
                 <p className="flex items-center gap-2 text-xs uppercase tracking-wide text-current">
-                  <TicketSlash className="size-4" />
+                  <AdminAnimatedIcon>
+                    <TicketSlash className="size-4" />
+                  </AdminAnimatedIcon>
                   Mark ticket as unclaimed
                 </p>
                 <p className="text-xs text-current">
@@ -1249,7 +1266,12 @@ const AdminPage = () => {
             <CardHeader className="flex items-center justify-between">
               <div>
                 <CardTitle className="flex items-center gap-2">
-                  <Tickets className="size-4 text-muted-foreground" />
+                  <AdminAnimatedIcon>
+                    <MonitorCheckIcon
+                      size={16}
+                      className="inline-flex text-muted-foreground"
+                    />
+                  </AdminAnimatedIcon>
                   Live State
                 </CardTitle>
                 <CardDescription>Summary status for today&apos;s raffle drawing.</CardDescription>
@@ -1354,7 +1376,9 @@ const AdminPage = () => {
           <Card className="bg-card space-y-3">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-2">
-                <History className="size-4 text-muted-foreground" />
+                <AdminAnimatedIcon>
+                  <HistoryIcon size={16} className="inline-flex text-muted-foreground" />
+                </AdminAnimatedIcon>
                 History
               </CardTitle>
               <CardDescription>Undo/redo or restore from snapshots.</CardDescription>
@@ -1369,7 +1393,9 @@ const AdminPage = () => {
                   disabled={!canUndo || loading || pendingAction !== null}
                   title="Undo last action"
                 >
-                  <Undo2 className="size-4" />
+                  <AdminAnimatedIcon>
+                    <Undo2 className="size-4" />
+                  </AdminAnimatedIcon>
                   Undo
                 </Button>
                 <Button
@@ -1380,7 +1406,9 @@ const AdminPage = () => {
                   disabled={!canRedo || loading || pendingAction !== null}
                   title="Redo last undone action"
                 >
-                  <Redo2 className="size-4" />
+                  <AdminAnimatedIcon>
+                    <Redo2 className="size-4" />
+                  </AdminAnimatedIcon>
                   Redo
                 </Button>
                 <Button
@@ -1431,7 +1459,9 @@ const AdminPage = () => {
           <Card className="bg-card space-y-3">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <DatabaseZap className="size-4 text-muted-foreground" />
+                <AdminAnimatedIcon>
+                  <DatabaseZap className="size-4 text-muted-foreground" />
+                </AdminAnimatedIcon>
                 System reset
               </CardTitle>
               <CardDescription>
@@ -1503,7 +1533,9 @@ const AdminPage = () => {
           <Card className="bg-card space-y-4">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <ScanQrCode className="size-4 text-muted-foreground" />
+                <AdminAnimatedIcon>
+                  <ScanQrCode className="size-4 text-muted-foreground" />
+                </AdminAnimatedIcon>
                 Share the live board
               </CardTitle>
               <CardDescription>
@@ -1562,7 +1594,9 @@ const AdminPage = () => {
           <Card className="bg-card space-y-4">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <CalendarClock className="size-4 text-muted-foreground" />
+                <AdminAnimatedIcon>
+                  <CalendarClock className="size-4 text-muted-foreground" />
+                </AdminAnimatedIcon>
                 Set operating hours
               </CardTitle>
               <CardDescription>
@@ -1616,7 +1650,9 @@ const AdminPage = () => {
         {!error && state && (
           <Card className="border-status-success-border bg-status-success-bg">
             <CardContent className="flex items-start gap-3">
-              <CheckCircle2 className="mt-1 size-5 text-status-success-text" />
+              <AdminAnimatedIcon>
+                <CheckCircle2 className="mt-1 size-5 text-status-success-text" />
+              </AdminAnimatedIcon>
               <div className="space-y-1">
                 <p className="font-semibold text-status-success-text">Persistence confirmed</p>
                 <p className="text-sm text-status-success-text">
@@ -1624,7 +1660,7 @@ const AdminPage = () => {
                   stored alongside the JSON data.
                 </p>
                 <p className="flex items-center gap-2 text-xs uppercase tracking-wide text-status-success-text">
-                  <Sparkles className="size-4" />
+                  <Sparkles className="size-4" animateOnHover animateOnTap animateOnView />
                   Atomic writes • Backup snapshots
                 </p>
               </div>
@@ -1634,7 +1670,10 @@ const AdminPage = () => {
 
         {loading && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="size-4 animate-spin" /> Loading state from datastore...
+            <AdminAnimatedIcon>
+              <Loader2 className="size-4 animate-spin" />
+            </AdminAnimatedIcon>{" "}
+            Loading state from datastore...
           </div>
         )}
         </main>
