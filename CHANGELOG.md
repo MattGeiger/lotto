@@ -25,6 +25,9 @@
 - Enabled one-character-at-a-time sequencing for display “Now Serving” transitions by adding per-character stagger support to `MorphingText`.
 - Applied the same per-character bottom-up morph style to display-page translated labels/messages (including the ticket detail and not-found dialogs) so visible text animates on language switches.
 - Added word-aware wrapping mode to `MorphingText` and made `LanguageMorphText` use it by default, preventing per-character line breaks (for example, Spanish display labels no longer orphan trailing letters).
+- Updated the public display search icon trigger mapping to use `path` on initial view load, `find` on hover, and `default` on tap/click.
+- Updated display search icon wiring to use `AnimateIcon` wrapper triggers with `completeOnStop`, ensuring tap/click runs visibly while preserving `path` (load) and `find` (hover) behavior.
+- Set display search icon size parity to `1.8rem` to match language/theme switch button glyph sizing.
 
 ## [1.4.0] - 2026-02-11
 ### Added

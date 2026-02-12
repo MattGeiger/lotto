@@ -6,6 +6,7 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
 import { Search } from "@/components/animate-ui/icons/search";
+import { AnimateIcon } from "@/components/animate-ui/icons/icon";
 import { useLanguage } from "@/contexts/language-context";
 import { Button } from "@/components/ui/button";
 
@@ -13,7 +14,7 @@ export default function DisplayPage() {
   const [searchValue, setSearchValue] = React.useState("");
   const [searchSubmission, setSearchSubmission] = React.useState<{ ticketNumber: number; triggerId: number } | null>(null);
   const searchTriggerRef = React.useRef(0);
-  const { language, t } = useLanguage();
+  const { t } = useLanguage();
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const digitsOnly = event.target.value.replace(/\D/g, "");
@@ -63,10 +64,18 @@ export default function DisplayPage() {
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="!h-[3.375rem] !w-[3.375rem] !border-0 !rounded-full bg-card/80 hover:bg-accent hover:text-accent-foreground shadow-[var(--base-shadow-lg)]"
+                className="!h-[3.375rem] !w-[3.375rem] !border-0 !rounded-full bg-card/80 hover:bg-accent hover:text-accent-foreground shadow-[var(--base-shadow-lg)] [&_svg]:!size-[1.8rem]"
                 onClick={handleSearchSubmit}
               >
-                <Search size={20} animateOnTap />
+                <AnimateIcon
+                  animateOnView="path"
+                  animateOnHover="find"
+                  animateOnTap="default"
+                  completeOnStop
+                  className="inline-flex"
+                >
+                  <Search size={29} />
+                </AnimateIcon>
                 <span className="sr-only">{t("searchButtonLabel")}</span>
               </Button>
             </div>
