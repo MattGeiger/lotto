@@ -348,6 +348,7 @@ export const ReadOnlyDisplay = ({ ticketSearchRequest }: ReadOnlyDisplayProps) =
                 className="inline-block overflow-visible pb-[0.08em] text-[96px] font-extrabold leading-[1.28]"
                 characterClassName="bg-gradient-serving-text bg-clip-text text-transparent"
                 characterStagger={0.08}
+                wordWrap="word"
                 initial={{ opacity: 0, y: 56, filter: "blur(8px)" }}
                 animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                 exit={{ opacity: 0, y: -36, filter: "blur(8px)" }}
