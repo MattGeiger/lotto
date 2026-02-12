@@ -4,6 +4,7 @@ import React from "react";
 import Image from "next/image";
 import QRCode from "qrcode";
 import { MorphingText } from "@/components/animate-ui/primitives/texts/morphing";
+import { RollingText } from "@/components/animate-ui/primitives/texts/rolling";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -246,6 +247,7 @@ export const ReadOnlyDisplay = ({ ticketSearchRequest }: ReadOnlyDisplayProps) =
     generatedOrder && currentlyServing !== null ? generatedOrder.indexOf(currentlyServing) : -1;
   const hasTickets = generatedOrder.length > 0;
   const updatedTime = formatTime(state?.timestamp ?? null, language);
+  const nowServingDisplayText = currentlyServing === null ? t("waiting") : String(currentlyServing);
   const pantryStatus = getPantryStatus(state?.operatingHours ?? null);
   const isPantryOpen = pantryStatus === "open";
   const nextOpenDay =
@@ -343,18 +345,28 @@ export const ReadOnlyDisplay = ({ ticketSearchRequest }: ReadOnlyDisplayProps) =
               <p className="mb-1 text-lg uppercase tracking-[0.14em] text-muted-foreground">
                 <LanguageMorphText text={t("nowServing")} />
               </p>
-              <MorphingText
-                text={String(currentlyServing ?? t("waiting"))}
-                className="inline-block overflow-visible pb-[0.08em] text-[96px] font-extrabold leading-[1.28]"
-                characterClassName="bg-gradient-serving-text bg-clip-text text-transparent"
-                characterStagger={0.08}
-                wordWrap="word"
-                initial={{ opacity: 0, y: 56, filter: "blur(8px)" }}
-                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                exit={{ opacity: 0, y: -36, filter: "blur(8px)" }}
-                transition={{ type: "spring", stiffness: 80, damping: 16, mass: 0.45 }}
-                aria-label="Currently serving ticket number"
-              />
+              {currentlyServing === null ? (
+                <MorphingText
+                  text={nowServingDisplayText}
+                  className="inline-block overflow-visible pb-[0.08em] text-[96px] font-extrabold leading-[1.28]"
+                  characterClassName="bg-gradient-serving-text bg-clip-text text-transparent"
+                  characterStagger={0.08}
+                  wordWrap="word"
+                  initial={{ opacity: 0, y: 56, filter: "blur(8px)" }}
+                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                  exit={{ opacity: 0, y: -36, filter: "blur(8px)" }}
+                  transition={{ type: "spring", stiffness: 80, damping: 16, mass: 0.45 }}
+                  aria-label="Currently serving ticket number"
+                />
+              ) : (
+                <RollingText
+                  text={nowServingDisplayText}
+                  className="inline-block overflow-visible pb-[0.08em] text-[96px] font-extrabold leading-[1.28]"
+                  characterClassName="bg-gradient-serving-text bg-clip-text text-transparent"
+                  transition={{ duration: 0.5, ease: "easeOut", delay: 0.1 }}
+                  aria-label="Currently serving ticket number"
+                />
+              )}
             </div>
           </div>
 
