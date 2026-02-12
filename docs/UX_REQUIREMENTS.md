@@ -223,6 +223,14 @@ Rerandomization is disabled. This would disrupt all client positions and
 break trust. This operation has been removed for client safety.
 ```
 
+### Public Display Language + Motion Safety
+
+- Language switching on the public display must preserve readability first, motion second.
+- Animated localized text may transition per character, but line wrapping must occur by **word boundaries**.
+- Never allow single-letter orphan wraps caused by animation spans (for example trailing letters in Spanish headings).
+- "Now Serving" value transitions may animate prominently, but status telemetry text (`refreshing`, `last checked`, transient load errors) must remain static to avoid flicker during polling.
+- All text animation must respect reduced-motion settings.
+
 ---
 
 ## Client Benefits

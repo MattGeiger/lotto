@@ -4,6 +4,7 @@ import { Info, ListOrdered } from "lucide-react";
 import { Clock } from "@/components/animate-ui/icons/clock";
 import { Users } from "@/components/animate-ui/icons/users";
 import { X } from "@/components/animate-ui/icons/x";
+import { LanguageMorphText } from "@/components/language-morph-text";
 
 import { useLanguage, type Language } from "@/contexts/language-context";
 import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -37,9 +38,10 @@ export function TicketDetailDialog({
   const { t } = useLanguage();
   const isReturned = ticketStatus === "returned";
   const isUnclaimed = ticketStatus === "unclaimed";
+  const calledAtLabel = t("calledAtMessage");
   const calledMessage =
     calledAtTime && !isReturned && !isUnclaimed
-      ? `${t("calledAtMessage")} ${calledAtTime}`
+      ? `${calledAtLabel} ${calledAtTime}`
       : null;
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -50,7 +52,7 @@ export function TicketDetailDialog({
       >
         <DialogHeader>
           <DialogTitle className="text-center text-3xl font-bold">
-            {t("ticket")} #{ticketNumber}
+            <LanguageMorphText text={t("ticket")} /> #{ticketNumber}
           </DialogTitle>
         </DialogHeader>
         <DialogClose className="absolute end-4 top-4 rounded-full p-1 text-muted-foreground transition hover:bg-muted/40">
@@ -64,10 +66,14 @@ export function TicketDetailDialog({
               <Info className="mt-0.5 size-20 text-primary dark:text-[color:var(--ticket-serving-border)]" />
               <p className="text-2xl leading-relaxed text-muted-foreground">
                 {isReturned
-                  ? t("returnedTicketMessage")
+                  ? <LanguageMorphText text={t("returnedTicketMessage")} />
                   : isUnclaimed
-                    ? t("unclaimedTicketMessage")
-                    : calledMessage}
+                    ? <LanguageMorphText text={t("unclaimedTicketMessage")} />
+                    : (
+                      <>
+                        <LanguageMorphText text={calledAtLabel} /> {calledAtTime}
+                      </>
+                    )}
               </p>
             </div>
           ) : (
@@ -75,7 +81,9 @@ export function TicketDetailDialog({
               <div className="flex items-center gap-3 rounded-lg border bg-card p-4">
                 <ListOrdered className="h-6 w-6 text-primary dark:text-[color:var(--ticket-serving-border)]" />
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-muted-foreground">{t("queuePosition")}</p>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    <LanguageMorphText text={t("queuePosition")} />
+                  </p>
                   <p className="text-2xl font-bold text-foreground">{queuePosition}</p>
                 </div>
               </div>
@@ -86,7 +94,9 @@ export function TicketDetailDialog({
                   animateOnHover
                 />
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-muted-foreground">{t("ticketsAhead")}</p>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    <LanguageMorphText text={t("ticketsAhead")} />
+                  </p>
                   <p className="text-2xl font-bold text-foreground">{ticketsAhead}</p>
                 </div>
               </div>
@@ -97,7 +107,9 @@ export function TicketDetailDialog({
                   animateOnHover
                 />
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-muted-foreground">{t("estimatedWait")}</p>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    <LanguageMorphText text={t("estimatedWait")} />
+                  </p>
                   <p className="text-2xl font-bold text-foreground">
                     {formatWaitTime(estimatedWaitMinutes, language)}
                   </p>

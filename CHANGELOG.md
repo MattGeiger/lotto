@@ -20,6 +20,11 @@
 - Updated admin page icon behavior so static Lucide icons now animate on initial page load, hover, and tap/click using a shared `AdminAnimatedIcon` wrapper; enhanced existing animated icons with tap and load triggers.
 - Replaced the admin “Live State” title icon with animated `MonitorCheckIcon` (`lucide-animated`) for parity with the v1.4 motion direction.
 - Updated admin “Draw position” card hierarchy so the large value is the ticket number, while draw position is shown as smaller text with position-of-total context.
+- Replaced the display page “Now Serving” value transition with the Animate UI `MorphingText` primitive so updates morph between values (including `Pending` to first serving number).
+- Tuned display “Now Serving” transition to a bottom-up insert/sweep profile (instead of default crossfade-like morph settings) using MorphingText `initial/animate/exit` overrides.
+- Enabled one-character-at-a-time sequencing for display “Now Serving” transitions by adding per-character stagger support to `MorphingText`.
+- Applied the same per-character bottom-up morph style to display-page translated labels/messages (including the ticket detail and not-found dialogs) so visible text animates on language switches.
+- Added word-aware wrapping mode to `MorphingText` and made `LanguageMorphText` use it by default, preventing per-character line breaks (for example, Spanish display labels no longer orphan trailing letters).
 
 ## [1.4.0] - 2026-02-11
 ### Added

@@ -1,14 +1,15 @@
 "use client";
 
 import React from "react";
-import { AnimatePresence, motion } from "motion/react";
 import Image from "next/image";
 import QRCode from "qrcode";
+import { MorphingText } from "@/components/animate-ui/primitives/texts/morphing";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { LanguageMorphText } from "@/components/language-morph-text";
 import { TicketDetailDialog } from "@/components/ticket-detail-dialog";
 import { useLanguage, type Language } from "@/contexts/language-context";
 import { formatDate } from "@/lib/date-format";
@@ -339,20 +340,20 @@ export const ReadOnlyDisplay = ({ ticketSearchRequest }: ReadOnlyDisplayProps) =
           {/* NOW SERVING - center */}
           <div className="flex justify-center">
             <div className="text-center">
-              <p className="mb-1 text-lg uppercase tracking-[0.14em] text-muted-foreground">{t("nowServing")}</p>
-              <AnimatePresence mode="wait">
-                <motion.p
-                  key={currentlyServing ?? "waiting"}
-                  initial={{ opacity: 0, scale: 0.92 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.92 }}
-                  transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-                  className="inline-block overflow-visible bg-gradient-serving-text bg-clip-text pb-[0.08em] text-[96px] font-extrabold leading-[1.28] text-transparent"
-                  aria-label="Currently serving ticket number"
-                >
-                  {currentlyServing ?? t("waiting")}
-                </motion.p>
-              </AnimatePresence>
+              <p className="mb-1 text-lg uppercase tracking-[0.14em] text-muted-foreground">
+                <LanguageMorphText text={t("nowServing")} />
+              </p>
+              <MorphingText
+                text={String(currentlyServing ?? t("waiting"))}
+                className="inline-block overflow-visible pb-[0.08em] text-[96px] font-extrabold leading-[1.28]"
+                characterClassName="bg-gradient-serving-text bg-clip-text text-transparent"
+                characterStagger={0.08}
+                initial={{ opacity: 0, y: 56, filter: "blur(8px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                exit={{ opacity: 0, y: -36, filter: "blur(8px)" }}
+                transition={{ type: "spring", stiffness: 180, damping: 24, mass: 0.45 }}
+                aria-label="Currently serving ticket number"
+              />
             </div>
           </div>
 
@@ -373,9 +374,9 @@ export const ReadOnlyDisplay = ({ ticketSearchRequest }: ReadOnlyDisplayProps) =
           <Card className="border-border/80 bg-card/80 text-start animate-slide-in-up" style={{ animationDelay: "100ms" }}>
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between gap-2">
-              <CardTitle className="text-lg uppercase tracking-[0.14em] text-muted-foreground">
-                {t("foodPantryServiceFor")}
-              </CardTitle>
+                <CardTitle className="text-lg uppercase tracking-[0.14em] text-muted-foreground">
+                  <LanguageMorphText text={t("foodPantryServiceFor")} />
+                </CardTitle>
               </div>
             </CardHeader>
             <CardContent className="space-y-1">
@@ -385,7 +386,7 @@ export const ReadOnlyDisplay = ({ ticketSearchRequest }: ReadOnlyDisplayProps) =
           <Card className="border-border/80 bg-card/80 text-center animate-slide-in-up" style={{ animationDelay: "200ms" }}>
             <CardHeader className="pb-2">
               <CardTitle className="text-lg uppercase tracking-[0.14em] text-muted-foreground">
-                {t("ticketsIssuedToday")}
+                <LanguageMorphText text={t("ticketsIssuedToday")} />
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -397,7 +398,7 @@ export const ReadOnlyDisplay = ({ ticketSearchRequest }: ReadOnlyDisplayProps) =
           <Card className="border-border/80 bg-card/80 text-center animate-slide-in-up" style={{ animationDelay: "300ms" }}>
             <CardHeader className="pb-2">
               <CardTitle className="text-lg uppercase tracking-[0.14em] text-muted-foreground">
-                {t("totalTicketsIssued")}
+                <LanguageMorphText text={t("totalTicketsIssued")} />
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -412,13 +413,13 @@ export const ReadOnlyDisplay = ({ ticketSearchRequest }: ReadOnlyDisplayProps) =
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between gap-2">
               <CardTitle className="text-lg uppercase tracking-[0.14em] text-muted-foreground">
-                {t("drawingOrder")}
+                <LanguageMorphText text={t("drawingOrder")} />
               </CardTitle>
               <Badge
                 variant="outline"
                 className="border-border/60 text-xs font-medium text-muted-foreground"
               >
-                {t("updated")}: {updatedTime}
+                <LanguageMorphText text={t("updated")} />: {updatedTime}
               </Badge>
             </div>
           </CardHeader>
@@ -430,11 +431,11 @@ export const ReadOnlyDisplay = ({ ticketSearchRequest }: ReadOnlyDisplayProps) =
                     {pantryStatus === "before_opening" && (
                       <>
                         <span className="block w-full text-center text-3xl font-extrabold leading-snug text-foreground">
-                          {t("pantryNotOpenYet")}
+                          <LanguageMorphText text={t("pantryNotOpenYet")} />
                         </span>
                         {todayHours && (
                           <span className="block w-full text-center text-xl font-semibold text-foreground">
-                            {t("todaysHours")}:{" "}
+                            <LanguageMorphText text={t("todaysHours")} />:{" "}
                             <span dir="ltr">{formatTimeRange(todayHours.openTime, todayHours.closeTime)}</span>
                           </span>
                         )}
@@ -444,11 +445,12 @@ export const ReadOnlyDisplay = ({ ticketSearchRequest }: ReadOnlyDisplayProps) =
                     {pantryStatus === "after_closing" && (
                       <>
                         <span className="block w-full text-center text-3xl font-extrabold leading-snug text-foreground">
-                          {t("pantryClosedForDay")}
+                          <LanguageMorphText text={t("pantryClosedForDay")} />
                         </span>
                         {nextOpenDay && (
                           <span className="block w-full text-center text-xl font-semibold text-foreground">
-                            {t("nextOpenDay")}: {t(nextOpenDay)}
+                            <LanguageMorphText text={t("nextOpenDay")} />:{" "}
+                            <LanguageMorphText text={t(nextOpenDay)} />
                           </span>
                         )}
                       </>
@@ -457,11 +459,12 @@ export const ReadOnlyDisplay = ({ ticketSearchRequest }: ReadOnlyDisplayProps) =
                     {pantryStatus === "not_operating_today" && (
                       <>
                         <span className="block w-full text-center text-3xl font-extrabold leading-snug text-foreground">
-                          {t("pantryClosed")}
+                          <LanguageMorphText text={t("pantryClosed")} />
                         </span>
                         {nextOpenDay && (
                           <span className="block w-full text-center text-xl font-semibold text-foreground">
-                            {t("nextOpenDay")}: {t(nextOpenDay)}
+                            <LanguageMorphText text={t("nextOpenDay")} />:{" "}
+                            <LanguageMorphText text={t(nextOpenDay)} />
                           </span>
                         )}
                       </>
@@ -470,7 +473,7 @@ export const ReadOnlyDisplay = ({ ticketSearchRequest }: ReadOnlyDisplayProps) =
                     {state?.operatingHours && (
                       <div className="mt-4 w-full max-w-md space-y-3">
                         <p className="text-center text-xl font-bold text-foreground">
-                          {t("pantryHours")}
+                          <LanguageMorphText text={t("pantryHours")} />
                         </p>
                         <div className="space-y-0.5 text-center">
                           {DAYS.map((day) => {
@@ -478,11 +481,13 @@ export const ReadOnlyDisplay = ({ ticketSearchRequest }: ReadOnlyDisplayProps) =
                             const dayLabel = t(day);
                             return (
                               <div key={day} className="flex justify-between text-base">
-                                <span className="font-medium text-foreground">{dayLabel}</span>
+                                <span className="font-medium text-foreground">
+                                  <LanguageMorphText text={dayLabel} />
+                                </span>
                                 <span className="text-muted-foreground" dir={config.isOpen ? "ltr" : undefined}>
                                   {config.isOpen
                                     ? formatTimeRange(config.openTime, config.closeTime)
-                                    : t("closed")}
+                                    : <LanguageMorphText text={t("closed")} />}
                                 </span>
                               </div>
                             );
@@ -494,13 +499,13 @@ export const ReadOnlyDisplay = ({ ticketSearchRequest }: ReadOnlyDisplayProps) =
                 ) : (
                   <>
                     <span className="block w-full text-center text-3xl font-extrabold leading-snug text-foreground">
-                      {t("welcome")}
+                      <LanguageMorphText text={t("welcome")} />
                     </span>
                     <span className="block w-full text-center text-3xl font-extrabold leading-snug text-foreground">
-                      {t("raffleNotStarted")}
+                      <LanguageMorphText text={t("raffleNotStarted")} />
                     </span>
                     <span className="block w-full text-center text-3xl font-extrabold leading-snug text-foreground">
-                      {t("checkBackSoon")}
+                      <LanguageMorphText text={t("checkBackSoon")} />
                     </span>
                   </>
                 )}
@@ -546,23 +551,23 @@ export const ReadOnlyDisplay = ({ ticketSearchRequest }: ReadOnlyDisplayProps) =
             <div className="mt-5 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
               <div className="flex items-center gap-2">
                 <span className="size-3 rounded-full border ticket-upcoming" />
-                {t("notCalled")}
+                <LanguageMorphText text={t("notCalled")} />
               </div>
               <div className="flex items-center gap-2">
                 <span className="size-3 rounded-full border ticket-serving" />
-                {t("nowServing")}
+                <LanguageMorphText text={t("nowServing")} />
               </div>
               <div className="flex items-center gap-2">
                 <span className="size-3 rounded-full border ticket-served" />
-                {t("called")}
+                <LanguageMorphText text={t("called")} />
               </div>
               <div className="flex items-center gap-2">
                 <span className="size-3 rounded-full border ticket-unclaimed" />
-                {t("unclaimed")}
+                <LanguageMorphText text={t("unclaimed")} />
               </div>
               <div className="flex items-center gap-2">
                 <span className="size-3 rounded-full border ticket-returned" />
-                {t("returned")}
+                <LanguageMorphText text={t("returned")} />
               </div>
             </div>
 
@@ -589,12 +594,16 @@ export const ReadOnlyDisplay = ({ ticketSearchRequest }: ReadOnlyDisplayProps) =
         <Dialog open={notFoundDialogOpen} onOpenChange={(open) => setNotFoundDialogOpen(open)}>
           <DialogContent className="max-w-sm">
             <DialogHeader>
-              <DialogTitle>{t("ticketNotFoundTitle")}</DialogTitle>
-              <DialogDescription>{t("ticketNotFoundMessage")}</DialogDescription>
+              <DialogTitle>
+                <LanguageMorphText text={t("ticketNotFoundTitle")} />
+              </DialogTitle>
+              <DialogDescription>
+                <LanguageMorphText text={t("ticketNotFoundMessage")} />
+              </DialogDescription>
             </DialogHeader>
             <div className="mt-6 flex justify-end">
               <Button variant="outline" onClick={() => setNotFoundDialogOpen(false)}>
-                {t("close")}
+                <LanguageMorphText text={t("close")} />
               </Button>
             </div>
           </DialogContent>

@@ -97,6 +97,9 @@ Custom WTH tokens (status, ticket gradients, display/admin gradients) live along
 - Ticket states use utility classes mapped to tokens (`ticket-serving`, `ticket-served`, `ticket-upcoming`) with dedicated text/border/background tokens (including `--ticket-served-text`).
 - Public display QR uses a canvas implementation (`qrcode` library) to avoid SVG viewBox scaling issues on long URLs; the QR points to the admin-configured `displayUrl` when set, falling back to the current origin.
 - Serving headline uses `bg-gradient-serving-text`; blue gradient in light mode, gold gradient in dark mode for readability and brand fit.
+- Public display "Now Serving" value transitions use the local Animate UI `MorphingText` primitive with bottom-up insert/sweep motion and per-character stagger.
+- Translated display copy uses `LanguageMorphText` (wrapper over `MorphingText`) so language switches animate consistently while still wrapping by **word** boundaries (`wordWrap="word"`), not per character.
+- Polling status copy (`refreshing`, `last checked`, transient error line) should remain static to avoid constant re-animation during periodic fetches.
 
 ### Adding Custom Colors (Tailwind v4)
 
@@ -274,6 +277,7 @@ All components must be built with accessibility in mind, ensuring usability by u
 - ✅ Focus indicators visible
 - ✅ Color contrast meets WCAG AA standards (4.5:1 for text)
 - ✅ Screen reader compatibility
+- ✅ Localized text wraps by word (no orphan single-letter wraps from animation spans)
 
 ### Example:
 ```tsx
