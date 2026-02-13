@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.4.2] - 2026-02-13
+### Changed
+- Enforced concrete-bound batch validation messages so post-init `generateBatch` rejects now return actionable copy with the current locked value (start mismatch and end shrink cases).
+- Locked batch expansion semantics to atomic persistence: when `endNumber` is increased during `generateBatch`, the expanded end is only persisted if the draw succeeds.
+- Strengthened batch/append safety rules by rejecting append attempts while undrawn tickets remain in the active range.
+- Updated admin range controls so Start is locked after first draw, End locks after pending reaches zero, and batch remaining counts preview pending tickets for a locally increased End value before submission.
+- Added tests covering concrete-bound message contracts, atomic end-number persistence on successful/failed expanded batches, and route-level 400 handling for typed user-input errors.
+- Documented the localhost-verified problem/solution flow in `docs/ISSUES.md` and published release notes in `docs/RELEASES.md` for v1.4.0.
+
 ## [1.4.1] - 2026-02-11
 ### Changed
 - Increased base light/dark radius tokens to `1.25rem` in `globals.css` per updated design direction.

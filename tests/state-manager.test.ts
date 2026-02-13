@@ -83,6 +83,18 @@ describe("state manager", () => {
     expectTimestamped(state);
   });
 
+  it("rejects initial generation when end is not greater than start", async () => {
+    await expect(
+      manager.generateState({ startNumber: 10, endNumber: 10, mode: "random" }),
+    ).rejects.toThrow(/greater than start number/i);
+  });
+
+  it("rejects range values longer than 6 digits", async () => {
+    await expect(
+      manager.generateState({ startNumber: 1, endNumber: 1_000_000, mode: "random" }),
+    ).rejects.toThrow(/6 digits or fewer/i);
+  });
+
   it("prevents regeneration when order is locked", async () => {
     await manager.generateState({ startNumber: 1, endNumber: 3, mode: "random" });
 
@@ -321,6 +333,16 @@ describe("state manager", () => {
       expect(new Set(result.generatedOrder).size).toBe(10);
     });
 
+    it("rejects first batch when end is not greater than start", async () => {
+      await expect(
+        manager.generateBatch({
+          startNumber: 10,
+          endNumber: 10,
+          batchSize: 1,
+        }),
+      ).rejects.toThrow(/greater than start number/i);
+    });
+
     it("appends a second batch without changing existing positions", async () => {
       const first = await manager.generateBatch({
         startNumber: 1,
@@ -338,6 +360,42 @@ describe("state manager", () => {
       expect(second.generatedOrder).toHaveLength(10);
       expect(second.generatedOrder.slice(0, 5)).toEqual(firstOrder);
       expect(new Set(second.generatedOrder).size).toBe(10);
+    });
+
+    it("rejects start mismatch after the first draw with a specific lock message", async () => {
+      await manager.generateBatch({
+        startNumber: 1,
+        endNumber: 40,
+        batchSize: 5,
+      });
+
+      await expect(
+        manager.generateBatch({
+          startNumber: 2,
+          endNumber: 40,
+          batchSize: 5,
+        }),
+      ).rejects.toThrow(
+        "Start number is locked at 1 after the first draw. Reset to start a new range.",
+      );
+    });
+
+    it("rejects end shrink after the first draw with a specific bound message", async () => {
+      await manager.generateBatch({
+        startNumber: 1,
+        endNumber: 40,
+        batchSize: 5,
+      });
+
+      await expect(
+        manager.generateBatch({
+          startNumber: 1,
+          endNumber: 39,
+          batchSize: 1,
+        }),
+      ).rejects.toThrow(
+        "The end number is currently 40. Please choose a number greater than 40.",
+      );
     });
 
     it("draws sequential batches in sequential mode", async () => {
@@ -399,6 +457,64 @@ describe("state manager", () => {
         }),
       ).rejects.toThrow(/positive integer/i);
     });
+
+    it("persists an expanded end number after a successful batch draw", async () => {
+      await manager.generateBatch({
+        startNumber: 1,
+        endNumber: 40,
+        batchSize: 10,
+      });
+
+      const expanded = await manager.generateBatch({
+        startNumber: 1,
+        endNumber: 50,
+        batchSize: 5,
+      });
+      expect(expanded.endNumber).toBe(50);
+
+      const reloaded = await manager.loadState();
+      expect(reloaded.endNumber).toBe(50);
+
+      const followUp = await manager.generateBatch({
+        startNumber: 1,
+        endNumber: 50,
+        batchSize: 1,
+      });
+      expect(followUp.endNumber).toBe(50);
+    });
+
+    it("does not persist expanded end number when batch draw fails", async () => {
+      await manager.generateBatch({
+        startNumber: 1,
+        endNumber: 40,
+        batchSize: 40,
+      });
+      const before = await manager.loadState();
+      expect(before.endNumber).toBe(40);
+
+      await expect(
+        manager.generateBatch({
+          startNumber: 1,
+          endNumber: 50,
+          batchSize: 11,
+        }),
+      ).rejects.toThrow("Batch size (11) exceeds remaining undrawn tickets (10).");
+
+      const after = await manager.loadState();
+      expect(after.endNumber).toBe(40);
+    });
+  });
+
+  it("rejects append while tickets remain undrawn in the current range", async () => {
+    await manager.generateBatch({
+      startNumber: 1,
+      endNumber: 10,
+      batchSize: 4,
+    });
+
+    await expect(manager.appendTickets(12)).rejects.toThrow(
+      /All tickets in the current range must be drawn before appending/i,
+    );
   });
 
   describe("extendRange", () => {

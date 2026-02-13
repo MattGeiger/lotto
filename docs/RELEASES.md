@@ -1,3 +1,31 @@
+# William Temple House Digital Raffle System v1.4.0
+
+**Release Date:** February 13, 2026
+
+## Batch Range Integrity
+
+- Locked `startNumber` after the first successful draw so staff cannot silently drift the starting bound mid-process.
+- Allowed `endNumber` to move only forward during active batching; shrink attempts are rejected with concrete ASK messaging that includes the current bound.
+- Ensured `generateBatch` range expansion is atomic: expanded `endNumber` persists only when the draw succeeds, preventing preview/state mismatch.
+- Restricted Append while undrawn tickets remain in the active range to preserve first-in fairness for pending tickets.
+
+## Operator Guidance
+
+- Added canonical concrete-bound messaging:
+  - `Start number is locked at {currentStart} after the first draw. Reset to start a new range.`
+  - `The end number is currently {currentEnd}. Please choose a number greater than {currentEnd}.`
+- Updated admin range controls so disabled Start/End interactions provide immediate Sonner guidance instead of silent failure.
+
+## Validation
+
+- Localhost verification completed for start-lock enforcement, forward-only end expansion, append gating with pending tickets, and atomic expansion persistence.
+
+## Versioning
+
+- Bumped application version to **1.4.0**.
+
+---
+
 # William Temple House Digital Raffle System v1.2.1
 
 **Release Date:** February 3, 2026

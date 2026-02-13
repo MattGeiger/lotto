@@ -10,6 +10,7 @@ import {
   type RaffleState,
 } from "./state-types";
 import { createDbStateManager } from "./state-manager-db";
+import { UserInputError } from "./user-input-error";
 
 export { defaultState } from "./state-types";
 export type { Mode, RaffleState, OperatingHours, DayOfWeek } from "./state-types";
@@ -34,6 +35,8 @@ const withTimestamp = (state: RaffleState) => ({
   ...state,
   timestamp: Date.now(),
 });
+
+const MAX_TICKET_NUMBER = 999_999;
 
 export const createStateManager = (baseDir = path.join(process.cwd(), "data")) => {
   const statePath = path.join(baseDir, "state.json");
@@ -89,16 +92,47 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
     }
   };
 
-  const validateRange = (start: number, end: number) => {
+  const validateRange = (
+    start: number,
+    end: number,
+    options?: { requireStrictEnd?: boolean },
+  ) => {
     if (!Number.isInteger(start) || !Number.isInteger(end)) {
-      throw new Error("Start and end must be integers.");
+      throw new UserInputError("Start and end must be integers.");
     }
     if (start <= 0 || end <= 0) {
-      throw new Error("Start and end must be positive numbers.");
+      throw new UserInputError("Start and end must be positive numbers.");
     }
-    if (end < start) {
-      throw new Error("End number must be greater than or equal to start number.");
+    if (start > MAX_TICKET_NUMBER || end > MAX_TICKET_NUMBER) {
+      throw new UserInputError("Start and end must be 6 digits or fewer.");
     }
+    if (options?.requireStrictEnd ? end <= start : end < start) {
+      throw new UserInputError(
+        options?.requireStrictEnd
+          ? "End number must be greater than start number."
+          : "End number must be greater than or equal to start number.",
+      );
+    }
+  };
+
+  const validateNewEndNumber = (value: number) => {
+    if (!Number.isInteger(value) || value <= 0) {
+      throw new UserInputError("End number must be a positive integer.");
+    }
+    if (value > MAX_TICKET_NUMBER) {
+      throw new UserInputError("End number must be 6 digits or fewer.");
+    }
+  };
+
+  const countUndrawnTickets = (state: RaffleState) => {
+    const drawn = new Set(state.generatedOrder);
+    let undrawn = 0;
+    for (let ticket = state.startNumber; ticket <= state.endNumber; ticket += 1) {
+      if (!drawn.has(ticket)) {
+        undrawn += 1;
+      }
+    }
+    return undrawn;
   };
 
   const ensureHasRange = (state: RaffleState) => {
@@ -122,12 +156,12 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
     const current = await safeReadState();
 
     if (current.orderLocked) {
-      throw new Error(
+      throw new UserInputError(
         "Order is locked. Cannot regenerate—this would change all client positions. Use Reset to start a new lottery.",
       );
     }
 
-    validateRange(input.startNumber, input.endNumber);
+    validateRange(input.startNumber, input.endNumber, { requireStrictEnd: true });
     const generatedOrder = generateOrder(input.startNumber, input.endNumber, input.mode);
     return persist({
       startNumber: input.startNumber,
@@ -148,9 +182,21 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
   const appendTickets = async (newEndNumber: number) => {
     const current = await safeReadState();
     ensureHasRange(current);
+    validateNewEndNumber(newEndNumber);
 
     if (newEndNumber <= current.endNumber) {
-      throw new Error("New end number must be greater than the current end number.");
+      throw new UserInputError(
+        `The end number is currently ${current.endNumber}. Please choose a number greater than ${current.endNumber}.`,
+      );
+    }
+
+    const undrawnCount = countUndrawnTickets(current);
+    if (undrawnCount > 0) {
+      throw new UserInputError(
+        `All tickets in the current range must be drawn before appending. ${undrawnCount} ticket${
+          undrawnCount === 1 ? " remains" : "s remain"
+        } undrawn. Use Generate batch to finish the current range first.`,
+      );
     }
 
     const additions = buildRange(current.endNumber + 1, newEndNumber);
@@ -167,8 +213,11 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
   const extendRange = async (newEndNumber: number) => {
     const current = await safeReadState();
     ensureHasRange(current);
+    validateNewEndNumber(newEndNumber);
     if (newEndNumber <= current.endNumber) {
-      throw new Error("New end number must be greater than the current end number.");
+      throw new UserInputError(
+        `The end number is currently ${current.endNumber}. Please choose a number greater than ${current.endNumber}.`,
+      );
     }
     return persist({
       ...current,
@@ -185,7 +234,7 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
     const { batchSize } = input;
 
     if (!Number.isInteger(batchSize) || batchSize <= 0) {
-      throw new Error("Batch size must be a positive integer.");
+      throw new UserInputError("Batch size must be a positive integer.");
     }
 
     // Determine effective range: use current if set, otherwise set from input
@@ -194,8 +243,22 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
     let effectiveEnd = current.endNumber;
 
     if (!hasRange) {
-      validateRange(input.startNumber, input.endNumber);
+      validateRange(input.startNumber, input.endNumber, { requireStrictEnd: true });
       effectiveStart = input.startNumber;
+      effectiveEnd = input.endNumber;
+    } else {
+      if (input.startNumber !== current.startNumber) {
+        throw new UserInputError(
+          `Start number is locked at ${current.startNumber} after the first draw. Reset to start a new range.`,
+        );
+      }
+      validateNewEndNumber(input.endNumber);
+      if (input.endNumber < current.endNumber) {
+        throw new UserInputError(
+          `The end number is currently ${current.endNumber}. Please choose a number greater than ${current.endNumber}.`,
+        );
+      }
+      effectiveStart = current.startNumber;
       effectiveEnd = input.endNumber;
     }
 
@@ -206,11 +269,11 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
     );
 
     if (pool.length === 0) {
-      throw new Error("All tickets in the range have already been drawn.");
+      throw new UserInputError("All tickets in the range have already been drawn.");
     }
 
     if (batchSize > pool.length) {
-      throw new Error(
+      throw new UserInputError(
         `Batch size (${batchSize}) exceeds remaining undrawn tickets (${pool.length}).`,
       );
     }

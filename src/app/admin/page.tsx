@@ -560,7 +560,7 @@ const AdminPage = () => {
     if (!state || (state.startNumber === 0 && state.endNumber === 0)) {
       const s = Number(rangeForm.startNumber);
       const e = Number(rangeForm.endNumber);
-      if (Number.isInteger(s) && Number.isInteger(e) && e >= s) return e - s + 1;
+      if (Number.isInteger(s) && Number.isInteger(e) && e > s) return e - s + 1;
       return 0;
     }
     const drawn = new Set(state.generatedOrder);
@@ -568,6 +568,27 @@ const AdminPage = () => {
     for (let i = state.startNumber; i <= state.endNumber; i++) {
       if (!drawn.has(i)) count++;
     }
+    return count;
+  })();
+  const hasDrawStarted = (state?.generatedOrder.length ?? 0) > 0;
+  const isRangeExhausted = hasDrawStarted && undrawnCount === 0;
+  const previewUndrawnCount = (() => {
+    if (!state || !hasDrawStarted || isRangeExhausted) {
+      return undrawnCount;
+    }
+
+    const parsedEnd = Number(rangeForm.endNumber);
+    const previewEnd =
+      Number.isInteger(parsedEnd) && parsedEnd > state.endNumber ? parsedEnd : state.endNumber;
+    const drawn = new Set(state.generatedOrder);
+    let count = 0;
+
+    for (let ticket = state.startNumber; ticket <= previewEnd; ticket += 1) {
+      if (!drawn.has(ticket)) {
+        count += 1;
+      }
+    }
+
     return count;
   })();
 
@@ -582,7 +603,7 @@ const AdminPage = () => {
     Number.isInteger(parsedEndNumber) &&
     parsedStartNumber > 0 &&
     parsedEndNumber > 0 &&
-    parsedEndNumber >= parsedStartNumber;
+    parsedEndNumber > parsedStartNumber;
   const canGenerateFull =
     hasValidGenerateRange &&
     !state?.orderLocked &&
@@ -808,8 +829,8 @@ const AdminPage = () => {
                   Ticket Range & Order
                 </CardTitle>
                 <CardDescription>
-                  Set the starting and ending ticket numbers, then generate or re-generate the
-                  order. Mode controls how the order is built.
+                  Set the starting and ending ticket numbers, then generate the order. After the
+                  first draw, Start locks and End can only move forward while batch draws remain.
                 </CardDescription>
               </div>
             </CardHeader>
@@ -834,39 +855,61 @@ const AdminPage = () => {
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="start">Start Number</Label>
-                  <Input
-                    id="start"
-                    type="text"
-                    inputMode="numeric"
-                    pattern="\d*"
-                    maxLength={6}
-                    value={rangeForm.startNumber}
-                    onChange={(e) =>
-                      setRangeForm((prev) => ({
-                        ...prev,
-                        startNumber: e.target.value.replace(/\D/g, "").slice(0, 6),
-                      }))
-                    }
-                    className="appearance-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                  />
+                  <div
+                    onClick={() => {
+                      if (hasDrawStarted && state) {
+                        toast.error(
+                          `Start number is locked at ${state.startNumber} after the first draw. Reset to start a new range.`,
+                        );
+                      }
+                    }}
+                  >
+                    <Input
+                      id="start"
+                      type="text"
+                      inputMode="numeric"
+                      pattern="\d*"
+                      maxLength={6}
+                      value={rangeForm.startNumber}
+                      onChange={(e) =>
+                        setRangeForm((prev) => ({
+                          ...prev,
+                          startNumber: e.target.value.replace(/\D/g, "").slice(0, 6),
+                        }))
+                      }
+                      disabled={hasDrawStarted}
+                      className="appearance-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                    />
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="end">End Number</Label>
-                  <Input
-                    id="end"
-                    type="text"
-                    inputMode="numeric"
-                    pattern="\d*"
-                    maxLength={6}
-                    value={rangeForm.endNumber}
-                    onChange={(e) =>
-                      setRangeForm((prev) => ({
-                        ...prev,
-                        endNumber: e.target.value.replace(/\D/g, "").slice(0, 6),
-                      }))
-                    }
-                    className="appearance-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                  />
+                  <div
+                    onClick={() => {
+                      if (isRangeExhausted && hasDrawStarted) {
+                        toast.error(
+                          "All tickets in this range are sorted. Use Append to increase the end number.",
+                        );
+                      }
+                    }}
+                  >
+                    <Input
+                      id="end"
+                      type="text"
+                      inputMode="numeric"
+                      pattern="\d*"
+                      maxLength={6}
+                      value={rangeForm.endNumber}
+                      onChange={(e) =>
+                        setRangeForm((prev) => ({
+                          ...prev,
+                          endNumber: e.target.value.replace(/\D/g, "").slice(0, 6),
+                        }))
+                      }
+                      disabled={isRangeExhausted && hasDrawStarted}
+                      className="appearance-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -926,7 +969,7 @@ const AdminPage = () => {
                   <AlertDialogHeader>
                     <AlertDialogTitle>Generate batch from undrawn pool</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Draw a subset of tickets from the {undrawnCount} remaining undrawn tickets
+                      Draw a subset of tickets from the {previewUndrawnCount} remaining undrawn tickets
                       and append to the draw order. Existing positions will not change.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
@@ -944,7 +987,7 @@ const AdminPage = () => {
                       onChange={(e) => setBatchSize(e.target.value.replace(/\D/g, "").slice(0, 4))}
                       className="w-28 appearance-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                     />
-                    <p className="text-xs text-muted-foreground">{undrawnCount} tickets remaining</p>
+                    <p className="text-xs text-muted-foreground">{previewUndrawnCount} tickets remaining</p>
                   </div>
                   <AlertDialogFooter>
                     <AlertDialogCancel disabled={batchDrawing}>Cancel</AlertDialogCancel>
@@ -962,7 +1005,7 @@ const AdminPage = () => {
                         batchDrawing ||
                         Number(batchSize) <= 0 ||
                         !Number.isInteger(Number(batchSize)) ||
-                        Number(batchSize) > undrawnCount
+                        Number(batchSize) > previewUndrawnCount
                       }
                     >
                       {batchDrawing ? "Working..." : "Draw batch"}
@@ -993,9 +1036,9 @@ const AdminPage = () => {
                       return;
                     }
 
-                    if (parsedEndNumber < parsedStartNumber) {
+                    if (parsedEndNumber <= parsedStartNumber) {
                       toast.error(
-                        "End Number must be greater than or equal to Start Number.",
+                        "End Number must be greater than Start Number.",
                       );
                       return;
                     }
@@ -1017,8 +1060,8 @@ const AdminPage = () => {
                         ? "Order locked. Use Reset to start new lottery."
                         : !hasGenerateRangeInputs
                           ? "Enter both Start Number and End Number first."
-                          : parsedEndNumber < parsedStartNumber
-                            ? "End Number must be greater than or equal to Start Number."
+                          : parsedEndNumber <= parsedStartNumber
+                            ? "End Number must be greater than Start Number."
                             : !hasValidGenerateRange
                               ? "Start and End must be whole numbers greater than 0."
                               : undefined
@@ -1027,7 +1070,7 @@ const AdminPage = () => {
                 </div>
                 <Button
                   variant="outline"
-                  disabled={loading || pendingAction !== null || undrawnCount === 0}
+                  disabled={loading || pendingAction !== null || previewUndrawnCount === 0}
                   onClick={() => setBatchDialogOpen(true)}
                 >
                   Generate batch

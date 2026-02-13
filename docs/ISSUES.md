@@ -284,6 +284,28 @@ With the batch generation feature (v1.2.3), staff can partially draw tickets fro
 
 ---
 
+## Issue 10: Start/End range edits looked editable but were ignored after draws
+
+### Status
+- Fixed and verified in localhost testing.
+
+### Observed
+After batch sorting started, staff could still type into Start/End inputs. The UI accepted edits, but draw behavior still followed the previously persisted range, which created silent mismatch and fairness trust concerns.
+
+### Root Cause
+- Post-init range rules were not enforced consistently across UI and backend.
+- `generateBatch` did not return concrete, bound-aware validation messages for start-lock or end-shrink attempts.
+- Expansion behavior needed explicit atomic persistence guarantees so a failed draw could not leave a partially expanded range.
+
+### Fix
+- Locked `startNumber` after first draw in the admin UI and backend, with canonical ASK copy that includes the current bound.
+- Allowed `endNumber` to expand only forward during active batching; rejected shrink attempts with concrete ASK copy: `The end number is currently {currentEnd}. Please choose a number greater than {currentEnd}.`
+- Enforced atomic `generateBatch` persistence: expansion + draw save together on success; failed draw requests persist nothing.
+- Added typed user-input error transport in `/api/state` so actionable validation messages return as HTTP 400 instead of generic 500s.
+- Added tests for bound-specific error copy, expansion persistence on success, and no end-range mutation on failed expanded draws.
+
+---
+
 ## Manual Test Checklist (for later implementation)
 - **Returned skip:** Mark a mid-queue ticket returned, then advance Next; verify the returned ticket is skipped. Repeat with Prev.
 - **Modal close:** Mark returned/unclaimed with successful response; modal closes immediately. Simulate a failed network response and confirm modal behavior matches the chosen approach.

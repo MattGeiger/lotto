@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { stateManager, type Mode, type OperatingHours } from "@/lib/state-manager";
+import { stateManager, type Mode } from "@/lib/state-manager";
+import { isUserInputError } from "@/lib/user-input-error";
 
 export const runtime = "nodejs";
 
@@ -227,6 +228,9 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "Unsupported action" }, { status: 400 });
     }
   } catch (error) {
+    if (isUserInputError(error)) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
     console.error("[State] POST failed:", error);
     return NextResponse.json(
       { error: "Unable to process request. Please try again." },
