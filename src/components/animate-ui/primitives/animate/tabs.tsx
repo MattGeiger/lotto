@@ -317,10 +317,10 @@ const TabsContent = React.forwardRef<
       data-slot="tabs-content"
       data-state={isActive ? 'active' : 'inactive'}
       inert={!isActive}
-      className={cn('overflow-hidden', className)}
-      initial={{ filter: 'blur(0px)' }}
-      animate={{ filter: isActive ? 'blur(0px)' : 'blur(4px)' }}
-      exit={{ filter: 'blur(0px)' }}
+      className={cn(
+        'data-[state=active]:overflow-visible data-[state=inactive]:overflow-hidden',
+        className,
+      )}
       {...props}
       transition={transition}
     >

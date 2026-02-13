@@ -306,6 +306,28 @@ After batch sorting started, staff could still type into Start/End inputs. The U
 
 ---
 
+## Issue 11: Login tabs showed clipped shadow artifacts and hydration mismatch warnings
+
+### Status
+- Fixed and verified in localhost testing.
+
+### Observed
+- On `/login`, control shadows showed clipped side artifacts while switching OTP/Magic tabs.
+- Next.js console reported hydration mismatch warnings tied to tab trigger/content `id` and `aria-controls` attributes.
+
+### Root Cause
+- Tab panels slide in a horizontally translated track and clipped overflow at the animated viewport edge, so inactive pane visual effects could leak as edge traces.
+- Inactive tab panels also used blur transitions, which amplified side artifacts during the slide.
+- Radix Tabs generated runtime IDs for triggers/content that did not match server-rendered attributes in this motion-wrapped tab setup.
+
+### Fix
+- Added deterministic login tab IDs/ARIA wiring for trigger/content pairs to eliminate SSR/client attribute drift.
+- Updated animated tab panel behavior to keep inactive panels clipped while allowing active panel overflow.
+- Removed inactive panel blur filtering from the tabs primitive to stop visual bleed from adjacent offscreen pane effects.
+- Kept horizontal slide and auto-height animation behavior intact.
+
+---
+
 ## Manual Test Checklist (for later implementation)
 - **Returned skip:** Mark a mid-queue ticket returned, then advance Next; verify the returned ticket is skipped. Repeat with Prev.
 - **Modal close:** Mark returned/unclaimed with successful response; modal closes immediately. Simulate a failed network response and confirm modal behavior matches the chosen approach.

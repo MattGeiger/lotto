@@ -22,6 +22,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
+const LOGIN_TABS_IDS = {
+  otpTrigger: "login-tabs-trigger-otp",
+  magicTrigger: "login-tabs-trigger-magic",
+  otpContent: "login-tabs-content-otp",
+  magicContent: "login-tabs-content-magic",
+} as const;
+
 const LoginForm = () => {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/admin";
@@ -111,23 +118,33 @@ const LoginForm = () => {
 
   return (
     <Card className="w-full max-w-md">
-      <CardHeader>
+      <CardHeader className="px-8 pt-7 sm:px-10 sm:pt-8">
         <CardTitle>Sign in to William Temple House</CardTitle>
         <CardDescription>Staff access only — use your @williamtemple.org email.</CardDescription>
       </CardHeader>
 
-      <CardContent>
+      <CardContent className="px-8 pb-7 sm:px-10 sm:pb-8">
         <Tabs defaultValue="otp" className="w-full">
           <TabsHighlight className="absolute inset-0 rounded-[calc(var(--radius)-7px)] border border-border/45 bg-background/80 shadow-sm backdrop-blur-sm supports-[backdrop-filter]:bg-background/55">
             <TabsList className="grid w-full grid-cols-2">
               <TabsHighlightItem value="otp">
-                <TabsTrigger value="otp" className="flex w-full items-center gap-2">
+                <TabsTrigger
+                  value="otp"
+                  id={LOGIN_TABS_IDS.otpTrigger}
+                  aria-controls={LOGIN_TABS_IDS.otpContent}
+                  className="flex w-full items-center gap-2"
+                >
                   <KeyRound className="size-4" />
                   OTP Code
                 </TabsTrigger>
               </TabsHighlightItem>
               <TabsHighlightItem value="magic">
-                <TabsTrigger value="magic" className="flex w-full items-center gap-2">
+                <TabsTrigger
+                  value="magic"
+                  id={LOGIN_TABS_IDS.magicTrigger}
+                  aria-controls={LOGIN_TABS_IDS.magicContent}
+                  className="flex w-full items-center gap-2"
+                >
                   <Mail className="size-4" />
                   Magic Link
                 </TabsTrigger>
@@ -135,8 +152,13 @@ const LoginForm = () => {
             </TabsList>
           </TabsHighlight>
 
-          <TabsContents>
-            <TabsContent value="magic" className="space-y-4">
+          <TabsContents className="px-3 pb-2 sm:px-4">
+            <TabsContent
+              value="magic"
+              id={LOGIN_TABS_IDS.magicContent}
+              aria-labelledby={LOGIN_TABS_IDS.magicTrigger}
+              className="space-y-4"
+            >
               <form onSubmit={handleMagicLink} className="space-y-3">
                 <div className="space-y-2">
                   <label htmlFor="email-magic" className="text-sm font-medium">
@@ -148,10 +170,11 @@ const LoginForm = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@williamtemple.org"
+                    className="px-4"
                     required
                   />
                 </div>
-                <Button type="submit" className="w-full" disabled={magicStatus === "sending"}>
+                <Button type="submit" className="w-full px-5" disabled={magicStatus === "sending"}>
                   {magicStatus === "sending" ? "Sending..." : "Send magic link"}
                 </Button>
               </form>
@@ -165,7 +188,12 @@ const LoginForm = () => {
               )}
             </TabsContent>
 
-            <TabsContent value="otp" className="space-y-4">
+            <TabsContent
+              value="otp"
+              id={LOGIN_TABS_IDS.otpContent}
+              aria-labelledby={LOGIN_TABS_IDS.otpTrigger}
+              className="space-y-4"
+            >
               {otpStatus === "idle" || otpStatus === "requesting" ? (
                 <div className="space-y-3">
                   <div className="space-y-2">
@@ -178,13 +206,14 @@ const LoginForm = () => {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="you@williamtemple.org"
+                      className="px-4"
                       required
                     />
                   </div>
                   <Button
                     type="button"
                     onClick={handleRequestOTP}
-                    className="w-full"
+                    className="w-full px-5"
                     disabled={otpStatus === "requesting" || email.trim().length === 0}
                   >
                     {otpStatus === "requesting" ? "Sending..." : "Send 6-digit code"}
@@ -221,13 +250,13 @@ const LoginForm = () => {
                           setOtpStatus("idle");
                           setOtpCode("");
                         }}
-                        className="flex-1"
+                        className="flex-1 px-4"
                       >
                         Change email
                       </Button>
                       <Button
                         type="submit"
-                        className="flex-1"
+                        className="flex-1 px-4"
                         disabled={otpStatus === "verifying" || otpCode.length !== 6}
                       >
                         {otpStatus === "verifying" ? "Verifying..." : "Verify"}
@@ -246,7 +275,7 @@ const LoginForm = () => {
 
 const LoginPage = () => {
   return (
-    <main className="mx-auto flex min-h-screen max-w-4xl flex-col items-center justify-center gap-6 px-6 py-12">
+    <main className="mx-auto flex min-h-dvh max-w-4xl flex-col items-center justify-start gap-6 px-6 py-8 sm:justify-center sm:py-12">
       <div className="flex justify-center">
         <Image
           src="/wth-logo-horizontal.png"

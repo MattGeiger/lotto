@@ -8,6 +8,8 @@
 - Updated admin range controls so Start is locked after first draw, End locks after pending reaches zero, and batch remaining counts preview pending tickets for a locally increased End value before submission.
 - Added tests covering concrete-bound message contracts, atomic end-number persistence on successful/failed expanded batches, and route-level 400 handling for typed user-input errors.
 - Documented the localhost-verified problem/solution flow in `docs/ISSUES.md` and published release notes in `docs/RELEASES.md` for v1.4.0.
+- Fixed login tab hydration mismatch by using stable trigger/content IDs and ARIA pairings instead of runtime-generated IDs.
+- Fixed login tab shadow-edge artifacts by removing inactive-panel blur filtering while preserving slide + height animation behavior in animated tabs.
 
 ## [1.4.1] - 2026-02-11
 ### Changed
