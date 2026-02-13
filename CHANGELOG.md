@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.4.3] - 2026-02-13
+### Changed
+- Added a local Animate UI-style theme transition primitive at `src/components/animate-ui/primitives/effects/theme-toggler.tsx` with directional View Transition `clip-path` animation for Light/Dark/System theme changes.
+- Updated `ThemeSwitcher` to route base theme updates through the new transition primitive while preserving existing `Hi-viz` contrast behavior and menu UX.
+- Added reduced-motion and no-View-Transition fallback handling so theme updates remain immediate when animation should not run.
+- Added `ThemeSwitcher` test coverage for the `document.startViewTransition` path.
+- Verified full suite + production build after integration (125 tests passing; build clean).
+
 ## [1.4.2] - 2026-02-13
 ### Changed
 - Enforced concrete-bound batch validation messages so post-init `generateBatch` rejects now return actionable copy with the current locked value (start mismatch and end shrink cases).

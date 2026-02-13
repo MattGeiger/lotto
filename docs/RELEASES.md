@@ -1,3 +1,25 @@
+# William Temple House Digital Raffle System v1.4.3
+
+**Release Date:** February 13, 2026
+
+## Theme Transition Effect (Animate UI Parity)
+
+- Added a local Animate UI-style `ThemeToggler` primitive (`src/components/animate-ui/primitives/effects/theme-toggler.tsx`) that applies directional View Transition `clip-path` reveals for base theme changes (`light`, `dark`, `system`).
+- Wired the existing theme dropdown (`src/components/theme-switcher.tsx`) to route base theme updates through the new transition primitive while preserving the existing `Hi-viz` contrast mode behavior.
+- Added reduced-motion and no-View-Transition fallback handling so theme changes remain immediate and reliable when animation is unavailable or disabled.
+
+## Validation
+
+- Added a `ThemeSwitcher` test that verifies `document.startViewTransition` usage when available.
+- Full test suite passing: **125 tests**.
+- Production build completed successfully.
+
+## Versioning
+
+- Bumped application version to **1.4.3**.
+
+---
+
 # William Temple House Digital Raffle System v1.4.2
 
 **Release Date:** February 13, 2026

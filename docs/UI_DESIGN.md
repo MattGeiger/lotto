@@ -308,6 +308,17 @@ Toggle dark mode by changing classes on root HTML element. All color variables s
 
 ---
 
+## Theme Switch Transition
+
+- The app theme switcher uses an Animate UI-style local primitive: `src/components/animate-ui/primitives/effects/theme-toggler.tsx`.
+- Base theme changes (`light`, `dark`, `system`) use the View Transition API with a directional `clip-path` reveal (`ltr` default).
+- Fallback behavior is required:
+  - If `document.startViewTransition` is unavailable, switch immediately.
+  - If `prefers-reduced-motion: reduce` is enabled, switch immediately.
+- `Hi-viz` remains a separate contrast mode layered through `ThemeProvider`; do not collapse it into the base theme enum.
+
+---
+
 ## TypeScript Support (React 19 Updates)
 
 **forwardRef is deprecated** in React 19. Use direct props instead:

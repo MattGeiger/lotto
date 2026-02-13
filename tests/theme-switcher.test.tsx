@@ -5,6 +5,11 @@ import { describe, expect, it, beforeEach, vi } from "vitest";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 
+type ViewTransitionResult = {
+  ready: Promise<void>;
+  finished: Promise<void>;
+};
+
 function installMatchMedia(matches = false) {
   Object.defineProperty(window, "matchMedia", {
     writable: true,
@@ -29,11 +34,36 @@ function renderSwitcher() {
   );
 }
 
+function installViewTransition() {
+  const startViewTransition = vi.fn(
+    (callback: () => void | Promise<void>): ViewTransitionResult => {
+      callback();
+      return {
+        ready: Promise.resolve(),
+        finished: Promise.resolve(),
+      };
+    },
+  );
+
+  Object.defineProperty(document, "startViewTransition", {
+    configurable: true,
+    writable: true,
+    value: startViewTransition,
+  });
+
+  return startViewTransition;
+}
+
 describe("ThemeSwitcher", () => {
   beforeEach(() => {
     window.localStorage.clear();
     document.documentElement.classList.remove("dark", "light", "hi-viz");
     installMatchMedia(false);
+    delete (
+      document as Document & {
+        startViewTransition?: unknown;
+      }
+    ).startViewTransition;
   });
 
   it("shows all four theme options", async () => {
@@ -80,6 +110,21 @@ describe("ThemeSwitcher", () => {
     });
     expect(window.localStorage.getItem("contrast-mode")).toBeNull();
     expect(window.localStorage.getItem("theme")).toBe("dark");
+  });
+
+  it("uses view transition when available for base theme changes", async () => {
+    const startViewTransition = installViewTransition();
+
+    renderSwitcher();
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole("button", { name: /theme options/i }));
+    await user.click(screen.getByText("Dark"));
+
+    await waitFor(() => {
+      expect(startViewTransition).toHaveBeenCalledTimes(1);
+      expect(window.localStorage.getItem("theme")).toBe("dark");
+    });
   });
 
   it("restores persisted hi-viz mode on mount", async () => {
