@@ -19,9 +19,9 @@ export function LanguageMorphText({
   className,
   characterStagger = 0.04,
   wordWrap = "word",
-  initial = { opacity: 0, y: 14, filter: "blur(4px)" },
-  animate = { opacity: 1, y: 0, filter: "blur(0px)" },
-  exit = { opacity: 0, y: -10, filter: "blur(4px)" },
+  initial = { opacity: 0, y: 14 },
+  animate = { opacity: 1, y: 0 },
+  exit = { opacity: 0, y: -10 },
   transition = DEFAULT_TRANSITION,
   ...props
 }: LanguageMorphTextProps) {

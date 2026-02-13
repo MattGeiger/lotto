@@ -328,6 +328,28 @@ After batch sorting started, staff could still type into Start/End inputs. The U
 
 ---
 
+## Issue 12: Morph animations dropped frames on low-power clients (Raspberry Pi/Chromium)
+
+### Status
+- Fixed and verified in localhost testing (performance hardening shipped).
+
+### Observed
+- On slower machines (for example Raspberry Pi 4 running Chromium), morph-style text transitions rendered only a few visible frames from start to finish.
+- The low frame cadence made "Now Serving" and language text transitions feel jumpy and delayed.
+
+### Root Cause
+- Animated `filter: blur(...)` was present in multiple text transition paths, including base morph primitives and display-specific overrides.
+- Blur animation is significantly more expensive than transform/opacity-only transitions on low-end GPU/CPU hardware.
+
+### Fix
+- Removed animated blur from:
+  - `src/components/animate-ui/primitives/texts/morphing.tsx`
+  - `src/components/language-morph-text.tsx`
+  - `src/components/readonly-display.tsx`
+- Preserved existing motion behavior (opacity/position/scale transitions, timing, and sequencing) while removing blur-related rendering cost.
+
+---
+
 ## Manual Test Checklist (for later implementation)
 - **Returned skip:** Mark a mid-queue ticket returned, then advance Next; verify the returned ticket is skipped. Repeat with Prev.
 - **Modal close:** Mark returned/unclaimed with successful response; modal closes immediately. Simulate a failed network response and confirm modal behavior matches the chosen approach.

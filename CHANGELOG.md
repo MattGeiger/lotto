@@ -10,6 +10,7 @@
 - Documented the localhost-verified problem/solution flow in `docs/ISSUES.md` and published release notes in `docs/RELEASES.md` for v1.4.0.
 - Fixed login tab hydration mismatch by using stable trigger/content IDs and ARIA pairings instead of runtime-generated IDs.
 - Fixed login tab shadow-edge artifacts by removing inactive-panel blur filtering while preserving slide + height animation behavior in animated tabs.
+- Removed animated blur filters from morph text transitions (display now-serving, language morph text, and shared morphing primitive defaults) to improve frame consistency on low-power Chromium clients.
 
 ## [1.4.1] - 2026-02-11
 ### Changed

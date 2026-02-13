@@ -352,9 +352,9 @@ export const ReadOnlyDisplay = ({ ticketSearchRequest }: ReadOnlyDisplayProps) =
                   characterClassName="bg-gradient-serving-text bg-clip-text text-transparent"
                   characterStagger={0.08}
                   wordWrap="word"
-                  initial={{ opacity: 0, y: 56, filter: "blur(8px)" }}
-                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                  exit={{ opacity: 0, y: -36, filter: "blur(8px)" }}
+                  initial={{ opacity: 0, y: 56 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -36 }}
                   transition={{ type: "spring", stiffness: 80, damping: 16, mass: 0.45 }}
                   aria-label="Currently serving ticket number"
                 />

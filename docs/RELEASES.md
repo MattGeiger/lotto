@@ -1,4 +1,4 @@
-# William Temple House Digital Raffle System v1.4.0
+# William Temple House Digital Raffle System v1.4.2
 
 **Release Date:** February 13, 2026
 
@@ -6,19 +6,63 @@
 
 - Locked `startNumber` after the first successful draw so staff cannot silently drift the starting bound mid-process.
 - Allowed `endNumber` to move only forward during active batching; shrink attempts are rejected with concrete ASK messaging that includes the current bound.
-- Ensured `generateBatch` range expansion is atomic: expanded `endNumber` persists only when the draw succeeds, preventing preview/state mismatch.
+- Enforced atomic `generateBatch` expansion: expanded `endNumber` persists only when the draw succeeds.
 - Restricted Append while undrawn tickets remain in the active range to preserve first-in fairness for pending tickets.
 
-## Operator Guidance
+## Reliability Fixes
 
-- Added canonical concrete-bound messaging:
-  - `Start number is locked at {currentStart} after the first draw. Reset to start a new range.`
-  - `The end number is currently {currentEnd}. Please choose a number greater than {currentEnd}.`
-- Updated admin range controls so disabled Start/End interactions provide immediate Sonner guidance instead of silent failure.
+- Added typed user-input error handling in `/api/state` so actionable business-rule errors return HTTP 400 (instead of generic 500).
+- Fixed login tab hydration mismatches by using deterministic tab trigger/content IDs and ARIA pairings.
+- Fixed login tab edge artifacts from adjacent pane effects in animated tabs.
+- Removed animated blur from morph text paths to improve frame consistency on low-power Chromium clients.
 
-## Validation
+## Versioning
 
-- Localhost verification completed for start-lock enforcement, forward-only end expansion, append gating with pending tickets, and atomic expansion persistence.
+- Bumped application version to **1.4.2**.
+
+---
+
+# William Temple House Digital Raffle System v1.4.1
+
+**Release Date:** February 11, 2026
+
+## Motion Expansion (Animate UI)
+
+- Expanded motion behavior across key controls and indicators: animated buttons, icon triggers, pending/live-state feedback, and staggered display card/queue entrances.
+- Reworked animated tabs to demo-parity behavior (horizontal track + auto-height + trigger tap scale), including login flow integration.
+- Added parity hardening across icon motion triggers and admin icon behavior to keep interaction feedback consistent.
+
+## Display Readability and Localization Motion
+
+- Migrated display "Now Serving" transitions to Animate UI primitives (`MorphingText` + numeric `RollingText`) with tuned timing/stagger for readability.
+- Added `LanguageMorphText` across translated labels/messages and enabled word-aware wrapping to prevent orphan characters in localized strings.
+
+## Versioning
+
+- Bumped application version to **1.4.1**.
+
+---
+
+# William Temple House Digital Raffle System v1.4.0
+
+**Release Date:** February 11, 2026
+
+## High-Contrast Accessibility Theme
+
+- Added persisted `Hi-viz` contrast mode alongside Light/Dark/System.
+- Introduced contrast-aware theme architecture in `ThemeProvider` with root-class sync for token-based overrides.
+- Added and refined high-contrast token sets in `globals.css` (including typography/token mapping updates).
+
+## Motion Foundation
+
+- Added motion primitives and animated icon integration foundation for the app UI.
+- Added global `prefers-reduced-motion` support so motion is disabled/simplified when requested.
+- Updated theme and header controls to use iconized, motion-capable interactions while preserving accessibility and clarity.
+
+## Additional Core Improvements Included in v1.4.0
+
+- Hardened local auth/dev reliability (trust-host handling, OTP fallback behavior, localhost bypass behavior in dev).
+- Updated admin status card styling and token alignment for clearer returned/unclaimed/next-up state visibility.
 
 ## Versioning
 
