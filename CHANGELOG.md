@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.4.4] - 2026-02-14
+### Changed
+- Added explicit Arcade guardrails to `AGENTS.md` requiring clean route/code/style separation from raffle features.
+- Documented the Arcade architecture boundary (`src/app/(arcade)/arcade/*` and `src/arcade/*`) and clarified that Arcade must not be integrated into the public display page.
+- Replaced `docs/GAME.md` strategy with a separation-first Snake plan using standalone Arcade routes and simple pixel-art UI direction instead of raffle UI element reuse.
+- Added `docs/V2.0_PLANNED_FEATURES.md` with v2.0 scope: standalone Arcade page, persistent top "NOW SERVING" banner, game menu, and Snake as launch game.
+- Added a dedicated Arcade route group with `/arcade` and `/arcade/snake`, including a persistent top `NOW SERVING` banner and an 8-bit launch menu focused on Snake.
+- Added Arcade-scoped 8bitcn-style shadcn wrappers under `src/arcade/ui/8bit/*` and isolated Arcade styling in `src/arcade/styles/arcade.css` to avoid collisions with shared raffle UI.
+- Added `@8bitcn` registry metadata in `components.json` for future retro component pulls while keeping current imports separated in Arcade paths.
+- Added self-hosted `Press Start 2P` font asset (`src/arcade/fonts/PressStart2P-Regular.ttf`) and applied it via `next/font/local` to Arcade-only layout typography.
+- Pruned `src/arcade/lucid_icons` to runtime-useful assets (`SVG/Flat`, `PNG/Flat/16`, `PNG/Flat/32`, and `License`) and removed shadow/spritesheet/Aseprite/source-support extras.
+- Enforced `Press Start 2P` as the default inherited typeface across the entire Arcade scope unless a component explicitly overrides it.
+- Reduced `/arcade/snake` gameplay instruction copy by four Tailwind size steps total for a cleaner card fit on smaller screens.
+- Added a centered `PLAY NOW` Arcade button beneath the `/arcade/snake` instructions card.
+- Added a top-left `BACK` button on `/arcade/snake` linking to `/arcade`, using the `Chevron-Arrow-Left` Arcade icon.
+- Fixed `/arcade/snake` `BACK` button content alignment so the icon and label render on the same horizontal line.
+- Switched the `/arcade/snake` back icon to an inline SVG with `currentColor` fill so the chevron always matches button text color.
+- Added the same top-left `BACK` button on `/arcade`, linking users back to the home page (`/`).
+- Reordered `/arcade` header layout so `ARCADE GAMES` appears above the `BACK` button.
+- Center-aligned Arcade titles (including shared Arcade `CardTitle` output and game-tile `h2` headings) so titles are no longer left-justified.
+
 ## [1.4.3] - 2026-02-13
 ### Changed
 - Added a local Animate UI-style theme transition primitive at `src/components/animate-ui/primitives/effects/theme-toggler.tsx` with directional View Transition `clip-path` animation for Light/Dark/System theme changes.

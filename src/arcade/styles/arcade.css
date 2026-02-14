@@ -1,0 +1,73 @@
+.arcade-scope {
+  --font-arcade-ui: var(--font-arcade-display);
+  --arcade-bg: #04070f;
+  --arcade-bg-alt: #0a1120;
+  --arcade-wall: #3b7cff;
+  --arcade-neon: #ff6de8;
+  --arcade-dot: #ffd75c;
+  --arcade-ghost: #86f0ff;
+  --arcade-panel: rgba(10, 16, 30, 0.94);
+  --arcade-panel-border: #3b7cff;
+  --arcade-text: #f3f7ff;
+  background:
+    radial-gradient(circle at 18% -4%, rgba(255, 109, 232, 0.2), transparent 34%),
+    radial-gradient(circle at 82% -8%, rgba(59, 124, 255, 0.22), transparent 38%),
+    linear-gradient(180deg, var(--arcade-bg), var(--arcade-bg-alt));
+  color: var(--arcade-text);
+  font-family: var(--font-arcade-display), ui-monospace, SFMono-Regular, Menlo, monospace;
+  min-height: 100vh;
+}
+
+.arcade-retro {
+  font-family: var(--font-arcade-display), ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.arcade-ui {
+  font-family: var(--font-arcade-ui), ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.02em;
+}
+
+.arcade-pixel-grid {
+  background-image:
+    radial-gradient(circle, rgba(255, 215, 92, 0.24) 0.11rem, transparent 0.13rem),
+    linear-gradient(90deg, rgba(59, 124, 255, 0.18) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(59, 124, 255, 0.15) 1px, transparent 1px);
+  background-size: 18px 18px, 22px 22px, 22px 22px;
+  background-position: 0 0, center, center;
+}
+
+.arcade-banner {
+  background:
+    linear-gradient(90deg, rgba(8, 14, 28, 0.98), rgba(13, 22, 40, 0.98)),
+    linear-gradient(90deg, rgba(59, 124, 255, 0.2), rgba(255, 109, 232, 0.2));
+  border-bottom: 4px solid var(--arcade-wall);
+  box-shadow:
+    0 1px 0 0 rgba(255, 215, 92, 0.55),
+    0 6px 0 0 rgba(0, 0, 0, 0.35);
+}
+
+.arcade-blink {
+  animation: arcade-blink 1200ms step-end infinite;
+}
+
+.pixelated {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+@keyframes arcade-blink {
+  0%, 45% {
+    opacity: 1;
+  }
+  55%, 100% {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arcade-blink {
+    animation: none;
+  }
+}
