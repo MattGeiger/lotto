@@ -136,13 +136,13 @@ html.light .arcade-scope .arcade-pixel-grid {
   padding: 0.38rem 0.48rem;
   background: linear-gradient(180deg, rgba(4, 7, 15, 0.88), rgba(4, 7, 15, 0.45));
   border: 1px solid rgba(59, 124, 255, 0.45);
-  text-shadow: var(--arcade-type-bold-shadow), 0 0 8px rgba(59, 124, 255, 0.4);
+  text-shadow: none;
 }
 
 html.light .arcade-scope .arcade-snake-readout {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(232, 241, 255, 0.93));
   border: 1px solid rgba(49, 93, 187, 0.5);
-  text-shadow: var(--arcade-type-bold-shadow), 0 0 6px rgba(49, 93, 187, 0.24);
+  text-shadow: none;
 }
 
 .arcade-snake-readout-metrics {
@@ -315,6 +315,7 @@ html.light .arcade-scope .arcade-snake-settings {
   align-items: center;
   justify-content: space-between;
   line-height: 1.2;
+  text-shadow: none;
 }
 
 .arcade-snake-slider {
