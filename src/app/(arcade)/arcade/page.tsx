@@ -9,7 +9,6 @@ import { useLanguage } from "@/contexts/language-context";
 export default function ArcadeHomePage() {
   const { t } = useLanguage();
   const playSnakeLabel = t("playSnake");
-  const playSnakeWords = playSnakeLabel.trim().split(/\s+/u).filter(Boolean);
 
   const launchGames = [
     {
@@ -82,15 +81,7 @@ export default function ArcadeHomePage() {
                             href="/arcade/snake"
                             className="block w-full whitespace-normal text-center leading-tight"
                           >
-                            {playSnakeWords.length > 1 ? (
-                              <span className="inline-flex max-w-full flex-wrap justify-center gap-x-2 gap-y-1">
-                                {playSnakeWords.map((word, index) => (
-                                  <span key={`play-snake-word-${index}`}>{word}</span>
-                                ))}
-                              </span>
-                            ) : (
-                              playSnakeLabel
-                            )}
+                            {playSnakeLabel}
                           </Link>
                         </Button>
                       ) : null}
