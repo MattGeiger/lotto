@@ -36,6 +36,24 @@ consistent with existing patterns and workflows.
 - User-facing notifications should use `sonner` toasts unless an existing
   pattern dictates otherwise.
 
+## Documentation Priority
+- Documentation is a first-class requirement for this repo.
+- Any feature implementation or behavior change must update docs to reflect the current state.
+- New features should have comprehensive implementation planning documented before major coding begins.
+- `docs/GAME.md` and `docs/V2.0_PLANNED_FEATURES.md` should be kept aligned with live Arcade behavior and planned scope.
+- `CHANGELOG.md` must capture both implementation changes and significant documentation updates.
+
+## Arcade Guardrails
+- Keep Arcade explicitly separated from raffle/display features in both code and UX.
+- Do not integrate Arcade gameplay into `/` or `src/components/readonly-display.tsx`.
+- Do not reuse raffle-specific UI/state concepts for Arcade (ticket cards, queue legends, raffle statuses).
+- Arcade visuals should use simple pixel-art direction with Arcade-specific components.
+- Place Arcade routes under `src/app/(arcade)/arcade/*`.
+- Keep existing raffle/admin/login/staff routes under `src/app/(core)/*` as work progresses.
+- Place Arcade feature code under `src/arcade/*` (`components`, `ui`, `game`, `hooks`, `lib`, `types`, `styles`).
+- Scope Arcade styles to Arcade route/layout files; avoid broad global theme changes in `src/app/globals.css`.
+- If using 8bitcn, install and consume it in an Arcade-only scope; do not overwrite global `theme-provider` or shared app theming.
+
 ## Deploy and Branching
 - Production is the Vercel project for `williamtemple.app`.
 - Use `dev` for staging/testing unless directed otherwise.
@@ -59,6 +77,7 @@ consistent with existing patterns and workflows.
 10. Avoid destructive git commands; do not revert unrelated changes. Check
     `git status` and work with the current state.
 11. Prefer `rg` over `grep` for search.
+12. Treat documentation updates as mandatory deliverables: keep current-state docs accurate and maintain detailed implementation plans before building major features.
 
 ## Testing
 Run relevant tests when changing behavior. If tests are skipped, say why and

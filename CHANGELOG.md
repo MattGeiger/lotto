@@ -1,5 +1,65 @@
 # Changelog
 
+## [1.4.4] - 2026-02-14
+### Changed
+- Added explicit Arcade guardrails to `AGENTS.md` requiring clean route/code/style separation from raffle features.
+- Documented the Arcade architecture boundary (`src/app/(arcade)/arcade/*` and `src/arcade/*`) and clarified that Arcade must not be integrated into the public display page.
+- Replaced `docs/GAME.md` strategy with a separation-first Snake plan using standalone Arcade routes and simple pixel-art UI direction instead of raffle UI element reuse.
+- Added `docs/V2.0_PLANNED_FEATURES.md` with v2.0 scope: standalone Arcade page, persistent top "NOW SERVING" banner, game menu, and Snake as launch game.
+- Added a dedicated Arcade route group with `/arcade` and `/arcade/snake`, including a persistent top `NOW SERVING` banner and an 8-bit launch menu focused on Snake.
+- Added Arcade-scoped 8bitcn-style shadcn wrappers under `src/arcade/ui/8bit/*` and isolated Arcade styling in `src/arcade/styles/arcade.css` to avoid collisions with shared raffle UI.
+- Added `@8bitcn` registry metadata in `components.json` for future retro component pulls while keeping current imports separated in Arcade paths.
+- Added self-hosted `Press Start 2P` font asset (`src/arcade/fonts/PressStart2P-Regular.ttf`) and applied it via `next/font/local` to Arcade-only layout typography.
+- Pruned `src/arcade/lucid_icons` to runtime-useful assets (`SVG/Flat`, `PNG/Flat/16`, `PNG/Flat/32`, and `License`) and removed shadow/spritesheet/Aseprite/source-support extras.
+- Enforced `Press Start 2P` as the default inherited typeface across the entire Arcade scope unless a component explicitly overrides it.
+- Reduced `/arcade/snake` gameplay instruction copy by four Tailwind size steps total for a cleaner card fit on smaller screens.
+- Added a centered `PLAY NOW` Arcade button beneath the `/arcade/snake` instructions card.
+- Added a top-left `BACK` button on `/arcade/snake` linking to `/arcade`, using the `Chevron-Arrow-Left` Arcade icon.
+- Fixed `/arcade/snake` `BACK` button content alignment so the icon and label render on the same horizontal line.
+- Switched the `/arcade/snake` back icon to an inline SVG with `currentColor` fill so the chevron always matches button text color.
+- Added the same top-left `BACK` button on `/arcade`, linking users back to the home page (`/`).
+- Reordered `/arcade` header layout so `ARCADE GAMES` appears above the `BACK` button.
+- Center-aligned Arcade titles (including shared Arcade `CardTitle` output and game-tile `h2` headings) so titles are no longer left-justified.
+- Added a mobile-first `/arcade/snake` gameplay shell with a stable square board (`clamp(240px, 88vw, 420px)`) and a sticky bottom D-pad (`UP/LEFT/RIGHT/DOWN`) with safe-area padding.
+- Replaced `/arcade/snake` D-pad text labels with the requested chevron icon assets (`Chevron-Arrow-Up/Down/Left/Right`) rendered as `currentColor` SVGs and explicitly styled to Arcade yellow.
+- Wired `/arcade/snake` `PLAY NOW` to smooth-scroll and focus the gameplay board section automatically.
+- Centered the `D-PAD` label in the middle control cell of the `/arcade/snake` on-screen D-pad.
+- Switched Arcade `Now Serving` polling from a fixed interval to the same adaptive display strategy (visibility-aware timeout scheduling, burst mode on changes, operating-hours-aware cadence, and 30s error retry).
+- Added explicit documentation-priority guardrails to `AGENTS.md`, requiring docs to stay current and implementation plans to be documented before major feature work.
+- Expanded `docs/GAME.md` with a current-state snapshot and a detailed Snake logic implementation checklist (engine, loop, controls, collisions, scoring, lifecycle, testing, and MVP definition of done).
+- Added a current implementation checkpoint to `docs/V2.0_PLANNED_FEATURES.md` so the v2.0 plan clearly distinguishes completed Arcade shell work from remaining Snake gameplay logic/tasks.
+- Implemented the first Snake gameplay increment: a running movement loop with a fixed 3-segment snake body, controlled by keyboard arrows and the Arcade D-pad (no food/collision/scoring yet).
+- Updated Snake page instructional copy and board HUD to reflect navigation-only behavior for this milestone.
+- Implemented the next Snake increment: wall/self collision detection, game-over state, and restart/reset controls while keeping food/scoring deferred.
+- Updated `docs/GAME.md` and `docs/V2.0_PLANNED_FEATURES.md` checkpoints to reflect that movement + collision milestones are now complete and food/scoring remain in progress.
+- Increased `/arcade/snake` game-over overlay text sizing to large-display scale for improved restart readability.
+- Removed the `RESTART RUN` button state, kept the `RESET` button, changed overlay copy to `TAP HERE TO PLAY AGAIN`, and made the Snake play area tap/click-restart the run while in `GAME OVER`.
+- Added Snake food pellet gameplay with random spawn on unoccupied cells, score increment on pellet collection, and immediate pellet respawn while keeping body length fixed at 3 for this increment.
+- Added dedicated `.arcade-snake-pellet` styling in Arcade-scoped CSS so food is visually distinct from snake segments.
+- Removed a duplicate `/arcade/snake` restart callback and corrected game-over input-queue clearing to run on status transitions.
+- Updated `docs/GAME.md` and `docs/V2.0_PLANNED_FEATURES.md` checkpoints to reflect that food+score is complete and growth-on-food is now the next pending gameplay milestone.
+- Fixed `/arcade/snake` hydration mismatch by removing random pellet generation from initial render and using a deterministic first pellet position in interior grid cells (so the pellet is visible on first load) before client-side gameplay randomization begins.
+- Enabled Snake growth on pellet consumption (`+1` segment each pellet) and updated movement/collision logic so growth ticks still enforce correct self-collision behavior.
+- Updated `/arcade/snake` pellet visual from a circular glow to a solid green pixel that fills one grid cell.
+- Replaced Snake `STOP` with a `PAUSE` -> `START` toggle that preserves active run state and resumes from the same board position.
+- Removed in-board top/bottom Snake stat overlays and moved gameplay readouts above and below the board to keep food/snake cells unobscured.
+- Enhanced Arcade `NOW SERVING` visibility with a retro-styled change alert pulse on the banner/value whenever the serving number updates.
+- Stabilized the top Snake readout to a fixed two-row layout so direction/value text changes (for example `UP` vs `RIGHT`) no longer shift the board position during gameplay.
+- Updated Snake head color from pink to orange for clearer player-avatar contrast within the Arcade board.
+- Removed the bottom Snake `LAST INPUT` readout banner to reduce duplicate direction telemetry and keep the play area focused on board + D-pad interaction.
+- Updated Snake scoring so each pellet awards `1000` points (score now advances in 1,000-point increments).
+- Updated Snake readout labels from `DIR` to `DIRECTION` and from `LEN` to `LENGTH` for clearer status terminology.
+- Simplified the Snake top readout to show only `SCORE` and `LENGTH`, removing `STATUS` and `DIRECTION` and collapsing the bar to a single-row metrics layout.
+- Replaced the center `D-PAD` text with a functional `PAUSE`/`START` control button in the on-screen controls and removed the duplicate pause toggle from the upper action row.
+- Updated the center Snake control to a three-state label flow: `START` on initial load, `PAUSE` while running, and `PLAY` while paused.
+- Styled the center Snake `PAUSE`/`PLAY` control as the primary filled yellow button (instead of outline) to match Arcade action emphasis.
+- Wired the center Snake `START` action to the same smooth scroll/focus behavior used by `PLAY NOW`, so start from the D-pad also jumps the user to the gameplay area.
+- Added adaptive mobile viewport sizing for Snake gameplay by deriving board/readout width from both `vw` and `dvh`, plus short-screen control-density tuning (smaller D-pad spacing/button heights) to improve fit on smaller devices.
+- Adjusted Snake scoring to award `10` points per pellet (score now advances in 10-point increments).
+- Increased short-screen Snake board sizing slightly (within the adaptive `dvh`/`vw` clamp) so gameplay area is larger while preserving full-content fit on smaller devices.
+- Updated the `/arcade` menu Snake CTA to use the primary filled Arcade button style and explicit `SNAKE` label, with a direct link target of `/arcade/snake`.
+- Updated the `/arcade` Snake CTA label from `SNAKE` to `PLAY SNAKE`.
+
 ## [1.4.3] - 2026-02-13
 ### Changed
 - Added a local Animate UI-style theme transition primitive at `src/components/animate-ui/primitives/effects/theme-toggler.tsx` with directional View Transition `clip-path` animation for Light/Dark/System theme changes.
