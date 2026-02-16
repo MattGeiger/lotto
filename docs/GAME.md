@@ -120,39 +120,39 @@ public/
 - Completed: Pause/resume controls preserve active game state (`PAUSE` -> `START`) without resetting board progress.
 - Completed: Snake readouts moved outside the board (above/below) to keep gameplay cells unobstructed.
 - Completed: Arcade `NOW SERVING` banner uses a retro alert pulse on ticket changes to improve in-game call visibility.
+- Completed: Snake accessibility controls now use one Arcade slider with six presets (`VERY EASY`, `EASY`, `NORMAL`, `HARD`, `VERY HARD`, `NIGHTMARE`) that combine speed + spawn rules, including Nightmare pellet expiry/respawn.
 - Not yet completed: Snake gameplay engine modules under `src/arcade/game/snake/*`.
 
-## Accessibility Issue: Snake Reflex Controls (Pre-Implementation Plan - 2026-02-16)
+## Accessibility Issue: Snake Reflex Controls (Implemented - 2026-02-16)
 - Problem statement: current Snake pace can be too demanding for players with slower reflexes, and pellet placement near walls can make early rounds punishing.
-- Scope: add player-adjustable speed and difficulty controls without coupling Arcade gameplay to raffle features or global app theming.
-- UI requirement: install and use `@8bitcn/slider` for two discrete controls inside the Snake page.
+- Scope: add player-adjustable settings without coupling Arcade gameplay to raffle features or global app theming.
+- UI requirement: install and use `@8bitcn/slider` for one unified settings control inside the Snake page.
 
-### Planned Speed Control
-- Control type: 3-stop slider, left to right:
-- `Slow` = half speed (`360ms` tick interval).
-- `Normal` = default/current speed (`180ms` tick interval).
-- `Fast` = 2x speed (`90ms` tick interval).
-- Behavior: changing speed should update gameplay pacing without resetting score, snake body, or game state.
-
-### Planned Difficulty Control
-- Control type: 3-stop slider, left to right:
-- `Easy` = food pellets spawn at least 5 grid cells from all walls.
-- `Medium` = food pellets spawn at least 3 grid cells from all walls.
-- `Hard` = food pellets can spawn anywhere on the board.
+### Implemented Unified Settings Slider
+- Control type: 6-stop slider, left to right:
+- `VERY EASY` = half speed (`360ms`) + pellets at least 5 cells from walls.
+- `EASY` = half speed (`360ms`) + pellets at least 3 cells from walls.
+- `NORMAL` = regular speed (`180ms`) + pellets at least 3 cells from walls.
+- `HARD` = regular speed (`180ms`) + pellets can spawn anywhere.
+- `VERY HARD` = fast speed (`90ms`) + pellets can spawn anywhere.
+- `NIGHTMARE` = fast speed (`90ms`) + pellets can spawn anywhere + pellets expire after 5 seconds and respawn if not eaten.
 - Spawn gating rules:
 - Apply wall-distance gating only to new pellet spawn candidates (not to existing pellet position unless respawned).
 - Keep snake-body exclusion logic intact.
 - If no valid cell remains under the selected gate (late-game edge case), degrade safely to any unoccupied cell to avoid deadlock.
+- In Nightmare mode, pellet timeout respawn avoids reusing the same location when alternative cells are available.
 
-### Planned Implementation Touchpoints
+### Implementation Touchpoints
 - `src/app/(arcade)/arcade/snake/page.tsx`:
-- Add speed and difficulty state.
-- Derive tick interval from selected speed and rerun timer effect when speed changes.
+- Add unified mode state (speed + wall gate + optional pellet lifetime).
+- Derive tick interval from selected mode and rerun timer effect when mode changes.
 - Route pellet spawn through difficulty-aware candidate filtering.
+- Add Nightmare-only pellet lifetime timer (`5000ms`) that respawns uneaten pellets.
 - `src/arcade/styles/arcade.css`:
 - Add Arcade-scoped slider/control layout styling for mobile-safe placement.
+- Remove decorative slider border framing after consolidating to a single slider.
 - `src/contexts/language-context.tsx`:
-- Add translation keys for new control labels and option values.
+- Add translation keys for unified mode labels and setting copy.
 
 ## Detailed Implementation Checklist (Snake Logic)
 
@@ -172,8 +172,7 @@ public/
 - [ ] Keep game speed deterministic on slow devices by processing discrete ticks.
 - [ ] Ensure loop starts only when game status is `running`.
 - [ ] Ensure loop fully stops on `paused` and `game-over`.
-- [ ] Add player-selectable speed presets (`Slow`, `Normal`, `Fast`) mapped to `360ms` / `180ms` / `90ms` ticks.
-- [ ] Apply speed changes without resetting active run state.
+- [x] Add player-selectable mode presets that map to tick intervals (`360ms`, `180ms`, `90ms`) and apply changes without resetting active run state.
 
 ### 3) Input Rules (Keyboard + D-pad)
 - [x] Route keyboard and D-pad input through one direction queue.
@@ -192,8 +191,9 @@ public/
 - [x] On food consumption: grow snake by one segment.
 - [x] On food consumption: increment score.
 - [x] Immediately respawn food after consumption.
-- [ ] Add difficulty presets (`Easy`, `Medium`, `Hard`) with minimum wall-distance gates of `5`, `3`, and `0` cells.
-- [ ] Ensure difficulty-gated spawn falls back to any unoccupied cell if constrained area is exhausted.
+- [x] Add unified mode presets that include wall-distance gates (`5`, `3`, `0`) and speed mapping in one control.
+- [x] Ensure difficulty-gated spawn falls back to any unoccupied cell if constrained area is exhausted.
+- [x] Add Nightmare mode pellet expiry (`5s`) with timed respawn when pellets are not eaten.
 - [ ] Optional: track local high score in Arcade-specific `localStorage` key.
 
 ### 6) UI Wiring (From Shell to Playable)
@@ -202,7 +202,7 @@ public/
 - [x] Make `PLAY NOW` initialize/reset game state and begin loop.
 - [x] Add `RESTART` action for `game-over`.
 - [x] Keep board rendering pixel-crisp and mobile-safe within current container constraints.
-- [ ] Add Arcade-scoped slider controls for speed and difficulty with labeled left-to-right options.
+- [x] Add Arcade-scoped unified settings slider with labeled left-to-right mode options.
 
 ### 7) Lifecycle and Stability
 - [ ] Pause game loop when tab becomes hidden; resume safely when visible.
@@ -263,6 +263,6 @@ public/
 
 ---
 
-Document Version: 3.3  
+Document Version: 3.5  
 Last Updated: 2026-02-16  
-Revision: Added pause/resume state, moved Snake readouts outside the board, and documented the retro-styled `NOW SERVING` change alert behavior.
+Revision: Consolidated Snake settings into one six-level slider, added Nightmare pellet expiry behavior, and updated accessibility-control documentation.

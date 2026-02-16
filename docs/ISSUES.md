@@ -353,46 +353,41 @@ After batch sorting started, staff could still type into Start/End inputs. The U
 ## Issue 13: Snake pace is too demanding for slower reflexes; pellet placement can be punishing near walls
 
 ### Status
-- Planned and documented before implementation (Arcade Snake scope, 2026-02-16).
+- Fixed in Arcade Snake (implemented 2026-02-16).
 
 ### Observed
 - Some players struggle with the default Snake movement speed.
 - Pellet spawns near borders can increase early collision risk, especially for beginners or low-reflex users.
 
-### Root Cause (Current Snake Implementation)
+### Root Cause
 - Tick loop uses one fixed speed (`180ms`) with no in-game pacing control.
 - Food pellet spawning is random across all unoccupied board cells and does not consider difficulty tiers.
 
-### Implementation Plan
-1) **Add slider component**
-   - Install `@8bitcn/slider` via shadcn and wire it into the Snake route only.
+### Fix
+- Installed `@8bitcn/slider` via shadcn and wired one unified settings slider into `/arcade/snake`.
+- Added a **single 6-step mode slider** (left to right):
+  - `VERY EASY` = `360ms` tick + pellets at least 5 cells from walls
+  - `EASY` = `360ms` tick + pellets at least 3 cells from walls
+  - `NORMAL` = `180ms` tick + pellets at least 3 cells from walls
+  - `HARD` = `180ms` tick + pellets can spawn anywhere
+  - `VERY HARD` = `90ms` tick + pellets can spawn anywhere
+  - `NIGHTMARE` = `90ms` tick + pellets can spawn anywhere + pellet lifetime `5s`
+- Updated spawn logic to:
+  - preserve snake-body exclusion,
+  - apply wall-distance gating for candidate cells,
+  - fall back to any unoccupied cell if the gated area is exhausted,
+  - keep deterministic initial pellet generation to avoid hydration mismatches,
+  - respawn Nightmare-expired pellets to a new location when alternatives exist.
+- Removed decorative slider border framing as part of the single-slider consolidation.
 
-2) **Speed control (3-position slider)**
-   - Left to right:
-   - `Slow` = `0.5x` movement speed (`360ms` tick interval).
-   - `Normal` = `1x` default (`180ms` tick interval).
-   - `Fast` = `2x` speed (`90ms` tick interval).
-   - Speed changes should apply immediately without resetting score, snake length, or run status.
-
-3) **Difficulty control (3-position slider)**
-   - Left to right:
-   - `Easy`: pellets spawn at least 5 cells from each wall.
-   - `Medium`: pellets spawn at least 3 cells from each wall.
-   - `Hard`: pellets can spawn anywhere in bounds.
-
-4) **Spawn gating behavior**
-   - Preserve exclusion of occupied snake cells.
-   - Filter spawn candidates by selected wall-distance gate.
-   - If the gated area is exhausted, fall back to any unoccupied cell to prevent lockups.
-   - Keep deterministic initial pellet generation to avoid hydration mismatches.
-
-### Validation Plan
+### Validation
 - Verify slider labels and ordering are correct on desktop and mobile.
-- Confirm tick pacing changes perceptibly at each speed setting.
-- Confirm pellet spawn envelopes by difficulty:
-  - Easy never spawns within 4 cells of any wall.
-  - Medium never spawns within 2 cells of any wall.
-  - Hard allows full-grid spawn.
+- Confirm tick pacing changes perceptibly across all six mode stops.
+- Confirm pellet spawn envelopes by mode:
+  - `VERY EASY`: never within 4 cells of walls.
+  - `EASY` / `NORMAL`: never within 2 cells of walls.
+  - `HARD` / `VERY HARD` / `NIGHTMARE`: full-grid spawn allowed.
+- Confirm in `NIGHTMARE` that uneaten pellets respawn after ~5 seconds.
 - Confirm no regressions to pause/resume, restart, score increments, or collision logic.
 
 ---
@@ -404,5 +399,5 @@ After batch sorting started, staff could still type into Start/End inputs. The U
 - **Standalone display:** Repeat date test on `npm run readonly` server.
 - **Polling backoff:** Leave the display idle during open hours; confirm polling slows after 10/30/60/120 minutes without changes, and resumes quickly after a state update.
 - **Visibility pause:** Hide the display tab, confirm polling stops, and verify it refreshes immediately on return.
-- **Snake speed control:** Set Slow/Normal/Fast and verify movement cadence aligns with `360ms` / `180ms` / `90ms` expectations.
-- **Snake difficulty control:** Set Easy/Medium/Hard and verify pellet wall-distance gating behavior matches each tier.
+- **Snake unified settings slider:** Sweep `VERY EASY` -> `NIGHTMARE` and verify speed + spawn rules update to each mode profile.
+- **Snake nightmare mode:** Leave a pellet uneaten for >5 seconds and verify automatic respawn to a new location.

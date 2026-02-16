@@ -12,3 +12,14 @@ Original prompt: Let's address a separate issue. I've got Codex working to final
 - Snake logic currently lives in src/app/(arcade)/arcade/snake/page.tsx with setInterval tick loop.
 - Deterministic initial pellet logic exists to avoid hydration mismatch; preserve deterministic behavior.
 - 2026-02-16: Added pre-implementation documentation entries in docs/GAME.md and docs/ISSUES.md for Snake speed + difficulty controls before code changes.
+- 2026-02-16: Installed `@8bitcn/slider` with shadcn and integrated Arcade slider controls into Snake.
+- 2026-02-16: Implemented speed presets (360/180/90ms) and difficulty-gated pellet spawn (5/3/0 cells from walls) with fallback behavior.
+- 2026-02-16: Updated docs/changelog/planning files to reflect implemented state.
+- 2026-02-16: Validation complete: `npm run lint` (warnings only, pre-existing) and `npm test` (125/125 passing).
+- 2026-02-16: Playwright skill check attempted but blocked (`playwright` package not available in environment), so gameplay verification was done via code-path review + existing test suite instead.
+- 2026-02-16: Moved Snake speed/difficulty sliders into a separate card directly beneath the instructions card; left the sticky bottom dock for D-pad controls only.
+- 2026-02-16: Added requested slider-card heading text `DIFFICULTY SETTING` and tightened slider-card content spacing.
+- 2026-02-16: Consolidated to one six-mode Snake settings slider (`VERY EASY` -> `NIGHTMARE`) and added Nightmare pellet timeout-respawn logic (`5s`).
+- 2026-02-16: Removed decorative slider border framing to match the unified-slider design.
+- 2026-02-16: Verified `npm test` and `npm run build` pass; `npm run lint` still reports only pre-existing warnings.
+- 2026-02-16: Removed the preset text row beneath the slider so only the live setting label is shown.

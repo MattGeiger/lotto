@@ -11,6 +11,7 @@
   --arcade-pellet: #74f84a;
   --arcade-panel: rgba(10, 16, 30, 0.94);
   --arcade-panel-border: #3b7cff;
+  --arcade-menu-card-bg: rgba(7, 12, 25, 0.88);
   --arcade-text: #f3f7ff;
   --arcade-action-bg: #ffd75c;
   --arcade-action-hover: #ff6de8;
@@ -46,6 +47,7 @@ html.light .arcade-scope {
   --arcade-pellet: #3ecf52;
   --arcade-panel: rgba(248, 252, 255, 0.96);
   --arcade-panel-border: #315dbb;
+  --arcade-menu-card-bg: rgba(246, 250, 255, 0.98);
   --arcade-text: #0b1d3b;
   --arcade-action-bg: #ffd75c;
   --arcade-action-hover: #ff8ed6;
@@ -279,6 +281,50 @@ html.light .arcade-scope .arcade-snake-control-dock {
   border-top: 2px solid rgba(49, 93, 187, 0.42);
 }
 
+.arcade-snake-settings {
+  width: min(100%, 540px);
+  margin: 0 auto;
+  display: grid;
+  gap: 0.72rem;
+  padding: 0.4rem 0;
+}
+
+html.light .arcade-scope .arcade-snake-settings {
+  background: transparent;
+}
+
+.arcade-snake-slider-group {
+  display: grid;
+  gap: 0.46rem;
+}
+
+.arcade-snake-slider-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  line-height: 1.2;
+}
+
+.arcade-snake-slider {
+  width: 100%;
+}
+
+.arcade-snake-slider [data-orientation="horizontal"] {
+  min-height: 20px;
+}
+
+.arcade-snake-slider [data-slot="slider-thumb"] {
+  box-shadow:
+    0 0 0 2px rgba(4, 7, 15, 0.92),
+    0 0 0 4px rgba(59, 124, 255, 0.32);
+}
+
+html.light .arcade-scope .arcade-snake-slider [data-slot="slider-thumb"] {
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.88),
+    0 0 0 4px rgba(49, 93, 187, 0.26);
+}
+
 .arcade-snake-pad {
   width: min(100%, 340px);
   margin: 0 auto;
@@ -440,6 +486,11 @@ html.light .arcade-scope .arcade-serving-value {
 
   .arcade-snake-control-dock {
     padding-top: 0.72rem;
+  }
+
+  .arcade-snake-settings {
+    padding: 0.32rem 0;
+    gap: 0.62rem;
   }
 }
 

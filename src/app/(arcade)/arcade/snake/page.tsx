@@ -9,18 +9,79 @@ import {
   ChevronArrowRightIcon,
   ChevronArrowUpIcon,
 } from "@/arcade/components/icons/chevron-arrow-left-icon";
-import { Button, Card, CardContent, CardHeader, CardTitle } from "@/arcade/ui/8bit";
+import { Button, Card, CardContent, CardHeader, CardTitle, Slider } from "@/arcade/ui/8bit";
 import { useLanguage } from "@/contexts/language-context";
 
 type Direction = "UP" | "DOWN" | "LEFT" | "RIGHT";
 type GridPoint = { x: number; y: number };
 type GameStatus = "READY" | "RUNNING" | "PAUSED" | "GAME_OVER";
+type SnakeModePreset = {
+  key: "veryEasy" | "easy" | "normal" | "hard" | "veryHard" | "nightmare";
+  labelKey:
+    | "snakeModeVeryEasy"
+    | "snakeModeEasy"
+    | "snakeModeNormal"
+    | "snakeModeHard"
+    | "snakeModeVeryHard"
+    | "snakeModeNightmare";
+  tickIntervalMs: number;
+  minWallDistance: number;
+  pelletLifetimeMs: number | null;
+};
 
 const GRID_SIZE = 20;
 const INITIAL_SNAKE_LENGTH = 3;
 const TICK_INTERVAL_MS = 180;
+const FAST_TICK_INTERVAL_MS = Math.max(60, Math.floor(TICK_INTERVAL_MS / 2));
+const SLOW_TICK_INTERVAL_MS = TICK_INTERVAL_MS * 2;
+const NIGHTMARE_PELLET_LIFETIME_MS = 5_000;
 const SCORE_PER_PELLET = 10;
 const INITIAL_DIRECTION: Direction = "RIGHT";
+const SNAKE_MODE_PRESETS: readonly SnakeModePreset[] = [
+  {
+    key: "veryEasy",
+    labelKey: "snakeModeVeryEasy",
+    tickIntervalMs: SLOW_TICK_INTERVAL_MS,
+    minWallDistance: 5,
+    pelletLifetimeMs: null,
+  },
+  {
+    key: "easy",
+    labelKey: "snakeModeEasy",
+    tickIntervalMs: SLOW_TICK_INTERVAL_MS,
+    minWallDistance: 3,
+    pelletLifetimeMs: null,
+  },
+  {
+    key: "normal",
+    labelKey: "snakeModeNormal",
+    tickIntervalMs: TICK_INTERVAL_MS,
+    minWallDistance: 3,
+    pelletLifetimeMs: null,
+  },
+  {
+    key: "hard",
+    labelKey: "snakeModeHard",
+    tickIntervalMs: TICK_INTERVAL_MS,
+    minWallDistance: 0,
+    pelletLifetimeMs: null,
+  },
+  {
+    key: "veryHard",
+    labelKey: "snakeModeVeryHard",
+    tickIntervalMs: FAST_TICK_INTERVAL_MS,
+    minWallDistance: 0,
+    pelletLifetimeMs: null,
+  },
+  {
+    key: "nightmare",
+    labelKey: "snakeModeNightmare",
+    tickIntervalMs: FAST_TICK_INTERVAL_MS,
+    minWallDistance: 0,
+    pelletLifetimeMs: NIGHTMARE_PELLET_LIFETIME_MS,
+  },
+];
+const DEFAULT_MODE_INDEX = 2;
 
 const DIRECTION_VECTORS: Record<Direction, GridPoint> = {
   UP: { x: 0, y: -1 },
@@ -44,6 +105,19 @@ const KEY_TO_DIRECTION: Record<string, Direction> = {
 };
 
 const isSamePoint = (a: GridPoint, b: GridPoint): boolean => a.x === b.x && a.y === b.y;
+const pointKey = (point: GridPoint): string => `${point.x},${point.y}`;
+const clampPresetIndex = (value: number, maxIndex: number): number =>
+  Math.max(0, Math.min(maxIndex, Math.round(value)));
+
+const isInsideWallDistanceGate = (point: GridPoint, minWallDistance: number): boolean => {
+  if (minWallDistance <= 0) {
+    return true;
+  }
+
+  const min = minWallDistance;
+  const max = GRID_SIZE - 1 - minWallDistance;
+  return point.x >= min && point.x <= max && point.y >= min && point.y <= max;
+};
 
 const createInitialSnake = (): GridPoint[] => {
   const midpoint = Math.floor(GRID_SIZE / 2);
@@ -53,71 +127,80 @@ const createInitialSnake = (): GridPoint[] => {
   }));
 };
 
-const createInitialFoodPellet = (snakeBody: GridPoint[]): GridPoint => {
-  const occupied = new Set(snakeBody.map((segment) => `${segment.x},${segment.y}`));
-  for (let y = 1; y < GRID_SIZE - 1; y += 1) {
-    for (let x = 1; x < GRID_SIZE - 1; x += 1) {
-      if (!occupied.has(`${x},${y}`)) {
-        return { x, y };
-      }
-    }
-  }
+const collectSpawnCandidates = (
+  snakeBody: GridPoint[],
+  minWallDistance: number,
+): { gated: GridPoint[]; fallback: GridPoint[] } => {
+  const occupied = new Set(snakeBody.map((segment) => pointKey(segment)));
+  const gated: GridPoint[] = [];
+  const fallback: GridPoint[] = [];
 
   for (let y = 0; y < GRID_SIZE; y += 1) {
     for (let x = 0; x < GRID_SIZE; x += 1) {
-      if (!occupied.has(`${x},${y}`)) {
-        return { x, y };
+      const point = { x, y };
+      if (occupied.has(pointKey(point))) {
+        continue;
+      }
+
+      fallback.push(point);
+      if (isInsideWallDistanceGate(point, minWallDistance)) {
+        gated.push(point);
       }
     }
   }
 
-  return { x: 0, y: 0 };
+  return { gated, fallback };
 };
 
-const createFoodPellet = (snakeBody: GridPoint[]): GridPoint => {
-  const occupied = new Set(snakeBody.map((segment) => `${segment.x},${segment.y}`));
-  const totalCells = GRID_SIZE * GRID_SIZE;
+const createInitialFoodPellet = (
+  snakeBody: GridPoint[],
+  minWallDistance: number,
+): GridPoint => {
+  const { gated, fallback } = collectSpawnCandidates(snakeBody, minWallDistance);
+  return gated[0] ?? fallback[0] ?? { x: 0, y: 0 };
+};
 
-  if (occupied.size >= totalCells) {
+const createFoodPellet = (
+  snakeBody: GridPoint[],
+  minWallDistance: number,
+  avoidPoint?: GridPoint,
+): GridPoint => {
+  const { gated, fallback } = collectSpawnCandidates(snakeBody, minWallDistance);
+  if (fallback.length === 0) {
     return { x: 0, y: 0 };
   }
 
-  for (let attempt = 0; attempt < totalCells * 2; attempt += 1) {
-    const point: GridPoint = {
-      x: Math.floor(Math.random() * GRID_SIZE),
-      y: Math.floor(Math.random() * GRID_SIZE),
-    };
-    if (!occupied.has(`${point.x},${point.y}`)) {
-      return point;
-    }
-  }
-
-  for (let y = 0; y < GRID_SIZE; y += 1) {
-    for (let x = 0; x < GRID_SIZE; x += 1) {
-      if (!occupied.has(`${x},${y}`)) {
-        return { x, y };
-      }
-    }
-  }
-
-  return { x: 0, y: 0 };
+  const pool = gated.length > 0 ? gated : fallback;
+  const respawnPool =
+    avoidPoint && pool.length > 1
+      ? pool.filter((point) => !isSamePoint(point, avoidPoint))
+      : pool;
+  const finalPool = respawnPool.length > 0 ? respawnPool : pool;
+  return finalPool[Math.floor(Math.random() * finalPool.length)] ?? fallback[0] ?? { x: 0, y: 0 };
 };
 
 export default function SnakePage() {
   const { t } = useLanguage();
   const [snake, setSnake] = React.useState<GridPoint[]>(() => createInitialSnake());
   const snakeRef = React.useRef<GridPoint[]>(snake);
-  const [food, setFood] = React.useState<GridPoint>(() => createInitialFoodPellet(createInitialSnake()));
+  const [food, setFood] = React.useState<GridPoint>(() =>
+    createInitialFoodPellet(
+      createInitialSnake(),
+      SNAKE_MODE_PRESETS[DEFAULT_MODE_INDEX].minWallDistance,
+    ),
+  );
   const foodRef = React.useRef<GridPoint>(food);
   const [score, setScore] = React.useState(0);
   const directionRef = React.useRef<Direction>(INITIAL_DIRECTION);
   const queuedDirectionRef = React.useRef<Direction | null>(null);
   const [status, setStatus] = React.useState<GameStatus>("READY");
+  const [modeIndex, setModeIndex] = React.useState(DEFAULT_MODE_INDEX);
   const playAreaRef = React.useRef<HTMLElement>(null);
+  const modePreset = SNAKE_MODE_PRESETS[modeIndex] ?? SNAKE_MODE_PRESETS[DEFAULT_MODE_INDEX];
 
   const resetGame = React.useCallback((nextStatus: Exclude<GameStatus, "GAME_OVER">) => {
     const nextSnake = createInitialSnake();
-    const nextFood = createFoodPellet(nextSnake);
+    const nextFood = createFoodPellet(nextSnake, modePreset.minWallDistance);
 
     snakeRef.current = nextSnake;
     foodRef.current = nextFood;
@@ -127,7 +210,7 @@ export default function SnakePage() {
     setFood(nextFood);
     setScore(0);
     setStatus(nextStatus);
-  }, []);
+  }, [modePreset.minWallDistance]);
 
   const resetRun = React.useCallback(() => {
     resetGame("READY");
@@ -144,6 +227,16 @@ export default function SnakePage() {
   React.useEffect(() => {
     foodRef.current = food;
   }, [food]);
+
+  React.useEffect(() => {
+    if (isInsideWallDistanceGate(foodRef.current, modePreset.minWallDistance)) {
+      return;
+    }
+
+    const nextFood = createFoodPellet(snakeRef.current, modePreset.minWallDistance);
+    foodRef.current = nextFood;
+    setFood(nextFood);
+  }, [modePreset.minWallDistance]);
 
   React.useEffect(() => {
     if (status !== "GAME_OVER") {
@@ -171,6 +264,16 @@ export default function SnakePage() {
     },
     [status],
   );
+
+  const handleModeChange = React.useCallback((values: number[]) => {
+    const nextValue = values[0];
+    if (typeof nextValue !== "number") {
+      return;
+    }
+
+    const nextIndex = clampPresetIndex(nextValue, SNAKE_MODE_PRESETS.length - 1);
+    setModeIndex(nextIndex);
+  }, []);
 
   const focusPlayArea = React.useCallback(() => {
     const playArea = playAreaRef.current;
@@ -274,17 +377,37 @@ export default function SnakePage() {
       setSnake(nextSnake);
 
       if (ateFood) {
-        const nextFood = createFoodPellet(nextSnake);
+        const nextFood = createFoodPellet(nextSnake, modePreset.minWallDistance);
         foodRef.current = nextFood;
         setFood(nextFood);
         setScore((previousScore) => previousScore + SCORE_PER_PELLET);
       }
-    }, TICK_INTERVAL_MS);
+    }, modePreset.tickIntervalMs);
 
     return () => {
       window.clearInterval(tickId);
     };
-  }, [status]);
+  }, [modePreset.minWallDistance, modePreset.tickIntervalMs, status]);
+
+  React.useEffect(() => {
+    if (status !== "RUNNING" || modePreset.pelletLifetimeMs == null) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      const nextFood = createFoodPellet(
+        snakeRef.current,
+        modePreset.minWallDistance,
+        foodRef.current,
+      );
+      foodRef.current = nextFood;
+      setFood(nextFood);
+    }, modePreset.pelletLifetimeMs);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [food, modePreset.minWallDistance, modePreset.pelletLifetimeMs, status]);
 
   const centerControlLabel =
     status === "RUNNING" ? t("pause") : status === "PAUSED" ? t("play") : t("start");
@@ -316,6 +439,32 @@ export default function SnakePage() {
             <li>* {t("snakeInstructionAvoid")}</li>
             <li>* {t("snakeInstructionCrash")}</li>
           </ul>
+        </CardContent>
+      </Card>
+
+      <Card className="mx-auto mt-4 w-full max-w-3xl">
+        <CardHeader className="space-y-1 pb-2">
+          <CardTitle className="text-2xl text-[var(--arcade-dot)] sm:text-3xl">
+            DIFFICULTY SETTING
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-2">
+          <div className="arcade-snake-settings arcade-ui">
+            <div className="arcade-snake-slider-group">
+              <p className="arcade-snake-slider-title text-[11px] text-[var(--arcade-dot)]">
+                {t("snakeSettingLabel")}: {t(modePreset.labelKey)}
+              </p>
+              <Slider
+                className="arcade-snake-slider"
+                min={0}
+                max={SNAKE_MODE_PRESETS.length - 1}
+                step={1}
+                value={[modeIndex]}
+                onValueChange={handleModeChange}
+                aria-label={t("snakeSettingLabel")}
+              />
+            </div>
+          </div>
         </CardContent>
       </Card>
 

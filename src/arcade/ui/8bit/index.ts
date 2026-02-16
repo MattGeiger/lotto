@@ -14,3 +14,5 @@ export type { ArcadeCardProps } from "@/arcade/ui/8bit/card";
 
 export { Badge, arcadeBadgeVariants } from "@/arcade/ui/8bit/badge";
 export type { ArcadeBadgeProps } from "@/arcade/ui/8bit/badge";
+
+export { Slider } from "@/arcade/ui/8bit/slider";

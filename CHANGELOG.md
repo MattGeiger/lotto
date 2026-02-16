@@ -71,6 +71,13 @@
 - Fixed Arcade RTL language switcher dropdown anchoring so Arabic/Farsi menus open inward (`left-0`) instead of off-screen when the control sits on the left edge.
 - Added an Arcade-only retro light/dark mode toggle in the top bar (no system/hi-viz option), with homepage-style placement: language on upper-left and theme toggle on upper-right.
 - Added a WCAG-focused Arcade light-theme pass by remapping light-mode accent tokens and action/contrast tokens (`--arcade-action-*`, `--arcade-ghost-contrast`) so text + control states meet AA contrast targets.
+- Fixed Arcade light-mode game-tile card contrast by replacing the hard-coded dark tile fill with a theme token (`--arcade-menu-card-bg`) and assigning an AA-compliant light tile surface for card text.
+- Added Arcade Snake settings slider support using the `@8bitcn/slider` component in `/arcade/snake`.
+- Consolidated Snake speed/difficulty into one six-step mode slider (`VERY EASY`, `EASY`, `NORMAL`, `HARD`, `VERY HARD`, `NIGHTMARE`).
+- Mapped mode stops to integrated behavior profiles (tick speed + wall-distance spawn gating), including Nightmare pellet timeout respawn after 5 seconds when uneaten.
+- Removed decorative border framing around slider controls after moving to the single-slider design.
+- Added localized Snake mode-setting labels across all supported display languages in `src/contexts/language-context.tsx`.
+- Updated `docs/GAME.md`, `docs/ISSUES.md`, and `docs/V2.0_PLANNED_FEATURES.md` to document the unified mode slider and Nightmare behavior.
 
 ## [1.4.3] - 2026-02-13
 ### Changed
