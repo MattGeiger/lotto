@@ -23,3 +23,4 @@ Original prompt: Let's address a separate issue. I've got Codex working to final
 - 2026-02-16: Removed decorative slider border framing to match the unified-slider design.
 - 2026-02-16: Verified `npm test` and `npm run build` pass; `npm run lint` still reports only pre-existing warnings.
 - 2026-02-16: Removed the preset text row beneath the slider so only the live setting label is shown.
+- 2026-02-16: Tuned slider color tokens for WCAG non-text contrast (dark mode issue fix) and verified contrast ratios for panel/track/range/thumb combinations.

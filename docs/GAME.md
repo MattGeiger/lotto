@@ -121,6 +121,7 @@ public/
 - Completed: Snake readouts moved outside the board (above/below) to keep gameplay cells unobstructed.
 - Completed: Arcade `NOW SERVING` banner uses a retro alert pulse on ticket changes to improve in-game call visibility.
 - Completed: Snake accessibility controls now use one Arcade slider with six presets (`VERY EASY`, `EASY`, `NORMAL`, `HARD`, `VERY HARD`, `NIGHTMARE`) that combine speed + spawn rules, including Nightmare pellet expiry/respawn.
+- Completed: Arcade slider contrast tokens were tuned for WCAG non-text contrast in dark mode (and parity checked in light mode) for track, range, and thumb visibility.
 - Not yet completed: Snake gameplay engine modules under `src/arcade/game/snake/*`.
 
 ## Accessibility Issue: Snake Reflex Controls (Implemented - 2026-02-16)
@@ -265,4 +266,4 @@ public/
 
 Document Version: 3.5  
 Last Updated: 2026-02-16  
-Revision: Consolidated Snake settings into one six-level slider, added Nightmare pellet expiry behavior, and updated accessibility-control documentation.
+Revision: Consolidated Snake settings into one six-level slider, added Nightmare pellet expiry behavior, and tuned slider contrast tokens for WCAG-compliant visibility.

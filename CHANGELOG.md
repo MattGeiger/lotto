@@ -76,6 +76,7 @@
 - Consolidated Snake speed/difficulty into one six-step mode slider (`VERY EASY`, `EASY`, `NORMAL`, `HARD`, `VERY HARD`, `NIGHTMARE`).
 - Mapped mode stops to integrated behavior profiles (tick speed + wall-distance spawn gating), including Nightmare pellet timeout respawn after 5 seconds when uneaten.
 - Removed decorative border framing around slider controls after moving to the single-slider design.
+- Improved Arcade Snake slider contrast tokens for WCAG non-text contrast in dark mode (with light-mode parity checks), increasing visibility of the track/range/thumb against card backgrounds.
 - Added localized Snake mode-setting labels across all supported display languages in `src/contexts/language-context.tsx`.
 - Updated `docs/GAME.md`, `docs/ISSUES.md`, and `docs/V2.0_PLANNED_FEATURES.md` to document the unified mode slider and Nightmare behavior.
 
