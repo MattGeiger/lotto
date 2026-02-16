@@ -308,11 +308,11 @@ export default function SnakePage() {
         </CardHeader>
         <CardContent>
           <ul className="arcade-ui list-none space-y-2 text-xs text-[var(--arcade-text)]/90 sm:text-sm">
-            <li>* USE ARROWS OR D-PAD TO MOVE SNAKE</li>
-            <li>* AVOID WALLS AND YOUR OWN BODY</li>
-            <li>* EAT FOOD PELLETS TO GROW AND INCREASE SCORE</li>
-            <li>* SNAKE STARTS AT LENGTH 3 AND GROWS BY 1 PER PELLET</li>
-            <li>* COLLISION ENDS THE RUN</li>
+            <li>* USE ARROWS TO MOVE</li>
+            <li>* EAT PELLETS TO GROW</li>
+            <li>* AVOID WALLS AND YOUR BODY</li>
+            <li>* EAT PELLETS TO SCORE POINTS</li>
+            <li>* CRASHING ENDS THE GAME</li>
           </ul>
         </CardContent>
       </Card>
