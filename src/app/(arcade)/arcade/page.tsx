@@ -44,8 +44,7 @@ export default function ArcadeHomePage() {
         <CardContent>
           <div className="grid gap-5 md:grid-cols-2">
             {launchGames.map((game) => {
-              const isActive = game.id === "snake";
-              const isComingSoon = game.id === "more";
+              const isComingSoon = Boolean(game.comingSoon);
               return (
                 <article
                   key={game.id}
@@ -65,7 +64,7 @@ export default function ArcadeHomePage() {
                         </h2>
                       </div>
 
-                      {isActive ? (
+                      {!isComingSoon ? (
                         <Button asChild variant="default" size="lg" className="w-full justify-center">
                           <Link href="/arcade/snake">PLAY SNAKE</Link>
                         </Button>

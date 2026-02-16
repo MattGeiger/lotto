@@ -152,20 +152,22 @@ export function NowServingBanner() {
   const nowServingText = currentlyServing === null ? "PENDING" : `#${currentlyServing}`;
 
   return (
-    <header
-      className={`arcade-banner sticky top-0 z-50${isServingAlert ? " arcade-banner-alert" : ""}`}
-    >
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-center gap-3 px-4 py-3 sm:px-6">
+    <header className="arcade-banner sticky top-0 z-50">
+      <div className="arcade-banner-row mx-auto flex w-full max-w-6xl items-center justify-center gap-3 px-4 py-3 sm:px-6">
         <span className="arcade-retro text-[10px] text-[var(--arcade-dot)] sm:text-xs">
           Now Serving
         </span>
-        <span
-          className={`arcade-retro arcade-serving-value text-lg sm:text-2xl${
-            isServingAlert ? " arcade-serving-value-alert" : ""
-          }`}
-          aria-live="polite"
-        >
-          {nowServingText}
+        <span className="arcade-serving-value-shell">
+          <span
+            className={`arcade-retro arcade-serving-value text-lg sm:text-2xl${
+              isServingAlert ? " arcade-serving-value-alert" : ""
+            }`}
+            aria-live="polite"
+          >
+            <span className={isServingAlert ? "arcade-serving-value-pulse" : ""}>
+              {nowServingText}
+            </span>
+          </span>
         </span>
       </div>
     </header>

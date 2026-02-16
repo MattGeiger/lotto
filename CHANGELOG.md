@@ -59,6 +59,9 @@
 - Increased short-screen Snake board sizing slightly (within the adaptive `dvh`/`vw` clamp) so gameplay area is larger while preserving full-content fit on smaller devices.
 - Updated the `/arcade` menu Snake CTA to use the primary filled Arcade button style and explicit `SNAKE` label, with a direct link target of `/arcade/snake`.
 - Updated the `/arcade` Snake CTA label from `SNAKE` to `PLAY SNAKE`.
+- Reworked Arcade `NOW SERVING` number-change animation to a three-phase sequence in-banner: zoom to `2x` with `+20px` drop, 10 back-and-forth `±10deg` shakes, then return to original scale/position without obstructing gameplay.
+- Tuned Arcade `NOW SERVING` number-change animation by keeping the zoom/drop sequence and replacing the shake phase with the prior retro pulse/blink treatment for improved readability.
+- Simplified `/arcade` menu game-card CTA rendering so any non-`comingSoon` game reliably renders its play button (ensuring `PLAY SNAKE` remains visible for the Snake card).
 
 ## [1.4.3] - 2026-02-13
 ### Changed
