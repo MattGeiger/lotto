@@ -25,3 +25,4 @@ Original prompt: Let's address a separate issue. I've got Codex working to final
 - 2026-02-16: Removed the preset text row beneath the slider so only the live setting label is shown.
 - 2026-02-16: Tuned slider color tokens for WCAG non-text contrast (dark mode issue fix) and verified contrast ratios for panel/track/range/thumb combinations.
 - 2026-02-16: Removed hard text-shadow styling from small Snake UI text (mode label + score/length readout) to improve readability.
+- 2026-02-16: Updated `/arcade` `PLAY SNAKE` button text rendering to wrap by words for multilingual labels.

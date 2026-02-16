@@ -109,6 +109,7 @@ public/
 ## Current Build State (2026-02-16)
 - Completed: isolated Arcade routes and layout (`/arcade`, `/arcade/snake`) with persistent `NOW SERVING` banner.
 - Completed: Arcade-scoped 8-bit visual system and Press Start 2P font.
+- Completed: Arcade home `PLAY SNAKE` CTA supports per-word wrapping for multi-word translations, avoiding overflow while preserving centered button layout.
 - Completed: Snake movement shell with stable square board container and on-screen D-pad controls.
 - Completed: D-pad chevron icon assets (Up/Down/Left/Right) with Arcade-yellow rendering.
 - Completed: `PLAY NOW` smooth-scroll/focus behavior to move users directly to the play area.
@@ -267,4 +268,4 @@ public/
 
 Document Version: 3.5  
 Last Updated: 2026-02-16  
-Revision: Consolidated Snake settings into one six-level slider, added Nightmare pellet expiry behavior, tuned slider contrast tokens for WCAG-compliant visibility, and removed heavy shadows from small Snake labels/readouts.
+Revision: Consolidated Snake settings into one six-level slider, added Nightmare pellet expiry behavior, tuned slider contrast tokens for WCAG-compliant visibility, removed heavy shadows from small Snake labels/readouts, and added per-word wrapped `PLAY SNAKE` CTA text for multilingual fit.
