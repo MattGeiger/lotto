@@ -66,8 +66,8 @@ export default function ArcadeHomePage() {
                       </div>
 
                       {isActive ? (
-                        <Button asChild size="lg" className="w-full justify-center">
-                          <Link href={game.href}>Play Snake</Link>
+                        <Button asChild variant="default" size="lg" className="w-full justify-center">
+                          <Link href="/arcade/snake">PLAY SNAKE</Link>
                         </Button>
                       ) : null}
                     </>

@@ -106,6 +106,90 @@ public/
 - Verify frame stability on lower-powered emulated devices.
 - Verify accessibility basics (focus order, contrast, reduced motion handling).
 
+## Current Build State (2026-02-16)
+- Completed: isolated Arcade routes and layout (`/arcade`, `/arcade/snake`) with persistent `NOW SERVING` banner.
+- Completed: Arcade-scoped 8-bit visual system and Press Start 2P font.
+- Completed: Snake movement shell with stable square board container and on-screen D-pad controls.
+- Completed: D-pad chevron icon assets (Up/Down/Left/Right) with Arcade-yellow rendering.
+- Completed: `PLAY NOW` smooth-scroll/focus behavior to move users directly to the play area.
+- Completed: Arcade banner polling migrated to adaptive interval strategy used by Display.
+- Completed: Snake movement loop starts with a 3-segment body and now grows by 1 per pellet.
+- Completed: Wall and self-collision detection with game-over state and restart controls.
+- Completed: Food pellet spawning on unoccupied cells plus score increments on pellet collection.
+- Completed: Growth-on-food behavior with collision-safe body checks during growth ticks.
+- Completed: Pause/resume controls preserve active game state (`PAUSE` -> `START`) without resetting board progress.
+- Completed: Snake readouts moved outside the board (above/below) to keep gameplay cells unobstructed.
+- Completed: Arcade `NOW SERVING` banner uses a retro alert pulse on ticket changes to improve in-game call visibility.
+- Not yet completed: Snake gameplay engine modules under `src/arcade/game/snake/*`.
+
+## Detailed Implementation Checklist (Snake Logic)
+
+### 1) Game Engine Foundation
+- [ ] Create `src/arcade/game/snake/types.ts` with `Direction`, `Point`, `SnakeSegment`, `GameStatus`, and `GameState`.
+- [ ] Create `src/arcade/game/snake/constants.ts` with board size (`20x20`), initial snake, tick rate, and score constants.
+- [ ] Create `src/arcade/game/snake/engine.ts` with pure functions:
+- [ ] `createInitialState()`
+- [ ] `queueDirection()`
+- [ ] `advanceTick()`
+- [ ] `spawnFood()`
+- [ ] `isCollision()`
+- [ ] Keep engine API UI-agnostic (no React or DOM access inside engine functions).
+
+### 2) Tick Loop and Timing
+- [ ] Add a fixed-step loop in the Snake page or a dedicated hook (`useSnakeLoop`) using `requestAnimationFrame` + accumulator.
+- [ ] Keep game speed deterministic on slow devices by processing discrete ticks.
+- [ ] Ensure loop starts only when game status is `running`.
+- [ ] Ensure loop fully stops on `paused` and `game-over`.
+
+### 3) Input Rules (Keyboard + D-pad)
+- [x] Route keyboard and D-pad input through one direction queue.
+- [x] Prevent immediate 180-degree reversal (for example `LEFT` cannot flip directly to `RIGHT` in same tick).
+- [x] Apply at most one turn per tick for deterministic behavior.
+- [x] Keep on-screen controls active while preserving keyboard behavior.
+
+### 4) Movement and Collision
+- [x] Move snake head by one cell each tick.
+- [x] Shift body segments correctly after head movement.
+- [x] Detect wall collision and self-collision.
+- [x] Transition to `game-over` state on collision.
+
+### 5) Food, Growth, and Score
+- [x] Spawn food only on unoccupied cells.
+- [x] On food consumption: grow snake by one segment.
+- [x] On food consumption: increment score.
+- [x] Immediately respawn food after consumption.
+- [ ] Optional: track local high score in Arcade-specific `localStorage` key.
+
+### 6) UI Wiring (From Shell to Playable)
+- [x] Replace board placeholder overlay with actual rendered snake/food cells.
+- [x] Add score HUD near board (Arcade-scoped only).
+- [x] Make `PLAY NOW` initialize/reset game state and begin loop.
+- [x] Add `RESTART` action for `game-over`.
+- [x] Keep board rendering pixel-crisp and mobile-safe within current container constraints.
+
+### 7) Lifecycle and Stability
+- [ ] Pause game loop when tab becomes hidden; resume safely when visible.
+- [ ] Reset transient input queue on pause/resume transitions.
+- [x] Clean up all timers/animation frames/listeners on unmount.
+- [x] Keep `NOW SERVING` banner polling independent from gameplay loop.
+
+### 8) Testing and Validation
+- [ ] Add unit tests under `tests/arcade/snake-engine.test.ts` for:
+- [ ] movement updates
+- [ ] reversal prevention
+- [ ] wall/self collision detection
+- [ ] food spawn exclusion of snake cells
+- [ ] score and growth increments
+- [ ] Add lightweight UI test(s) for start/restart state transitions.
+- [ ] Validate on simulated mobile viewport before any production deployment.
+
+### 9) Definition of Done (Snake MVP)
+- [ ] Snake is fully playable via keyboard and on-screen controls.
+- [ ] Score updates correctly and game-over/restart flows are complete.
+- [ ] Mobile simulation validates playability and control reliability.
+- [ ] No coupling introduced to raffle gameplay/state APIs.
+- [ ] `CHANGELOG.md`, `docs/GAME.md`, and `docs/V2.0_PLANNED_FEATURES.md` reflect shipped behavior and remaining scope.
+
 ## Implementation Phases
 
 ### Phase 0 - Separation Scaffolding
@@ -142,6 +226,6 @@ public/
 
 ---
 
-Document Version: 3.0  
-Last Updated: 2026-02-14  
-Revision: Replaced display-integration strategy with explicit separation-first Arcade architecture and pixel-art direction.
+Document Version: 3.3  
+Last Updated: 2026-02-16  
+Revision: Added pause/resume state, moved Snake readouts outside the board, and documented the retro-styled `NOW SERVING` change alert behavior.
