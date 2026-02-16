@@ -6,11 +6,25 @@
   --arcade-neon: #ff6de8;
   --arcade-snake-head: #ff9a3c;
   --arcade-dot: #ffd75c;
+  --arcade-snake-body: #ffd75c;
   --arcade-ghost: #86f0ff;
   --arcade-pellet: #74f84a;
   --arcade-panel: rgba(10, 16, 30, 0.94);
   --arcade-panel-border: #3b7cff;
   --arcade-text: #f3f7ff;
+  --arcade-action-bg: #ffd75c;
+  --arcade-action-hover: #ff6de8;
+  --arcade-action-text: #000000;
+  --arcade-ghost-contrast: #000000;
+  --arcade-type-bold-shadow:
+    0.45px 0 0 currentColor,
+    -0.45px 0 0 currentColor,
+    0 0.45px 0 currentColor,
+    0 -0.45px 0 currentColor,
+    0.45px 0.45px 0 currentColor,
+    -0.45px 0.45px 0 currentColor,
+    0.45px -0.45px 0 currentColor,
+    -0.45px -0.45px 0 currentColor;
   background:
     radial-gradient(circle at 18% -4%, rgba(255, 109, 232, 0.2), transparent 34%),
     radial-gradient(circle at 82% -8%, rgba(59, 124, 255, 0.22), transparent 38%),
@@ -20,15 +34,55 @@
   min-height: 100vh;
 }
 
+html.light .arcade-scope {
+  --arcade-bg: #edf3ff;
+  --arcade-bg-alt: #d7e7ff;
+  --arcade-wall: #315dbb;
+  --arcade-neon: #8a1b5d;
+  --arcade-snake-head: #f0852a;
+  --arcade-dot: #7a4a00;
+  --arcade-snake-body: #ffb703;
+  --arcade-ghost: #0f4f9a;
+  --arcade-pellet: #3ecf52;
+  --arcade-panel: rgba(248, 252, 255, 0.96);
+  --arcade-panel-border: #315dbb;
+  --arcade-text: #0b1d3b;
+  --arcade-action-bg: #ffd75c;
+  --arcade-action-hover: #ff8ed6;
+  --arcade-action-text: #000000;
+  --arcade-ghost-contrast: #ffffff;
+  background:
+    radial-gradient(circle at 14% -6%, rgba(224, 74, 162, 0.18), transparent 36%),
+    radial-gradient(circle at 88% -10%, rgba(49, 93, 187, 0.2), transparent 40%),
+    linear-gradient(180deg, var(--arcade-bg), var(--arcade-bg-alt));
+}
+
 .arcade-retro {
   font-family: var(--font-arcade-display), ui-monospace, SFMono-Regular, Menlo, monospace;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.64em;
   text-transform: uppercase;
+  text-shadow: var(--arcade-type-bold-shadow);
 }
 
 .arcade-ui {
   font-family: var(--font-arcade-ui), ui-monospace, SFMono-Regular, Menlo, monospace;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.32em;
+  text-shadow: var(--arcade-type-bold-shadow);
+}
+
+/* ── RTL support for Arabic & Farsi ── */
+
+.arcade-scope[data-arcade-lang="ar"],
+.arcade-scope[data-arcade-lang="fa"] {
+  direction: rtl;
+}
+
+/* Game canvas and controls stay LTR regardless of language */
+.arcade-snake-board,
+.arcade-snake-pad,
+.arcade-snake-control-dock,
+.arcade-snake-readout {
+  direction: ltr;
 }
 
 .arcade-pixel-grid {
@@ -38,6 +92,13 @@
     linear-gradient(0deg, rgba(59, 124, 255, 0.15) 1px, transparent 1px);
   background-size: 18px 18px, 22px 22px, 22px 22px;
   background-position: 0 0, center, center;
+}
+
+html.light .arcade-scope .arcade-pixel-grid {
+  background-image:
+    radial-gradient(circle, rgba(49, 93, 187, 0.18) 0.11rem, transparent 0.13rem),
+    linear-gradient(90deg, rgba(49, 93, 187, 0.14) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(49, 93, 187, 0.12) 1px, transparent 1px);
 }
 
 .arcade-snake-shell {
@@ -61,7 +122,13 @@
   padding: 0.38rem 0.48rem;
   background: linear-gradient(180deg, rgba(4, 7, 15, 0.88), rgba(4, 7, 15, 0.45));
   border: 1px solid rgba(59, 124, 255, 0.45);
-  text-shadow: 0 0 8px rgba(59, 124, 255, 0.4);
+  text-shadow: var(--arcade-type-bold-shadow), 0 0 8px rgba(59, 124, 255, 0.4);
+}
+
+html.light .arcade-scope .arcade-snake-readout {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(232, 241, 255, 0.93));
+  border: 1px solid rgba(49, 93, 187, 0.5);
+  text-shadow: var(--arcade-type-bold-shadow), 0 0 6px rgba(49, 93, 187, 0.24);
 }
 
 .arcade-snake-readout-metrics {
@@ -99,6 +166,20 @@
     0 0 0 2px rgba(255, 109, 232, 0.3);
 }
 
+html.light .arcade-scope .arcade-snake-board {
+  background:
+    linear-gradient(180deg, rgba(242, 247, 255, 0.98), rgba(222, 234, 255, 0.96)),
+    linear-gradient(
+      90deg,
+      rgba(49, 93, 187, 0.12) 0 2px,
+      transparent 2px calc(100% - 2px),
+      rgba(49, 93, 187, 0.12) calc(100% - 2px)
+    );
+  box-shadow:
+    inset 0 0 0 2px rgba(49, 93, 187, 0.2),
+    0 0 0 2px rgba(12, 24, 54, 0.12);
+}
+
 .arcade-snake-board::before {
   content: "";
   position: absolute;
@@ -109,6 +190,12 @@
   background-size: calc(100% / 20) calc(100% / 20);
   z-index: 1;
   pointer-events: none;
+}
+
+html.light .arcade-scope .arcade-snake-board::before {
+  background-image:
+    linear-gradient(90deg, rgba(49, 93, 187, 0.24) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(49, 93, 187, 0.2) 1px, transparent 1px);
 }
 
 .arcade-snake-track {
@@ -128,15 +215,23 @@
     top 160ms steps(1, end);
 }
 
+html.light .arcade-scope .arcade-snake-pellet {
+  box-shadow: inset 0 0 0 1px rgba(11, 29, 59, 0.4);
+}
+
 .arcade-snake-segment {
   position: absolute;
   width: calc(100% / 20);
   height: calc(100% / 20);
-  background: var(--arcade-dot);
+  background: var(--arcade-snake-body);
   box-shadow: inset 0 0 0 1px rgba(4, 7, 15, 0.45);
   transition:
     left 160ms steps(1, end),
     top 160ms steps(1, end);
+}
+
+html.light .arcade-scope .arcade-snake-segment {
+  box-shadow: inset 0 0 0 1px rgba(11, 29, 59, 0.4);
 }
 
 .arcade-snake-segment-head {
@@ -155,7 +250,12 @@
   background: rgba(4, 7, 15, 0.62);
   cursor: pointer;
   z-index: 4;
-  text-shadow: 0 0 8px rgba(255, 109, 232, 0.4);
+  text-shadow: var(--arcade-type-bold-shadow), 0 0 8px rgba(255, 109, 232, 0.4);
+}
+
+html.light .arcade-scope .arcade-snake-overlay {
+  background: rgba(235, 244, 255, 0.78);
+  text-shadow: var(--arcade-type-bold-shadow), 0 0 7px rgba(224, 74, 162, 0.22);
 }
 
 .arcade-snake-control-dock {
@@ -172,6 +272,13 @@
   border-top: 2px solid rgba(59, 124, 255, 0.5);
 }
 
+html.light .arcade-scope .arcade-snake-control-dock {
+  background:
+    linear-gradient(180deg, rgba(241, 248, 255, 0.38), rgba(220, 234, 255, 0.96) 30%),
+    linear-gradient(90deg, rgba(49, 93, 187, 0.1), rgba(224, 74, 162, 0.1));
+  border-top: 2px solid rgba(49, 93, 187, 0.42);
+}
+
 .arcade-snake-pad {
   width: min(100%, 340px);
   margin: 0 auto;
@@ -185,7 +292,7 @@
   height: clamp(3rem, 6.4dvh, 3.5rem);
   width: 100%;
   margin: 0;
-  font-size: 0.6rem;
+  font-size: 0.9rem;
   line-height: 1;
 }
 
@@ -199,8 +306,17 @@
     0 6px 0 0 rgba(0, 0, 0, 0.35);
 }
 
+html.light .arcade-scope .arcade-banner {
+  background:
+    linear-gradient(90deg, rgba(232, 241, 255, 0.98), rgba(216, 231, 255, 0.98)),
+    linear-gradient(90deg, rgba(49, 93, 187, 0.18), rgba(224, 74, 162, 0.16));
+  box-shadow:
+    0 1px 0 0 rgba(49, 93, 187, 0.4),
+    0 6px 0 0 rgba(15, 32, 66, 0.18);
+}
+
 .arcade-banner-row {
-  min-height: 3.4rem;
+  min-height: 4.4rem;
 }
 
 .arcade-serving-value-shell {
@@ -223,6 +339,13 @@
   box-shadow: inset 0 0 0 1px rgba(255, 215, 92, 0.2);
   transform-origin: center top;
   will-change: transform;
+}
+
+html.light .arcade-scope .arcade-serving-value {
+  border: 2px solid rgba(49, 93, 187, 0.56);
+  background: rgba(255, 255, 255, 0.74);
+  color: #246fbd;
+  box-shadow: inset 0 0 0 1px rgba(49, 93, 187, 0.22);
 }
 
 .arcade-serving-value-alert {
@@ -322,7 +445,7 @@
 
 @media (min-width: 640px) {
   .arcade-banner-row {
-    min-height: 3.8rem;
+    min-height: 4.8rem;
   }
 
   .arcade-snake-control-dock {

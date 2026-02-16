@@ -10,21 +10,22 @@ const arcadeButtonVariants = cva("", {
       retro: "arcade-retro",
     },
     variant: {
-      default: "bg-[var(--arcade-dot)] text-black hover:bg-[var(--arcade-neon)] hover:text-black",
+      default:
+        "bg-[var(--arcade-action-bg)] text-[var(--arcade-action-text)] hover:bg-[var(--arcade-action-hover)] hover:text-[var(--arcade-action-text)]",
       destructive:
         "bg-[color:#ff6b6b] text-black hover:bg-[color:#ff9292] hover:text-black",
       outline:
         "bg-transparent text-[var(--arcade-dot)] ring-2 ring-[var(--arcade-wall)] hover:bg-[var(--arcade-wall)]/20",
       secondary:
-        "bg-[var(--arcade-ghost)] text-black hover:bg-[var(--arcade-dot)] hover:text-black",
+        "bg-[var(--arcade-ghost)] text-[var(--arcade-ghost-contrast)] hover:bg-[var(--arcade-action-bg)] hover:text-[var(--arcade-action-text)]",
       ghost:
         "bg-transparent text-[var(--arcade-text)] hover:bg-[var(--arcade-wall)]/25 hover:text-[var(--arcade-text)]",
       link: "bg-transparent text-[var(--arcade-dot)] underline underline-offset-4",
     },
     size: {
-      default: "h-11 px-4 py-2",
-      sm: "h-9 px-3 py-1.5 text-[10px]",
-      lg: "h-12 px-6 py-2.5",
+      default: "h-11 px-4 py-2 text-xl",
+      sm: "h-9 px-3 py-1.5 text-sm",
+      lg: "h-12 px-6 py-2.5 text-2xl",
       icon: "size-11 p-0",
     },
   },

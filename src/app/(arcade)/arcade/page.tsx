@@ -1,27 +1,32 @@
+"use client";
+
 import Link from "next/link";
 
 import { ChevronArrowLeftIcon } from "@/arcade/components/icons/chevron-arrow-left-icon";
 import { Button, Card, CardContent, CardHeader, CardTitle } from "@/arcade/ui/8bit";
-
-const launchGames = [
-  {
-    id: "snake",
-    title: "Snake",
-    href: "/arcade/snake",
-  },
-  {
-    id: "more",
-    title: "More Games Coming Soon",
-    comingSoon: true,
-  },
-];
+import { useLanguage } from "@/contexts/language-context";
 
 export default function ArcadeHomePage() {
+  const { t } = useLanguage();
+
+  const launchGames = [
+    {
+      id: "snake",
+      title: t("snakeTitle"),
+      href: "/arcade/snake",
+    },
+    {
+      id: "more",
+      title: t("moreGamesComing"),
+      comingSoon: true,
+    },
+  ];
+
   return (
     <div className="arcade-pixel-grid mx-auto min-h-[calc(100vh-4.5rem)] max-w-6xl px-4 pb-12 pt-8 sm:px-6 sm:pt-10">
       <section className="mb-4 text-center">
-        <h1 className="arcade-retro text-[1.35rem] leading-tight text-[var(--arcade-dot)] sm:text-[2rem]">
-          Arcade Games
+        <h1 className="arcade-retro text-[2rem] leading-tight text-[var(--arcade-dot)] sm:text-[3rem]">
+          {t("arcadeGames")}
         </h1>
       </section>
 
@@ -29,15 +34,15 @@ export default function ArcadeHomePage() {
         <Button asChild size="sm" className="px-3">
           <Link href="/" className="inline-flex items-center gap-2">
             <ChevronArrowLeftIcon className="pixelated inline-block h-3.5 w-auto shrink-0" />
-            <span>BACK</span>
+            <span>{t("back")}</span>
           </Link>
         </Button>
       </div>
 
       <Card className="mx-auto w-full max-w-5xl">
         <CardHeader className="pb-4">
-          <CardTitle className="text-lg text-[var(--arcade-ghost)] sm:text-xl">
-            Select Game
+          <CardTitle className="text-3xl text-[var(--arcade-ghost)] sm:text-4xl">
+            {t("selectGame")}
           </CardTitle>
         </CardHeader>
 
@@ -52,21 +57,21 @@ export default function ArcadeHomePage() {
                 >
                   {isComingSoon ? (
                     <div className="flex h-full items-center justify-center text-center">
-                      <h2 className="arcade-retro text-center text-sm text-[var(--arcade-dot)] sm:text-base">
+                      <h2 className="arcade-retro text-center text-xl text-[var(--arcade-dot)] sm:text-2xl">
                         {game.title}
                       </h2>
                     </div>
                   ) : (
                     <>
                       <div className="space-y-3">
-                        <h2 className="arcade-retro text-center text-sm text-[var(--arcade-dot)] sm:text-base">
+                        <h2 className="arcade-retro text-center text-xl text-[var(--arcade-dot)] sm:text-2xl">
                           {game.title}
                         </h2>
                       </div>
 
                       {!isComingSoon ? (
                         <Button asChild variant="default" size="lg" className="w-full justify-center">
-                          <Link href="/arcade/snake">PLAY SNAKE</Link>
+                          <Link href="/arcade/snake">{t("playSnake")}</Link>
                         </Button>
                       ) : null}
                     </>

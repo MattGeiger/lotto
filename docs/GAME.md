@@ -122,6 +122,38 @@ public/
 - Completed: Arcade `NOW SERVING` banner uses a retro alert pulse on ticket changes to improve in-game call visibility.
 - Not yet completed: Snake gameplay engine modules under `src/arcade/game/snake/*`.
 
+## Accessibility Issue: Snake Reflex Controls (Pre-Implementation Plan - 2026-02-16)
+- Problem statement: current Snake pace can be too demanding for players with slower reflexes, and pellet placement near walls can make early rounds punishing.
+- Scope: add player-adjustable speed and difficulty controls without coupling Arcade gameplay to raffle features or global app theming.
+- UI requirement: install and use `@8bitcn/slider` for two discrete controls inside the Snake page.
+
+### Planned Speed Control
+- Control type: 3-stop slider, left to right:
+- `Slow` = half speed (`360ms` tick interval).
+- `Normal` = default/current speed (`180ms` tick interval).
+- `Fast` = 2x speed (`90ms` tick interval).
+- Behavior: changing speed should update gameplay pacing without resetting score, snake body, or game state.
+
+### Planned Difficulty Control
+- Control type: 3-stop slider, left to right:
+- `Easy` = food pellets spawn at least 5 grid cells from all walls.
+- `Medium` = food pellets spawn at least 3 grid cells from all walls.
+- `Hard` = food pellets can spawn anywhere on the board.
+- Spawn gating rules:
+- Apply wall-distance gating only to new pellet spawn candidates (not to existing pellet position unless respawned).
+- Keep snake-body exclusion logic intact.
+- If no valid cell remains under the selected gate (late-game edge case), degrade safely to any unoccupied cell to avoid deadlock.
+
+### Planned Implementation Touchpoints
+- `src/app/(arcade)/arcade/snake/page.tsx`:
+- Add speed and difficulty state.
+- Derive tick interval from selected speed and rerun timer effect when speed changes.
+- Route pellet spawn through difficulty-aware candidate filtering.
+- `src/arcade/styles/arcade.css`:
+- Add Arcade-scoped slider/control layout styling for mobile-safe placement.
+- `src/contexts/language-context.tsx`:
+- Add translation keys for new control labels and option values.
+
 ## Detailed Implementation Checklist (Snake Logic)
 
 ### 1) Game Engine Foundation
@@ -140,6 +172,8 @@ public/
 - [ ] Keep game speed deterministic on slow devices by processing discrete ticks.
 - [ ] Ensure loop starts only when game status is `running`.
 - [ ] Ensure loop fully stops on `paused` and `game-over`.
+- [ ] Add player-selectable speed presets (`Slow`, `Normal`, `Fast`) mapped to `360ms` / `180ms` / `90ms` ticks.
+- [ ] Apply speed changes without resetting active run state.
 
 ### 3) Input Rules (Keyboard + D-pad)
 - [x] Route keyboard and D-pad input through one direction queue.
@@ -158,6 +192,8 @@ public/
 - [x] On food consumption: grow snake by one segment.
 - [x] On food consumption: increment score.
 - [x] Immediately respawn food after consumption.
+- [ ] Add difficulty presets (`Easy`, `Medium`, `Hard`) with minimum wall-distance gates of `5`, `3`, and `0` cells.
+- [ ] Ensure difficulty-gated spawn falls back to any unoccupied cell if constrained area is exhausted.
 - [ ] Optional: track local high score in Arcade-specific `localStorage` key.
 
 ### 6) UI Wiring (From Shell to Playable)
@@ -166,6 +202,7 @@ public/
 - [x] Make `PLAY NOW` initialize/reset game state and begin loop.
 - [x] Add `RESTART` action for `game-over`.
 - [x] Keep board rendering pixel-crisp and mobile-safe within current container constraints.
+- [ ] Add Arcade-scoped slider controls for speed and difficulty with labeled left-to-right options.
 
 ### 7) Lifecycle and Stability
 - [ ] Pause game loop when tab becomes hidden; resume safely when visible.

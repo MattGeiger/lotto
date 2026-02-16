@@ -350,6 +350,53 @@ After batch sorting started, staff could still type into Start/End inputs. The U
 
 ---
 
+## Issue 13: Snake pace is too demanding for slower reflexes; pellet placement can be punishing near walls
+
+### Status
+- Planned and documented before implementation (Arcade Snake scope, 2026-02-16).
+
+### Observed
+- Some players struggle with the default Snake movement speed.
+- Pellet spawns near borders can increase early collision risk, especially for beginners or low-reflex users.
+
+### Root Cause (Current Snake Implementation)
+- Tick loop uses one fixed speed (`180ms`) with no in-game pacing control.
+- Food pellet spawning is random across all unoccupied board cells and does not consider difficulty tiers.
+
+### Implementation Plan
+1) **Add slider component**
+   - Install `@8bitcn/slider` via shadcn and wire it into the Snake route only.
+
+2) **Speed control (3-position slider)**
+   - Left to right:
+   - `Slow` = `0.5x` movement speed (`360ms` tick interval).
+   - `Normal` = `1x` default (`180ms` tick interval).
+   - `Fast` = `2x` speed (`90ms` tick interval).
+   - Speed changes should apply immediately without resetting score, snake length, or run status.
+
+3) **Difficulty control (3-position slider)**
+   - Left to right:
+   - `Easy`: pellets spawn at least 5 cells from each wall.
+   - `Medium`: pellets spawn at least 3 cells from each wall.
+   - `Hard`: pellets can spawn anywhere in bounds.
+
+4) **Spawn gating behavior**
+   - Preserve exclusion of occupied snake cells.
+   - Filter spawn candidates by selected wall-distance gate.
+   - If the gated area is exhausted, fall back to any unoccupied cell to prevent lockups.
+   - Keep deterministic initial pellet generation to avoid hydration mismatches.
+
+### Validation Plan
+- Verify slider labels and ordering are correct on desktop and mobile.
+- Confirm tick pacing changes perceptibly at each speed setting.
+- Confirm pellet spawn envelopes by difficulty:
+  - Easy never spawns within 4 cells of any wall.
+  - Medium never spawns within 2 cells of any wall.
+  - Hard allows full-grid spawn.
+- Confirm no regressions to pause/resume, restart, score increments, or collision logic.
+
+---
+
 ## Manual Test Checklist (for later implementation)
 - **Returned skip:** Mark a mid-queue ticket returned, then advance Next; verify the returned ticket is skipped. Repeat with Prev.
 - **Modal close:** Mark returned/unclaimed with successful response; modal closes immediately. Simulate a failed network response and confirm modal behavior matches the chosen approach.
@@ -357,3 +404,5 @@ After batch sorting started, staff could still type into Start/End inputs. The U
 - **Standalone display:** Repeat date test on `npm run readonly` server.
 - **Polling backoff:** Leave the display idle during open hours; confirm polling slows after 10/30/60/120 minutes without changes, and resumes quickly after a state update.
 - **Visibility pause:** Hide the display tab, confirm polling stops, and verify it refreshes immediately on return.
+- **Snake speed control:** Set Slow/Normal/Fast and verify movement cadence aligns with `360ms` / `180ms` / `90ms` expectations.
+- **Snake difficulty control:** Set Easy/Medium/Hard and verify pellet wall-distance gating behavior matches each tier.

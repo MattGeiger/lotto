@@ -10,11 +10,13 @@ const arcadeBadgeVariants = cva("", {
       retro: "arcade-retro",
     },
     variant: {
-      default: "border-[var(--arcade-dot)] bg-[var(--arcade-dot)] text-black",
+      default:
+        "border-[var(--arcade-action-bg)] bg-[var(--arcade-action-bg)] text-[var(--arcade-action-text)]",
       destructive: "border-[#ff6b6b] bg-[#ff6b6b] text-black",
       outline:
         "border-[var(--arcade-wall)] bg-transparent text-[var(--arcade-dot)]",
-      secondary: "border-[var(--arcade-ghost)] bg-[var(--arcade-ghost)] text-black",
+      secondary:
+        "border-[var(--arcade-ghost)] bg-[var(--arcade-ghost)] text-[var(--arcade-ghost-contrast)]",
     },
   },
   defaultVariants: {

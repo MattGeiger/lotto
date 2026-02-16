@@ -10,6 +10,7 @@ import {
   ChevronArrowUpIcon,
 } from "@/arcade/components/icons/chevron-arrow-left-icon";
 import { Button, Card, CardContent, CardHeader, CardTitle } from "@/arcade/ui/8bit";
+import { useLanguage } from "@/contexts/language-context";
 
 type Direction = "UP" | "DOWN" | "LEFT" | "RIGHT";
 type GridPoint = { x: number; y: number };
@@ -103,6 +104,7 @@ const createFoodPellet = (snakeBody: GridPoint[]): GridPoint => {
 };
 
 export default function SnakePage() {
+  const { t } = useLanguage();
   const [snake, setSnake] = React.useState<GridPoint[]>(() => createInitialSnake());
   const snakeRef = React.useRef<GridPoint[]>(snake);
   const [food, setFood] = React.useState<GridPoint>(() => createInitialFoodPellet(createInitialSnake()));
@@ -285,7 +287,7 @@ export default function SnakePage() {
   }, [status]);
 
   const centerControlLabel =
-    status === "RUNNING" ? "PAUSE" : status === "PAUSED" ? "PLAY" : "START";
+    status === "RUNNING" ? t("pause") : status === "PAUSED" ? t("play") : t("start");
   const centerControlAriaLabel =
     status === "RUNNING" ? "Pause game" : status === "PAUSED" ? "Resume game" : "Start game";
 
@@ -295,49 +297,49 @@ export default function SnakePage() {
         <Button asChild size="sm" className="px-3">
           <Link href="/arcade" className="inline-flex items-center gap-2">
             <ChevronArrowLeftIcon className="pixelated inline-block h-3.5 w-auto shrink-0" />
-            <span>BACK</span>
+            <span>{t("back")}</span>
           </Link>
         </Button>
       </div>
 
       <Card className="mx-auto w-full max-w-3xl">
         <CardHeader className="space-y-2">
-          <CardTitle className="text-xl text-[var(--arcade-dot)] sm:text-2xl">
-            Snake
+          <CardTitle className="text-4xl text-[var(--arcade-dot)] sm:text-5xl">
+            {t("snakeTitle")}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <ul className="arcade-ui list-none space-y-2 text-xs text-[var(--arcade-text)]/90 sm:text-sm">
-            <li>* USE ARROWS TO MOVE</li>
-            <li>* EAT PELLETS FOR POINTS</li>
-            <li>* EATING MAKES YOU GROW</li>
-            <li>* AVOID WALLS AND YOUR BODY</li>
-            <li>* CRASHING ENDS THE GAME</li>
+          <ul className="arcade-ui list-none space-y-2 text-lg text-[var(--arcade-text)]/90 sm:text-xl">
+            <li>* {t("snakeInstructionMove")}</li>
+            <li>* {t("snakeInstructionPoints")}</li>
+            <li>* {t("snakeInstructionGrow")}</li>
+            <li>* {t("snakeInstructionAvoid")}</li>
+            <li>* {t("snakeInstructionCrash")}</li>
           </ul>
         </CardContent>
       </Card>
 
       <div className="mt-5 flex flex-wrap justify-center gap-3">
         <Button type="button" size="lg" className="min-w-44" onClick={handlePlayNow}>
-          PLAY NOW
+          {t("playNow")}
         </Button>
         {status === "GAME_OVER" ? (
           <Button type="button" variant="outline" className="min-w-36" onClick={resetRun}>
-            RESET
+            {t("reset")}
           </Button>
         ) : null}
       </div>
 
       {status === "GAME_OVER" ? (
         <div className="mt-3 flex justify-center">
-          <p className="arcade-retro arcade-snake-alert text-[10px] text-[var(--arcade-neon)] sm:text-xs">
-            GAME OVER: COLLISION DETECTED
+          <p className="arcade-retro arcade-snake-alert text-base text-[var(--arcade-neon)] sm:text-lg">
+            {t("gameOverCollision")}
           </p>
         </div>
       ) : null}
 
       <div className="sr-only" aria-live="polite">
-        {status === "GAME_OVER" ? "Game over." : null}
+        {status === "GAME_OVER" ? t("gameOverAnnouncement") : null}
       </div>
 
       <section
@@ -347,8 +349,8 @@ export default function SnakePage() {
         aria-label="Snake play area"
       >
         <div className="arcade-snake-readout arcade-snake-readout-metrics arcade-ui">
-          <p className="text-[9px] text-[var(--arcade-dot)]">SCORE: {score}</p>
-          <p className="text-[9px] text-[var(--arcade-dot)]">LENGTH: {snake.length}</p>
+          <p className="text-[13px] text-[var(--arcade-dot)]">{t("score")}: {score}</p>
+          <p className="text-[13px] text-[var(--arcade-dot)]">{t("length")}: {snake.length}</p>
         </div>
 
         <div
@@ -382,9 +384,9 @@ export default function SnakePage() {
           </div>
           {status === "GAME_OVER" ? (
             <div className="arcade-snake-overlay">
-              <p className="arcade-retro text-2xl text-[var(--arcade-neon)] sm:text-4xl">GAME OVER</p>
-              <p className="arcade-ui text-lg text-[var(--arcade-dot)] sm:text-2xl">
-                TAP HERE TO PLAY AGAIN
+              <p className="arcade-retro text-5xl text-[var(--arcade-neon)] sm:text-7xl">{t("gameOver")}</p>
+              <p className="arcade-ui text-3xl text-[var(--arcade-dot)] sm:text-5xl">
+                {t("tapToPlayAgain")}
               </p>
             </div>
           ) : null}
@@ -418,7 +420,7 @@ export default function SnakePage() {
           <Button
             type="button"
             variant="default"
-            className="arcade-snake-control-btn arcade-ui text-[9px]"
+            className="arcade-snake-control-btn arcade-ui text-[13px]"
             aria-label={centerControlAriaLabel}
             onClick={handleCenterControl}
           >

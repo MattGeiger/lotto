@@ -2,6 +2,7 @@
 
 import * as React from "react";
 
+import { useLanguage } from "@/contexts/language-context";
 import { getPollingIntervalMs } from "@/lib/polling-strategy";
 import type { OperatingHours } from "@/lib/state-types";
 
@@ -17,6 +18,7 @@ const BURST_DURATION_MS = 2 * 60_000;
 const SERVING_ALERT_DURATION_MS = 5000;
 
 export function NowServingBanner() {
+  const { t } = useLanguage();
   const [currentlyServing, setCurrentlyServing] = React.useState<number | null>(null);
   const [isServingAlert, setIsServingAlert] = React.useState(false);
   const pollTimeoutRef = React.useRef<number | null>(null);
@@ -149,17 +151,17 @@ export function NowServingBanner() {
     };
   }, [clearPollTimeout, pollState]);
 
-  const nowServingText = currentlyServing === null ? "PENDING" : `#${currentlyServing}`;
+  const nowServingText = currentlyServing === null ? t("waiting").toUpperCase() : `#${currentlyServing}`;
 
   return (
     <header className="arcade-banner sticky top-0 z-50">
       <div className="arcade-banner-row mx-auto flex w-full max-w-6xl items-center justify-center gap-3 px-4 py-3 sm:px-6">
-        <span className="arcade-retro text-[10px] text-[var(--arcade-dot)] sm:text-xs">
-          Now Serving
+        <span className="arcade-retro text-base text-[var(--arcade-dot)] sm:text-lg">
+          {t("nowServing")}
         </span>
         <span className="arcade-serving-value-shell">
           <span
-            className={`arcade-retro arcade-serving-value text-lg sm:text-2xl${
+            className={`arcade-retro arcade-serving-value text-3xl sm:text-5xl${
               isServingAlert ? " arcade-serving-value-alert" : ""
             }`}
             aria-live="polite"

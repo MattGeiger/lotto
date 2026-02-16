@@ -63,6 +63,14 @@
 - Tuned Arcade `NOW SERVING` number-change animation by keeping the zoom/drop sequence and replacing the shake phase with the prior retro pulse/blink treatment for improved readability.
 - Simplified `/arcade` menu game-card CTA rendering so any non-`comingSoon` game reliably renders its play button (ensuring `PLAY SNAKE` remains visible for the Snake card).
 - Updated `/arcade/snake` instruction card copy to the concise five-line ruleset (`USE ARROWS TO MOVE`, `EAT PELLETS FOR POINTS`, `EATING MAKES YOU GROW`, `AVOID WALLS AND YOUR BODY`, `CRASHING ENDS THE GAME`).
+- Increased Arcade typography scale across menu/gameplay/banner/controls/language-switcher surfaces to compensate for the newly standardized pixel font's smaller visual footprint.
+- Increased Arcade typography by an additional step across the same section-wide surfaces for improved readability with the new pixel font.
+- Added an Arcade-only same-color hard text shadow to retro/UI text styles to create a pseudo-bold pixel-font treatment while preserving existing glow accents.
+- Refined Arcade pseudo-bold text shadow to use tighter offsets with fuller directional coverage, reducing double-print artifacts while keeping heavier glyph weight.
+- Increased Arcade global character spacing again (`.arcade-retro` to `0.64em`, `.arcade-ui` to `0.32em`) so glyphs have stronger horizontal separation with the new standardized pixel font.
+- Fixed Arcade RTL language switcher dropdown anchoring so Arabic/Farsi menus open inward (`left-0`) instead of off-screen when the control sits on the left edge.
+- Added an Arcade-only retro light/dark mode toggle in the top bar (no system/hi-viz option), with homepage-style placement: language on upper-left and theme toggle on upper-right.
+- Added a WCAG-focused Arcade light-theme pass by remapping light-mode accent tokens and action/contrast tokens (`--arcade-action-*`, `--arcade-ghost-contrast`) so text + control states meet AA contrast targets.
 
 ## [1.4.3] - 2026-02-13
 ### Changed
