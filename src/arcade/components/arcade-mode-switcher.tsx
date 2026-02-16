@@ -32,19 +32,22 @@ export function ArcadeModeSwitcher({ className }: ArcadeModeSwitcherProps) {
       variant="outline"
       size="icon"
       font="normal"
-      className="h-9 w-9 p-0 text-[var(--arcade-dot)] hover:text-[var(--arcade-neon)]"
+      className={cn("h-9 w-9 p-0 text-[var(--arcade-dot)] hover:text-[var(--arcade-neon)]", className)}
       onClick={toggleTheme}
       aria-label="Toggle light and dark mode"
       title="Toggle light and dark mode"
     >
       <svg
-        width="24"
-        height="24"
+        width="50"
+        height="50"
         viewBox="0 0 256 256"
         fill="currentColor"
         xmlns="http://www.w3.org/2000/svg"
-        className={cn("size-6 [html.dark_&]:block [html.light_&]:hidden", className)}
+        stroke="currentColor"
+        strokeWidth="0.25"
+        className="hidden size-7 [html.light_&]:block"
         aria-hidden="true"
+        aria-label="sun-dim"
       >
         <rect x="120" y="88" width="14" height="14" rx="1" />
         <rect x="104" y="88" width="14" height="14" rx="1" />
@@ -56,19 +59,36 @@ export function ArcadeModeSwitcher({ className }: ArcadeModeSwitcherProps) {
         <rect x="104" y="152" width="14" height="14" rx="1" />
         <rect x="136" y="152" width="14" height="14" rx="1" />
         <rect x="152" y="104" width="14" height="14" rx="1" />
+        <rect x="168" y="72" width="14" height="14" rx="1" />
+        <rect x="168" y="168" width="14" height="14" rx="1" />
+        <rect x="72" y="168" width="14" height="14" rx="1" />
+        <rect x="72" y="72" width="14" height="14" rx="1" />
         <rect x="120" y="56" width="14" height="14" rx="1" />
         <rect x="56" y="120" width="14" height="14" rx="1" />
         <rect x="120" y="184" width="14" height="14" rx="1" />
         <rect x="184" y="120" width="14" height="14" rx="1" />
+        <rect x="40" y="120" width="14" height="14" rx="1" />
+        <rect x="120" y="40" width="14" height="14" rx="1" />
+        <rect x="120" y="200" width="14" height="14" rx="1" />
+        <rect x="184" y="184" width="14" height="14" rx="1" />
+        <rect x="56" y="184" width="14" height="14" rx="1" />
+        <rect x="184" y="56" width="14" height="14" rx="1" />
+        <rect x="56" y="56" width="14" height="14" rx="1" />
+        <rect x="200" y="120" width="14" height="14" rx="1" />
+        <rect x="152" y="120" width="14" height="14" rx="1" />
+        <rect x="152" y="136" width="14" height="14" rx="1" />
       </svg>
       <svg
-        width="24"
-        height="24"
+        width="50"
+        height="50"
         viewBox="0 0 256 256"
         fill="currentColor"
         xmlns="http://www.w3.org/2000/svg"
-        className={cn("size-6 [html.light_&]:block [html.dark_&]:hidden", className)}
+        stroke="currentColor"
+        strokeWidth="0.25"
+        className="hidden size-7 [html.dark_&]:block"
         aria-hidden="true"
+        aria-label="moon"
       >
         <rect x="104" y="56" width="14" height="14" rx="1" />
         <rect x="88" y="56" width="14" height="14" rx="1" />
@@ -86,15 +106,27 @@ export function ArcadeModeSwitcher({ className }: ArcadeModeSwitcherProps) {
         <rect x="88" y="120" width="14" height="14" rx="1" />
         <rect x="104" y="120" width="14" height="14" rx="1" />
         <rect x="72" y="120" width="14" height="14" rx="1" />
+        <rect x="88" y="56" width="14" height="14" rx="1" />
         <rect x="104" y="136" width="14" height="14" rx="1" />
         <rect x="72" y="152" width="14" height="14" rx="1" />
         <rect x="104" y="152" width="14" height="14" rx="1" />
         <rect x="120" y="136" width="14" height="14" rx="1" />
         <rect x="88" y="152" width="14" height="14" rx="1" />
+        <rect x="168" y="152" width="14" height="14" rx="1" />
+        <rect x="184" y="136" width="14" height="14" rx="1" />
         <rect x="120" y="152" width="14" height="14" rx="1" />
+        <rect x="152" y="152" width="14" height="14" rx="1" />
+        <rect x="136" y="152" width="14" height="14" rx="1" />
+        <rect x="72" y="168" width="14" height="14" rx="1" />
         <rect x="104" y="168" width="14" height="14" rx="1" />
+        <rect x="88" y="168" width="14" height="14" rx="1" />
+        <rect x="168" y="168" width="14" height="14" rx="1" />
         <rect x="120" y="168" width="14" height="14" rx="1" />
         <rect x="136" y="168" width="14" height="14" rx="1" />
+        <rect x="104" y="184" width="14" height="14" rx="1" />
+        <rect x="120" y="184" width="14" height="14" rx="1" />
+        <rect x="136" y="184" width="14" height="14" rx="1" />
+        <rect x="184" y="152" width="14" height="14" rx="1" />
       </svg>
       <span className="sr-only">Toggle light and dark mode</span>
     </Button>

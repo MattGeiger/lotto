@@ -71,6 +71,7 @@
 - Increased Arcade global character spacing again (`.arcade-retro` to `0.64em`, `.arcade-ui` to `0.32em`) so glyphs have stronger horizontal separation with the new standardized pixel font.
 - Fixed Arcade RTL language switcher dropdown anchoring so Arabic/Farsi menus open inward (`left-0`) instead of off-screen when the control sits on the left edge.
 - Added an Arcade-only retro light/dark mode toggle in the top bar (no system/hi-viz option), with homepage-style placement: language on upper-left and theme toggle on upper-right.
+- Updated Arcade mode-switcher icon geometry to match 8bitcn `retro-mode-switcher` (full pixel maps), and aligned theme semantics to app consistency: light mode shows sun, dark mode shows moon.
 - Added a WCAG-focused Arcade light-theme pass by remapping light-mode accent tokens and action/contrast tokens (`--arcade-action-*`, `--arcade-ghost-contrast`) so text + control states meet AA contrast targets.
 - Fixed Arcade light-mode game-tile card contrast by replacing the hard-coded dark tile fill with a theme token (`--arcade-menu-card-bg`) and assigning an AA-compliant light tile surface for card text.
 - Added Arcade Snake settings slider support using the `@8bitcn/slider` component in `/arcade/snake`.
