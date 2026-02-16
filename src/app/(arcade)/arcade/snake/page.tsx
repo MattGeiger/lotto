@@ -309,9 +309,9 @@ export default function SnakePage() {
         <CardContent>
           <ul className="arcade-ui list-none space-y-2 text-xs text-[var(--arcade-text)]/90 sm:text-sm">
             <li>* USE ARROWS TO MOVE</li>
-            <li>* EAT PELLETS TO GROW</li>
+            <li>* EAT PELLETS FOR POINTS</li>
+            <li>* EATING MAKES YOU GROW</li>
             <li>* AVOID WALLS AND YOUR BODY</li>
-            <li>* EAT PELLETS TO SCORE POINTS</li>
             <li>* CRASHING ENDS THE GAME</li>
           </ul>
         </CardContent>

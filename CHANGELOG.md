@@ -62,7 +62,7 @@
 - Reworked Arcade `NOW SERVING` number-change animation to a three-phase sequence in-banner: zoom to `2x` with `+20px` drop, 10 back-and-forth `±10deg` shakes, then return to original scale/position without obstructing gameplay.
 - Tuned Arcade `NOW SERVING` number-change animation by keeping the zoom/drop sequence and replacing the shake phase with the prior retro pulse/blink treatment for improved readability.
 - Simplified `/arcade` menu game-card CTA rendering so any non-`comingSoon` game reliably renders its play button (ensuring `PLAY SNAKE` remains visible for the Snake card).
-- Updated `/arcade/snake` instruction card copy to the concise five-line ruleset (`USE ARROWS TO MOVE`, `EAT PELLETS TO GROW`, `AVOID WALLS AND YOUR BODY`, `EAT PELLETS TO SCORE POINTS`, `CRASHING ENDS THE GAME`).
+- Updated `/arcade/snake` instruction card copy to the concise five-line ruleset (`USE ARROWS TO MOVE`, `EAT PELLETS FOR POINTS`, `EATING MAKES YOU GROW`, `AVOID WALLS AND YOUR BODY`, `CRASHING ENDS THE GAME`).
 
 ## [1.4.3] - 2026-02-13
 ### Changed
