@@ -79,11 +79,10 @@ export function StaffCtaButtons() {
         onPointerDown={triggerBoardIcon}
         onClick={triggerBoardIcon}
       >
-        <Link href="/">
+        <Link href="/display">
           View Public Board <EyeIcon ref={eyeIconRef} size={16} className="inline-flex text-current" />
         </Link>
       </Button>
     </div>
   );
 }
-

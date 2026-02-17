@@ -4,7 +4,7 @@ import { MorphingText, type MorphingTextProps } from "@/components/animate-ui/pr
 import { cn } from "@/lib/utils";
 
 type LanguageMorphTextProps = Omit<MorphingTextProps, "text"> & {
-  text: string;
+  text: string | string[];
 };
 
 const DEFAULT_TRANSITION = {

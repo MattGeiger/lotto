@@ -7,6 +7,13 @@
 - Replaced `docs/GAME.md` strategy with a separation-first Snake plan using standalone Arcade routes and simple pixel-art UI direction instead of raffle UI element reuse.
 - Added `docs/V2.0_PLANNED_FEATURES.md` with v2.0 scope: standalone Arcade page, persistent top "NOW SERVING" banner, game menu, and Snake as launch game.
 - Added a dedicated Arcade route group with `/arcade` and `/arcade/snake`, including a persistent top `NOW SERVING` banner and an 8-bit launch menu focused on Snake.
+- Added `/display` as a first-party alias of the public homepage display so `williamtemple.app/display` serves the same read-only board content as `/`.
+- Updated `/staff` “View Public Board” CTA target to `/display` so staff navigation uses the stable display URL.
+- Decoupled `/display` from `/` page re-export and removed the homepage (`/`) QR panel while keeping `/display` QR-enabled and operationally unchanged.
+- Removed homepage (`/`) top-bar ticket search controls and replaced the center slot with WTH logo branding, keeping `/display` as the unchanged search-enabled board route.
+- Removed the redundant board-row logo on homepage (`/`) so `NOW SERVING` is centered beneath the top-bar logo, while `/display` keeps its original board-row logo.
+- Added a homepage (`/`) load-time language-picker modal (“Choose your language”) with buttons for all supported languages, wired to the existing language context/localStorage selection flow.
+- Updated the homepage language-picker modal title to auto-cycle through supported-language variants every 5 seconds using the same morph-text animation pattern used elsewhere for language transitions.
 - Added Arcade-scoped 8bitcn-style shadcn wrappers under `src/arcade/ui/8bit/*` and isolated Arcade styling in `src/arcade/styles/arcade.css` to avoid collisions with shared raffle UI.
 - Added `@8bitcn` registry metadata in `components.json` for future retro component pulls while keeping current imports separated in Arcade paths.
 - Added self-hosted `Press Start 2P` font asset (`src/arcade/fonts/PressStart2P-Regular.ttf`) and applied it via `next/font/local` to Arcade-only layout typography.

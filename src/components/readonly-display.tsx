@@ -17,6 +17,7 @@ import { formatDate } from "@/lib/date-format";
 import { getPollingIntervalMs } from "@/lib/polling-strategy";
 import { isRTL } from "@/lib/rtl-utils";
 import type { DayOfWeek, OperatingHours, RaffleState } from "@/lib/state-types";
+import { cn } from "@/lib/utils";
 
 const TIME_LOCALES: Record<Language, string> = {
   en: "en-US",
@@ -101,9 +102,15 @@ export type TicketSearchRequest = {
 
 type ReadOnlyDisplayProps = {
   ticketSearchRequest?: TicketSearchRequest;
+  showQrCode?: boolean;
+  showHeaderLogo?: boolean;
 };
 
-export const ReadOnlyDisplay = ({ ticketSearchRequest }: ReadOnlyDisplayProps) => {
+export const ReadOnlyDisplay = ({
+  ticketSearchRequest,
+  showQrCode = true,
+  showHeaderLogo = true,
+}: ReadOnlyDisplayProps) => {
   const { language, t } = useLanguage();
   const [state, setState] = React.useState<RaffleState | null>(null);
   const [status, setStatus] = React.useState("");
@@ -214,6 +221,7 @@ export const ReadOnlyDisplay = ({ ticketSearchRequest }: ReadOnlyDisplayProps) =
   }, [formattedDate, t]);
 
   React.useEffect(() => {
+    if (!showQrCode) return;
     const fetchDisplayUrl = async () => {
       try {
         const response = await fetch("/api/state", {
@@ -228,16 +236,17 @@ export const ReadOnlyDisplay = ({ ticketSearchRequest }: ReadOnlyDisplayProps) =
       }
     };
     fetchDisplayUrl();
-  }, []);
+  }, [showQrCode]);
 
   React.useEffect(() => {
+    if (!showQrCode) return;
     const target = qrUrl || (typeof window !== "undefined" ? window.location.href : "");
     const canvas = qrCanvasRef.current;
     if (!canvas) return;
     QRCode.toCanvas(canvas, target, { width: 150, margin: 1 }).catch(() => {
       // ignore render errors
     });
-  }, [qrUrl]);
+  }, [qrUrl, showQrCode]);
 
   const startNumber = state?.startNumber ?? 0;
   const endNumber = state?.endNumber ?? 0;
@@ -320,24 +329,37 @@ export const ReadOnlyDisplay = ({ ticketSearchRequest }: ReadOnlyDisplayProps) =
       >
       <div className="mx-auto flex w-full flex-col gap-4">
         {/* Logo + Now Serving Row */}
-        <div className="mt-10 grid grid-cols-1 gap-4 sm:mt-12 sm:grid-cols-[minmax(280px,320px)_1fr_minmax(280px,320px)] sm:items-center sm:gap-6">
+        <div
+          className={cn(
+            "mt-10 grid grid-cols-1 gap-4 sm:mt-12 sm:items-center sm:gap-6",
+            showHeaderLogo && showQrCode
+              ? "sm:grid-cols-[minmax(280px,320px)_1fr_minmax(280px,320px)]"
+              : showHeaderLogo
+                ? "sm:grid-cols-[minmax(280px,320px)_1fr]"
+                : showQrCode
+                  ? "sm:grid-cols-[1fr_minmax(280px,320px)]"
+                  : "sm:grid-cols-1",
+          )}
+        >
           {/* Logo - left */}
-          <div className="flex justify-center sm:justify-start">
-            <Image
-              src="/wth-logo-horizontal.png"
-              alt="William Temple House"
-              width={2314}
-              height={606}
-              className="block h-auto w-full max-w-[400px] dark:hidden"
-            />
-            <Image
-              src="/wth-logo-horizontal-reverse.png"
-              alt="William Temple House"
-              width={2333}
-              height={641}
-              className="hidden h-auto w-full max-w-[400px] dark:block"
-            />
-          </div>
+          {showHeaderLogo ? (
+            <div className="flex justify-center sm:justify-start">
+              <Image
+                src="/wth-logo-horizontal.png"
+                alt="William Temple House"
+                width={2314}
+                height={606}
+                className="block h-auto w-full max-w-[400px] dark:hidden"
+              />
+              <Image
+                src="/wth-logo-horizontal-reverse.png"
+                alt="William Temple House"
+                width={2333}
+                height={641}
+                className="hidden h-auto w-full max-w-[400px] dark:block"
+              />
+            </div>
+          ) : null}
 
           {/* NOW SERVING - center */}
           <div className="flex justify-center">
@@ -371,16 +393,18 @@ export const ReadOnlyDisplay = ({ ticketSearchRequest }: ReadOnlyDisplayProps) =
           </div>
 
           {/* QR Code - right */}
-          <div className="hidden sm:flex items-center justify-center">
-            <div className="rounded-lg border border-border/60 bg-card/30 p-3">
-              <canvas
-                ref={qrCanvasRef}
-                width={150}
-                height={150}
-                aria-label="Scan to view display"
-              />
+          {showQrCode ? (
+            <div className="hidden sm:flex items-center justify-center">
+              <div className="rounded-lg border border-border/60 bg-card/30 p-3">
+                <canvas
+                  ref={qrCanvasRef}
+                  width={150}
+                  height={150}
+                  aria-label="Scan to view display"
+                />
+              </div>
             </div>
-          </div>
+          ) : null}
         </div>
 
         <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-3 sm:gap-4">
