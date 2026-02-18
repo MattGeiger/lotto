@@ -4,8 +4,8 @@ Next.js (App Router) app with ShadCN-inspired UI, JSON persistence, and atomic b
 
 ## Features
 - Staff dashboard (`/admin`) to set ranges, toggle random vs sequential, append tickets, update “now serving,” mark returned/unclaimed tickets, and reset with confirmations.
-- Public display (`/display`) with airport-style grid, status legend, ticket detail messaging (called/returned/unclaimed), and QR code sharing, using adaptive polling with visibility pause and operating-hours backoff.
-- Homepage (`/`) now serves the v2.0 personalization track while preserving the current board visual language (QR panel and top-bar search removed from `/`, centered WTH branding added, redundant board-row logo removed so `NOW SERVING` sits centered, and a load-time language picker modal shown on entry with a title that cycles through supported languages every 5 seconds).
+- Public display (`/` and `/display`) with airport-style grid, status legend, ticket detail messaging (called/returned/unclaimed), and QR code sharing, using adaptive polling with visibility pause and operating-hours backoff.
+- Personalized homepage (`/new`) serves the v2.0 personalization track while preserving the current board visual language (QR panel and top-bar search removed, centered WTH branding added, redundant board-row logo removed so `NOW SERVING` sits centered, and a load-time language picker modal shown on entry with a title that cycles through supported languages every 5 seconds).
 - Multilingual display UI with language switcher (English, 中文, Español, Русский, Українська, Tiếng Việt, فارسی, العربية) and automatic RTL direction for Farsi/Arabic.
 - Built-in read-only board in Next.js plus an optional standalone server (`npm run readonly`) on its own port for edge/legacy hosting.
 - File-based datastore with atomic writes, timestamped backups, and append logic that preserves prior random order.
@@ -14,6 +14,7 @@ Next.js (App Router) app with ShadCN-inspired UI, JSON persistence, and atomic b
 ## Local URLs
 - Display: http://localhost:3000/
 - Display alias: http://localhost:3000/display
+- Personalized homepage: http://localhost:3000/new
 - Admin: http://localhost:3000/admin
 - Login: http://localhost:3000/login
 - Staff intro: http://localhost:3000/staff
@@ -46,7 +47,7 @@ NODE_ENV=production
 - `npm run lint` — run ESLint.
 
 ## Read-only board options
-- Built-in: `/display` is the stable QR-enabled board and `/` is the homepage-personalization variant, both with adaptive polling and operating-hours-aware backoff.
+- Built-in: `/` is the default QR-enabled public board, `/display` is the live alias, and `/new` is the homepage-personalization variant.
 - Optional standalone: `npm run readonly` on port `4000`, still polling `data/state.json` for legacy/edge hosting.
 - Configure standalone via env vars:
   - `READONLY_PORT` — port to listen on (default `4000`).
@@ -126,8 +127,9 @@ NODE_ENV=production
 ## Routing and domains (deployment)
 - Production domain: `williamtemple.app` (custom domain in Vercel).
 - Planned routes:
-  - `/` → homepage personalization surface (maintains existing look-and-feel direction while iterating).
-  - `/display` → stable public read-only board route (QR-enabled operational experience).
+  - `/` → public read-only board route (QR-enabled operational experience).
+  - `/display` → public read-only board alias (same behavior as `/`).
+  - `/new` → homepage personalization surface (maintains existing look-and-feel direction while iterating).
   - `/login` → magic-link entry; after sign-in, redirect to the staff landing page (current homepage content).
   - `/admin` → staff dashboard (unchanged), linked from the staff landing page after login.
   - `/staff` → staff welcome/intro (former homepage).
@@ -180,7 +182,7 @@ Local options:
   ```bash
   docker compose up --build
   ```
-- App listens on `http://localhost:3000` (homepage `/`, stable board `/display`, staff dashboard `/admin`, staff intro `/staff`).
+- App listens on `http://localhost:3000` (public board `/`, alias `/display`, personalized homepage `/new`, staff dashboard `/admin`, staff intro `/staff`).
 - Stored state lives in your host `./data` directory so it survives container restarts.
 
 ## Tech

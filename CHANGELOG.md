@@ -12,6 +12,7 @@
 - Decoupled `/display` from `/` page re-export and removed the homepage (`/`) QR panel while keeping `/display` QR-enabled and operationally unchanged.
 - Removed homepage (`/`) top-bar ticket search controls and replaced the center slot with WTH logo branding, keeping `/display` as the unchanged search-enabled board route.
 - Removed the redundant board-row logo on homepage (`/`) so `NOW SERVING` is centered beneath the top-bar logo, while `/display` keeps its original board-row logo.
+- Swapped public routes for production testing: `/` now serves the searchable public board, `/new` now serves the personalized homepage onboarding flow, and `/display` remains a live non-redirecting alias of the public board.
 - Added a homepage (`/`) load-time language-picker modal (“Choose your language”) with buttons for all supported languages, wired to the existing language context/localStorage selection flow.
 - Updated the homepage language-picker modal title to auto-cycle through supported-language variants every 5 seconds using the same morph-text animation pattern used elsewhere for language transitions.
 - Extended homepage (`/`) onboarding to a second modal step that prompts for a ticket number after language selection and submits directly into the existing display ticket lookup flow.

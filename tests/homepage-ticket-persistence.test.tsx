@@ -2,7 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import HomePage from "@/app/page";
+import HomePage from "@/app/new/page";
 import { LanguageProvider } from "@/contexts/language-context";
 import { HOMEPAGE_TICKET_STORAGE_KEY } from "@/lib/home-ticket-storage";
 import type { RaffleState } from "@/lib/state-types";
