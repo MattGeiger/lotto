@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.5.0] - 2026-02-18
+### Changed
+- Promoted the public board routes for production testing: `/` is now the default public display and `/display` remains a live alias with the same behavior.
+- Added `/new` as the preview personalized homepage surface (language + ticket onboarding, personalized ticket card), intended for future promotion to the default homepage.
+- Added a shared public-display page implementation used by both `/` and `/display` to keep behavior parity while maintaining separate URLs.
+- Marked Arcade as a v1.5.0 preview feature with one playable game (`Snake`) available under `/arcade` and `/arcade/snake`.
+- Updated the `FOOD PANTRY SERVICE FOR` card to show device-local, locale-aware service time once drawing starts, including clearer RTL clock rendering.
+
 ## [1.4.4] - 2026-02-14
 ### Changed
 - Added explicit Arcade guardrails to `AGENTS.md` requiring clean route/code/style separation from raffle features.

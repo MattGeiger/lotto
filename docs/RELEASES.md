@@ -1,3 +1,23 @@
+# William Temple House Digital Raffle System v1.5.0
+
+**Release Date:** February 18, 2026
+
+## Homepage and Route Preview
+
+- Public board is now served from `/`, with `/display` kept live as a non-redirecting alias for operational continuity.
+- Added `/new` as the preview personalized homepage experience; this route is the candidate to be promoted as the default homepage in a future release.
+
+## Arcade Preview Scope
+
+- v1.5.0 includes an Arcade preview with one playable game: **Snake** (`/arcade/snake`).
+- Arcade remains intentionally scoped as a preview surface while broader v2.0 personalization work continues.
+
+## Versioning
+
+- Bumped application version to **1.5.0**.
+
+---
+
 # William Temple House Digital Raffle System v1.4.3
 
 **Release Date:** February 13, 2026
