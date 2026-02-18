@@ -30,12 +30,16 @@ export default function Home() {
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div className="space-y-2">
             <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-              Fair, simple queue management
+              <span className="block">LOTTO: Lots Of Time To Occupy</span>
+              <span className="mt-2 block text-lg font-medium text-muted-foreground sm:text-xl">
+                A fun, fair, and simple queue management system
+              </span>
             </h1>
             <p className="max-w-2xl text-base leading-relaxed text-muted-foreground">
-              A lightweight Next.js app that replaces the coffee-can raffle with a durable,
-              randomized, volunteer-friendly system. Manage ticket ranges, keep clients informed,
-              and display the board on phones or a wall screen.
+              A lightweight web app designed for chance-based or sequential queue management. Set
+              custom ticket ranges, keep clients informed, entertained, and engaged. Supports
+              large displays and mobile devices. Includes multilingual support, visual themes, and
+              even video games.
             </p>
           </div>
           <StaffCtaButtons />
