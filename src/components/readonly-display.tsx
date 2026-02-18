@@ -61,6 +61,16 @@ const formatTimeRange = (openTime: string, closeTime: string): string => {
   return `${start} - ${end}`;
 };
 
+const formatServiceClock = (input: Date | number, language: Language): string => {
+  const date = input instanceof Date ? input : new Date(input);
+  const locale = TIME_LOCALES[language] ?? "en-US";
+  return new Intl.DateTimeFormat(locale, {
+    hour: "numeric",
+    minute: "2-digit",
+    calendar: "gregory",
+  }).format(date);
+};
+
 function ArcadePixelFrame({ className }: { className?: string }) {
   return (
     <>
@@ -236,8 +246,9 @@ export const ReadOnlyDisplay = ({
   const lastChangeAtRef = React.useRef<number | null>(null);
   const burstUntilRef = React.useRef<number | null>(null);
   const lastSearchRequestRef = React.useRef(0);
+  const [deviceNowMs, setDeviceNowMs] = React.useState(() => Date.now());
 
-  const formattedDate = formatDate(language);
+  const formattedDate = formatDate(language, deviceNowMs);
 
   const clearPollTimeout = React.useCallback(() => {
     if (pollTimeoutRef.current !== null) {
@@ -328,6 +339,14 @@ export const ReadOnlyDisplay = ({
   }, [t]);
 
   React.useEffect(() => {
+    const updateClock = () => setDeviceNowMs(Date.now());
+    const intervalId = window.setInterval(updateClock, 30_000);
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, []);
+
+  React.useEffect(() => {
     document.title = `${t("foodPantryServiceFor")} ${formattedDate}`;
   }, [formattedDate, t]);
 
@@ -366,6 +385,7 @@ export const ReadOnlyDisplay = ({
   const currentIndex =
     generatedOrder && currentlyServing !== null ? generatedOrder.indexOf(currentlyServing) : -1;
   const hasTickets = generatedOrder.length > 0;
+  const formattedServiceTime = formatServiceClock(deviceNowMs, language);
   const isPersonalized = displayVariant === "personalized";
   const updatedTime = formatTime(state?.timestamp ?? null, language);
   const nowServingDisplayText = currentlyServing === null ? t("waiting") : String(currentlyServing);
@@ -564,7 +584,16 @@ export const ReadOnlyDisplay = ({
               </div>
             </CardHeader>
             <CardContent className="space-y-1">
-              <p className="text-2xl font-semibold text-foreground">{formattedDate}</p>
+              <p data-testid="service-date" className="text-2xl font-semibold text-foreground">{formattedDate}</p>
+              {hasTickets ? (
+                <p
+                  data-testid="service-time"
+                  dir="ltr"
+                  className="text-left text-xl font-semibold text-foreground/90 [unicode-bidi:isolate]"
+                >
+                  {formattedServiceTime}
+                </p>
+              ) : null}
             </CardContent>
           </Card>
           <Card className="border-border/80 bg-card/80 text-center animate-slide-in-up" style={{ animationDelay: "200ms" }}>

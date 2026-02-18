@@ -62,6 +62,7 @@ describe("ReadOnlyDisplay personalized variant", () => {
   let currentState: RaffleState;
 
   beforeEach(() => {
+    window.localStorage.clear();
     currentState = structuredClone(baseState);
     vi.stubGlobal(
       "fetch",
@@ -84,6 +85,7 @@ describe("ReadOnlyDisplay personalized variant", () => {
     expect(screen.getByText("24")).toBeInTheDocument();
     expect(screen.getByText("4 minutes")).toBeInTheDocument();
     expect(screen.getByText("2")).toBeInTheDocument();
+    expect(screen.getByTestId("service-time")).toHaveTextContent(/\S/);
     expect(screen.getByRole("button", { name: "Enter a new ticket number" })).toBeInTheDocument();
     const arcadeLink = screen.getByRole("link", { name: "PLAY GAMES" });
     expect(arcadeLink).toBeInTheDocument();
@@ -98,6 +100,17 @@ describe("ReadOnlyDisplay personalized variant", () => {
     expect(screen.getByText("Your ticket number is not yet in the drawing. Check back soon.")).toBeInTheDocument();
     expect(screen.getByText("53")).toBeInTheDocument();
     expect(screen.getAllByText("CHECK BACK SOON").length).toBeGreaterThanOrEqual(3);
+  });
+
+  it("formats service time using the active language locale", async () => {
+    window.localStorage.setItem("display-language", "zh");
+    renderPersonalizedDisplay();
+
+    const serviceTime = await screen.findByTestId("service-time");
+    expect(serviceTime).toHaveAttribute("dir", "ltr");
+    await waitFor(() => {
+      expect(serviceTime.textContent ?? "").not.toMatch(/[aApP][mM]/);
+    });
   });
 
   it("hides the public legend in personalized mode", async () => {
@@ -136,6 +149,7 @@ describe("ReadOnlyDisplay personalized variant", () => {
       expect(screen.getByText("Check back soon for updates.")).toBeInTheDocument();
     });
 
+    expect(screen.queryByTestId("service-time")).not.toBeInTheDocument();
     expect(screen.queryByText("YOUR TICKET NUMBER")).not.toBeInTheDocument();
   });
 });

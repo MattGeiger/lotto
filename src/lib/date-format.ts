@@ -11,8 +11,8 @@ const localeMap: Record<Language, string> = {
   ar: "ar",
 };
 
-export function formatDate(language: Language): string {
-  const now = new Date();
+export function formatDate(language: Language, input?: Date | number): string {
+  const now = input instanceof Date ? input : typeof input === "number" ? new Date(input) : new Date();
   const locale = localeMap[language];
 
   const weekday = now.toLocaleString(locale, { weekday: "long", calendar: "gregory" });
