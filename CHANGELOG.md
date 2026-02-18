@@ -24,6 +24,12 @@
 - Added homepage inline fallback handling for tickets not yet present in draw order, showing a localized check-back message plus `CHECK BACK SOON` value placeholders.
 - Added localized personalized-card labels/actions/messages across all supported display languages and introduced targeted tests for the modal order and homepage personalized card behavior.
 - Corrected ticket-ahead and wait-time calculations so the currently serving shopper is counted as ahead for upcoming tickets (for example, next-in-queue now shows `1` ahead with an estimated `2 minutes` wait).
+- Added homepage ticket-number persistence in browser `localStorage` (`homepage-ticket-selection-v1`) with auto-expiry at local midnight, so refreshes retain the client’s ticket while preventing carry-over into the next service day.
+- Updated localized homepage `Enter a new ticket number` button text translations to the new intent-based phrasing (replacing legacy all-caps/change-ticket wording in non-English locales).
+- Added a centered secondary CTA under homepage personalized ticket controls that links clients directly to `/arcade` (`👾 PLAY GAMES`), with localized copy across supported languages.
+- Styled the homepage personalized-card Arcade CTA with an Arcade-like pixel treatment (retro frame + action colors) and applied the same Arcade display font to the CTA text (emoji excluded), while keeping implementation scoped to core display code.
+- Added ticket-aware Arcade banner behavior that reads persisted homepage ticket selection: no ticket keeps animated `NOW SERVING`, while tracked tickets show `ESTIMATED WAIT` in `#h #m` format.
+- Added called-ticket Arcade reaction flow using `react-canvas-confetti`: when the tracked ticket is called, Arcade dispatches a pause event and Snake auto-pauses active runs before confetti celebration.
 - Added Arcade-scoped 8bitcn-style shadcn wrappers under `src/arcade/ui/8bit/*` and isolated Arcade styling in `src/arcade/styles/arcade.css` to avoid collisions with shared raffle UI.
 - Added `@8bitcn` registry metadata in `components.json` for future retro component pulls while keeping current imports separated in Arcade paths.
 - Added self-hosted `Press Start 2P` font asset (`src/arcade/fonts/PressStart2P-Regular.ttf`) and applied it via `next/font/local` to Arcade-only layout typography.

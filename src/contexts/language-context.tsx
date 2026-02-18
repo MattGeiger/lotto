@@ -48,6 +48,7 @@ export function useLanguage() {
 const translations: Record<Language, Record<string, string>> = {
   en: {
     nowServing: "Now Serving",
+    arcadeEstimatedWaitLabel: "ESTIMATED WAIT",
     waiting: "Pending",
     foodPantryServiceFor: "Food Pantry Service For",
     ticketsIssuedToday: "Ticket Numbers Issued Today",
@@ -103,6 +104,7 @@ const translations: Record<Language, Record<string, string>> = {
     checkBackSoonValue: "CHECK BACK SOON",
     ticketNotInDrawingYetMessage: "Your ticket number is not yet in the drawing. Check back soon.",
     changeTicket: "Enter a new ticket number",
+    visitArcade: "PLAY GAMES",
     // Arcade
     arcadeGames: "Arcade Games",
     back: "BACK",
@@ -145,6 +147,7 @@ const translations: Record<Language, Record<string, string>> = {
   },
   zh: {
     nowServing: "正在叫号",
+    arcadeEstimatedWaitLabel: "预计等待",
     waiting: "请等候",
     foodPantryServiceFor: "食品发放服务",
     ticketsIssuedToday: "今日号码范围",
@@ -197,7 +200,8 @@ const translations: Record<Language, Record<string, string>> = {
     yourTicketPositionLabel: "您的号码位置",
     checkBackSoonValue: "请稍后再查看",
     ticketNotInDrawingYetMessage: "您的号码尚未进入叫号顺序。请稍后再查看。",
-    changeTicket: "更改号码",
+    changeTicket: "输入新的号码",
+    visitArcade: "玩游戏",
     // Arcade
     arcadeGames: "游戏厅",
     back: "返回",
@@ -240,6 +244,7 @@ const translations: Record<Language, Record<string, string>> = {
   },
   es: {
     nowServing: "Turno Actual",
+    arcadeEstimatedWaitLabel: "ESPERA ESTIMADA",
     waiting: "En espera",
     foodPantryServiceFor: "Servicio del Banco de Alimentos",
     ticketsIssuedToday: "Boletos emitidos hoy",
@@ -294,7 +299,8 @@ const translations: Record<Language, Record<string, string>> = {
     yourTicketPositionLabel: "POSICIÓN DE SU BOLETO",
     checkBackSoonValue: "VUELVA PRONTO",
     ticketNotInDrawingYetMessage: "Su número aún no está en el sorteo. Vuelva pronto.",
-    changeTicket: "CAMBIAR BOLETO",
+    changeTicket: "Ingrese un nuevo número de boleto",
+    visitArcade: "Juega juegos",
     // Arcade
     arcadeGames: "Juegos Arcade",
     back: "VOLVER",
@@ -337,6 +343,7 @@ const translations: Record<Language, Record<string, string>> = {
   },
   ru: {
     nowServing: "Вызывается номер",
+    arcadeEstimatedWaitLabel: "ПРИМЕРНОЕ ВРЕМЯ ОЖИДАНИЯ",
     waiting: "Ожидайте",
     foodPantryServiceFor: "Раздача продуктов",
     ticketsIssuedToday: "Выданные сегодня номера",
@@ -391,7 +398,8 @@ const translations: Record<Language, Record<string, string>> = {
     yourTicketPositionLabel: "ПОЗИЦИЯ ВАШЕГО БИЛЕТА",
     checkBackSoonValue: "ПРОВЕРЬТЕ ПОЗЖЕ",
     ticketNotInDrawingYetMessage: "Ваш номер еще не добавлен в порядок вызова. Проверьте позже.",
-    changeTicket: "ИЗМЕНИТЬ БИЛЕТ",
+    changeTicket: "Введите новый номер билета",
+    visitArcade: "Играйте в игры",
     // Arcade
     arcadeGames: "Аркадные Игры",
     back: "НАЗАД",
@@ -434,6 +442,7 @@ const translations: Record<Language, Record<string, string>> = {
   },
   uk: {
     nowServing: "Викликається номер",
+    arcadeEstimatedWaitLabel: "ОРІЄНТОВНИЙ ЧАС ОЧІКУВАННЯ",
     waiting: "Очікуйте",
     foodPantryServiceFor: "Роздача продуктів",
     ticketsIssuedToday: "Видані сьогодні номери",
@@ -488,7 +497,8 @@ const translations: Record<Language, Record<string, string>> = {
     yourTicketPositionLabel: "ПОЗИЦІЯ ВАШОГО КВИТКА",
     checkBackSoonValue: "ПЕРЕВІРТЕ ПІЗНІШЕ",
     ticketNotInDrawingYetMessage: "Ваш номер ще не додано до порядку виклику. Перевірте пізніше.",
-    changeTicket: "ЗМІНИТИ КВИТОК",
+    changeTicket: "Введіть новий номер квитка",
+    visitArcade: "Грайте в ігри",
     // Arcade
     arcadeGames: "Аркадні Ігри",
     back: "НАЗАД",
@@ -531,6 +541,7 @@ const translations: Record<Language, Record<string, string>> = {
   },
   vi: {
     nowServing: "Đang gọi số",
+    arcadeEstimatedWaitLabel: "THỜI GIAN CHỜ DỰ KIẾN",
     waiting: "Vui lòng chờ",
     foodPantryServiceFor: "Phát thực phẩm ngày",
     ticketsIssuedToday: "Số vé phát hôm nay",
@@ -585,7 +596,8 @@ const translations: Record<Language, Record<string, string>> = {
     yourTicketPositionLabel: "VỊ TRÍ VÉ CỦA BẠN",
     checkBackSoonValue: "QUAY LẠI SAU",
     ticketNotInDrawingYetMessage: "Số của bạn chưa có trong thứ tự bốc thăm. Vui lòng quay lại sau.",
-    changeTicket: "ĐỔI VÉ",
+    changeTicket: "Nhập số vé mới",
+    visitArcade: "Chơi trò chơi",
     // Arcade
     arcadeGames: "Trò Chơi Điện Tử",
     back: "QUAY LẠI",
@@ -628,6 +640,7 @@ const translations: Record<Language, Record<string, string>> = {
   },
   fa: {
     nowServing: "در حال فراخوانی شماره",
+    arcadeEstimatedWaitLabel: "زمان انتظار تقریبی",
     waiting: "لطفاً صبر کنید",
     foodPantryServiceFor: "توزیع مواد غذایی برای",
     ticketsIssuedToday: "بلیط‌های صادر شده امروز",
@@ -682,7 +695,8 @@ const translations: Record<Language, Record<string, string>> = {
     yourTicketPositionLabel: "موقعیت بلیط شما",
     checkBackSoonValue: "بعداً دوباره بررسی کنید",
     ticketNotInDrawingYetMessage: "شماره شما هنوز وارد ترتیب قرعه‌کشی نشده است. لطفاً بعداً بررسی کنید.",
-    changeTicket: "تغییر بلیط",
+    changeTicket: "شماره بلیط جدید را وارد کنید",
+    visitArcade: "بازی کنید",
     // Arcade
     arcadeGames: "بازی‌های آرکید",
     back: "بازگشت",
@@ -725,6 +739,7 @@ const translations: Record<Language, Record<string, string>> = {
   },
   ar: {
     nowServing: "الرقم الحالي",
+    arcadeEstimatedWaitLabel: "وقت الانتظار المتوقع",
     waiting: "يرجى الانتظار",
     foodPantryServiceFor: "توزيع المواد الغذائية ليوم",
     ticketsIssuedToday: "التذاكر الصادرة اليوم",
@@ -779,7 +794,8 @@ const translations: Record<Language, Record<string, string>> = {
     yourTicketPositionLabel: "موضع تذكرتك",
     checkBackSoonValue: "تحقق قريبًا",
     ticketNotInDrawingYetMessage: "رقمك ليس ضمن ترتيب السحب بعد. يرجى التحقق لاحقًا.",
-    changeTicket: "تغيير التذكرة",
+    changeTicket: "أدخل رقم تذكرة جديدًا",
+    visitArcade: "العب ألعابًا",
     // Arcade
     arcadeGames: "ألعاب أركيد",
     back: "رجوع",

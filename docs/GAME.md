@@ -106,7 +106,7 @@ public/
 - Verify frame stability on lower-powered emulated devices.
 - Verify accessibility basics (focus order, contrast, reduced motion handling).
 
-## Current Build State (2026-02-16)
+## Current Build State (2026-02-18)
 - Completed: isolated Arcade routes and layout (`/arcade`, `/arcade/snake`) with persistent `NOW SERVING` banner.
 - Completed: Arcade-scoped 8-bit visual system and Press Start 2P font.
 - Completed: Arcade home `PLAY SNAKE` CTA supports per-word wrapping for multi-word translations, avoiding overflow while preserving centered button layout.
@@ -122,6 +122,8 @@ public/
 - Completed: Pause/resume controls preserve active game state (`PAUSE` -> `START`) without resetting board progress.
 - Completed: Snake readouts moved outside the board (above/below) to keep gameplay cells unobstructed.
 - Completed: Arcade `NOW SERVING` banner uses a retro alert pulse on ticket changes to improve in-game call visibility.
+- Completed: Arcade banner now reads persisted homepage ticket selection; when present it switches from `NOW SERVING` to `ESTIMATED WAIT` and renders wait in `#h #m` format.
+- Completed: When a tracked ticket is called, Arcade triggers a confetti burst and dispatches a ticket-called event so Snake auto-pauses from `RUNNING` to `PAUSED`.
 - Completed: Snake accessibility controls now use one Arcade slider with six presets (`VERY EASY`, `EASY`, `NORMAL`, `HARD`, `VERY HARD`, `NIGHTMARE`) that combine speed + spawn rules, including Nightmare pellet expiry/respawn.
 - Completed: Arcade slider contrast tokens were tuned for WCAG non-text contrast in dark mode (and parity checked in light mode) for track, range, and thumb visibility.
 - Completed: Small Snake UI text (mode label and score/length readout) no longer uses the hard pseudo-bold shadow, improving readability in dark mode while preserving larger retro headings.

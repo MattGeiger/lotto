@@ -7,6 +7,10 @@ import { ReadOnlyDisplay } from "@/components/readonly-display";
 import { LanguageProvider } from "@/contexts/language-context";
 import type { RaffleState } from "@/lib/state-types";
 
+vi.mock("next/font/local", () => ({
+  default: () => ({ className: "font-arcade-display", variable: "" }),
+}));
+
 vi.mock("next/image", () => ({
   default: ({ alt }: { alt: string }) => <span data-testid={`next-image-${alt}`} />,
 }));
@@ -81,6 +85,9 @@ describe("ReadOnlyDisplay personalized variant", () => {
     expect(screen.getByText("4 minutes")).toBeInTheDocument();
     expect(screen.getByText("2")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Enter a new ticket number" })).toBeInTheDocument();
+    const arcadeLink = screen.getByRole("link", { name: "PLAY GAMES" });
+    expect(arcadeLink).toBeInTheDocument();
+    expect(arcadeLink).toHaveAttribute("href", "/arcade");
   });
 
   it("shows inline not-in-drawing messaging and check-back placeholders", async () => {

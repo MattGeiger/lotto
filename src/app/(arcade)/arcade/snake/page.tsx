@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 
+import { ARCADE_TICKET_CALLED_EVENT } from "@/arcade/lib/events";
 import {
   ChevronArrowDownIcon,
   ChevronArrowLeftIcon,
@@ -330,6 +331,20 @@ export default function SnakePage() {
       window.removeEventListener("keydown", onKeyDown);
     };
   }, [handleDirection]);
+
+  React.useEffect(() => {
+    const onTicketCalled = () => {
+      queuedDirectionRef.current = null;
+      setStatus((currentStatus) =>
+        currentStatus === "RUNNING" ? "PAUSED" : currentStatus,
+      );
+    };
+
+    window.addEventListener(ARCADE_TICKET_CALLED_EVENT, onTicketCalled as EventListener);
+    return () => {
+      window.removeEventListener(ARCADE_TICKET_CALLED_EVENT, onTicketCalled as EventListener);
+    };
+  }, []);
 
   React.useEffect(() => {
     if (status !== "RUNNING") {

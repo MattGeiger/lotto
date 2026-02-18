@@ -1,0 +1,1 @@
+export const ARCADE_TICKET_CALLED_EVENT = "arcade:pause-for-ticket-call";

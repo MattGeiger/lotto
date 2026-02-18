@@ -8,6 +8,7 @@ import { LanguageMorphText } from "@/components/language-morph-text";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { useLanguage, type Language } from "@/contexts/language-context";
+import { readPersistedHomepageTicket, writePersistedHomepageTicket } from "@/lib/home-ticket-storage";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -50,6 +51,14 @@ export default function DisplayPage() {
   const [ticketInputError, setTicketInputError] = React.useState("");
   const [selectedTicketNumber, setSelectedTicketNumber] = React.useState<number | null>(null);
 
+  React.useEffect(() => {
+    const persistedTicket = readPersistedHomepageTicket();
+    if (persistedTicket === null) return;
+    setSelectedTicketNumber(persistedTicket);
+    setTicketInput(String(persistedTicket).padStart(2, "0"));
+    setIsOnboardingModalOpen(false);
+  }, []);
+
   const handleLanguageSelect = React.useCallback(
     (language: Language) => {
       setLanguage(language);
@@ -65,6 +74,7 @@ export default function DisplayPage() {
       return;
     }
     setSelectedTicketNumber(ticketNumber);
+    writePersistedHomepageTicket(ticketNumber);
     setTicketInputError("");
     setIsOnboardingModalOpen(false);
   }, [ticketInput]);

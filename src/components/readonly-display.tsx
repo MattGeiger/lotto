@@ -2,6 +2,8 @@
 
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
+import localFont from "next/font/local";
 import QRCode from "qrcode";
 import { MorphingText } from "@/components/animate-ui/primitives/texts/morphing";
 import { RollingText } from "@/components/animate-ui/primitives/texts/rolling";
@@ -31,6 +33,13 @@ const TIME_LOCALES: Record<Language, string> = {
   ar: "ar",
 };
 
+const arcadeDisplayFont = localFont({
+  src: "../arcade/fonts/SevenFifteen-V0_013/SevenFifteenMonoRounded-Regular.ttf",
+  display: "swap",
+  weight: "400",
+  style: "normal",
+});
+
 const formatTime = (input?: Date | number | null, language: Language = "en") => {
   if (!input && input !== 0) return "—";
   const date = input instanceof Date ? input : new Date(input);
@@ -51,6 +60,99 @@ const formatTimeRange = (openTime: string, closeTime: string): string => {
   const end = formatDisplayTime(closeTime);
   return `${start} - ${end}`;
 };
+
+function ArcadePixelFrame({ className }: { className?: string }) {
+  return (
+    <>
+      <span
+        aria-hidden="true"
+        className={cn(
+          "pointer-events-none absolute -top-1 left-1 h-1 w-[calc(50%-2px)] bg-foreground dark:bg-ring",
+          className,
+        )}
+      />
+      <span
+        aria-hidden="true"
+        className={cn(
+          "pointer-events-none absolute -top-1 right-1 h-1 w-[calc(50%-2px)] bg-foreground dark:bg-ring",
+          className,
+        )}
+      />
+      <span
+        aria-hidden="true"
+        className={cn(
+          "pointer-events-none absolute -bottom-1 left-1 h-1 w-[calc(50%-2px)] bg-foreground dark:bg-ring",
+          className,
+        )}
+      />
+      <span
+        aria-hidden="true"
+        className={cn(
+          "pointer-events-none absolute -bottom-1 right-1 h-1 w-[calc(50%-2px)] bg-foreground dark:bg-ring",
+          className,
+        )}
+      />
+      <span
+        aria-hidden="true"
+        className={cn(
+          "pointer-events-none absolute left-0 top-0 size-1 bg-foreground dark:bg-ring",
+          className,
+        )}
+      />
+      <span
+        aria-hidden="true"
+        className={cn(
+          "pointer-events-none absolute right-0 top-0 size-1 bg-foreground dark:bg-ring",
+          className,
+        )}
+      />
+      <span
+        aria-hidden="true"
+        className={cn(
+          "pointer-events-none absolute bottom-0 left-0 size-1 bg-foreground dark:bg-ring",
+          className,
+        )}
+      />
+      <span
+        aria-hidden="true"
+        className={cn(
+          "pointer-events-none absolute bottom-0 right-0 size-1 bg-foreground dark:bg-ring",
+          className,
+        )}
+      />
+      <span
+        aria-hidden="true"
+        className={cn(
+          "pointer-events-none absolute -left-1 top-1 h-[calc(100%-8px)] w-1 bg-foreground dark:bg-ring",
+          className,
+        )}
+      />
+      <span
+        aria-hidden="true"
+        className={cn(
+          "pointer-events-none absolute -right-1 top-1 h-[calc(100%-8px)] w-1 bg-foreground dark:bg-ring",
+          className,
+        )}
+      />
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute left-0 top-0 h-1 w-full bg-foreground/20"
+      />
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute left-0 top-1 h-1 w-3 bg-foreground/20"
+      />
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute bottom-0 left-0 h-1 w-full bg-foreground/20"
+      />
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute bottom-1 right-0 h-1 w-3 bg-foreground/20"
+      />
+    </>
+  );
+}
 
 const POLL_ERROR_RETRY_MS = 30_000;
 const BURST_DURATION_MS = 2 * 60_000;
@@ -651,9 +753,25 @@ export const ReadOnlyDisplay = ({
                 </div>
 
                 {onRequestTicketChange ? (
-                  <div className="flex justify-end">
+                  <div className="flex flex-col items-center gap-3">
                     <Button type="button" onClick={onRequestTicketChange}>
                       <LanguageMorphText text={t("changeTicket")} />
+                    </Button>
+                    <Button
+                      asChild
+                      type="button"
+                      className="relative m-1 rounded-none border-none bg-[#ffd75c] text-black transition-transform active:translate-y-0.5 hover:bg-[#ff6de8] hover:text-black dark:bg-[#ffd75c] dark:text-black dark:hover:bg-[#ff6de8]"
+                    >
+                      <Link href="/arcade" className="relative inline-flex items-center justify-center gap-2">
+                        <span aria-hidden="true" className="text-base leading-none">
+                          👾
+                        </span>
+                        <LanguageMorphText
+                          text={t("visitArcade")}
+                          className={cn(arcadeDisplayFont.className, "tracking-[0.12em]")}
+                        />
+                        <ArcadePixelFrame />
+                      </Link>
                     </Button>
                   </div>
                 ) : null}
