@@ -17,6 +17,7 @@ import { formatDate } from "@/lib/date-format";
 import { getPollingIntervalMs } from "@/lib/polling-strategy";
 import { isRTL } from "@/lib/rtl-utils";
 import type { DayOfWeek, OperatingHours, RaffleState } from "@/lib/state-types";
+import { formatWaitTime } from "@/lib/time-format";
 import { cn } from "@/lib/utils";
 
 const TIME_LOCALES: Record<Language, string> = {
@@ -100,14 +101,22 @@ export type TicketSearchRequest = {
   triggerId: number;
 };
 
+type DisplayVariant = "public" | "personalized";
+
 type ReadOnlyDisplayProps = {
   ticketSearchRequest?: TicketSearchRequest;
+  displayVariant?: DisplayVariant;
+  personalizedTicketNumber?: number | null;
+  onRequestTicketChange?: () => void;
   showQrCode?: boolean;
   showHeaderLogo?: boolean;
 };
 
 export const ReadOnlyDisplay = ({
   ticketSearchRequest,
+  displayVariant = "public",
+  personalizedTicketNumber = null,
+  onRequestTicketChange,
   showQrCode = true,
   showHeaderLogo = true,
 }: ReadOnlyDisplayProps) => {
@@ -255,6 +264,7 @@ export const ReadOnlyDisplay = ({
   const currentIndex =
     generatedOrder && currentlyServing !== null ? generatedOrder.indexOf(currentlyServing) : -1;
   const hasTickets = generatedOrder.length > 0;
+  const isPersonalized = displayVariant === "personalized";
   const updatedTime = formatTime(state?.timestamp ?? null, language);
   const nowServingDisplayText = currentlyServing === null ? t("waiting") : String(currentlyServing);
   const pantryStatus = getPantryStatus(state?.operatingHours ?? null);
@@ -287,7 +297,7 @@ export const ReadOnlyDisplay = ({
     }
   }, [ticketSearchRequest, startNumber, endNumber, generatedOrder]);
 
-  const getTicketDetails = (ticketNumber: number) => {
+  const getTicketDetails = React.useCallback((ticketNumber: number) => {
     if (!state?.generatedOrder?.length) return null;
     const queuePosition = state.generatedOrder.indexOf(ticketNumber) + 1;
     if (queuePosition <= 0) return null;
@@ -313,13 +323,48 @@ export const ReadOnlyDisplay = ({
         ? state.generatedOrder
             .slice(0, ticketIndex)
             .filter((ticket) => state.ticketStatus?.[ticket] !== "returned").length
+        : ticketIndex <= servingIndex
+          ? 0
         : state.generatedOrder
-            .slice(servingIndex + 1, ticketIndex)
+            .slice(servingIndex, ticketIndex)
             .filter((ticket) => state.ticketStatus?.[ticket] !== "returned").length;
     // 165 minutes / 75 shoppers = 2.2 minutes per shopper
     const estimatedWaitMinutes = Math.round(ticketsAhead * 2.2);
     return { queuePosition, ticketsAhead, estimatedWaitMinutes, ticketStatus, calledAt, calledAtTime };
-  };
+  }, [language, state]);
+
+  const personalizedTicketDetails =
+    isPersonalized && personalizedTicketNumber !== null
+      ? getTicketDetails(personalizedTicketNumber)
+      : null;
+  const personalizedTicketStatus =
+    isPersonalized && personalizedTicketNumber !== null
+      ? state?.ticketStatus?.[personalizedTicketNumber] ?? null
+      : null;
+  const personalizedCalledAt =
+    isPersonalized && personalizedTicketNumber !== null
+      ? state?.calledAt?.[personalizedTicketNumber] ?? null
+      : null;
+  const personalizedCalledAtTime = personalizedCalledAt ? formatTime(personalizedCalledAt, language) : null;
+  const personalizedTicketDisplay =
+    personalizedTicketNumber === null ? "—" : String(personalizedTicketNumber).padStart(2, "0");
+  const personalizedEstimatedWaitDisplay = personalizedTicketDetails
+    ? formatWaitTime(personalizedTicketDetails.estimatedWaitMinutes, language)
+    : t("checkBackSoonValue");
+  const personalizedTicketsAheadDisplay = personalizedTicketDetails
+    ? String(personalizedTicketDetails.ticketsAhead)
+    : t("checkBackSoonValue");
+  const personalizedTicketPositionDisplay = personalizedTicketDetails
+    ? String(personalizedTicketDetails.queuePosition)
+    : t("checkBackSoonValue");
+  const showTicketNotInDrawingMessage =
+    hasTickets &&
+    isPersonalized &&
+    personalizedTicketNumber !== null &&
+    personalizedTicketDetails === null &&
+    personalizedTicketStatus !== "returned" &&
+    personalizedTicketStatus !== "unclaimed" &&
+    !personalizedCalledAtTime;
 
   return (
       <div
@@ -450,7 +495,7 @@ export const ReadOnlyDisplay = ({
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between gap-2">
               <CardTitle className="text-lg uppercase tracking-[0.14em] text-muted-foreground">
-                <LanguageMorphText text={t("drawingOrder")} />
+                <LanguageMorphText text={isPersonalized ? t("yourTicketCardTitle") : t("drawingOrder")} />
               </CardTitle>
               <Badge
                 variant="outline"
@@ -549,64 +594,134 @@ export const ReadOnlyDisplay = ({
               </div>
             )}
 
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(96px,1fr))] gap-3 md:gap-4">
-              {generatedOrder.map((value, index) => {
-                const baseClasses =
-                  "flex items-center justify-center rounded-xl border text-center text-2xl font-extrabold leading-[1.2] px-3 py-3 cursor-pointer transition-transform hover:scale-[1.03]";
-                const ticketStatus = state?.ticketStatus?.[value];
-                const stateClass =
-                  ticketStatus === "returned"
-                    ? "ticket-returned"
-                    : ticketStatus === "unclaimed"
-                      ? "ticket-unclaimed"
-                      : value === currentlyServing
-                        ? "ticket-serving"
-                        : currentIndex !== -1 && index < currentIndex
-                          ? "ticket-served"
-                          : "ticket-upcoming";
-                return (
-                  <div
-                    key={value}
-                    className={`${baseClasses} ${stateClass} animate-fade-in`}
-                    style={{ animationDelay: `${Math.min(index * 30, 1500)}ms` }}
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => setSelectedTicket(value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        setSelectedTicket(value);
-                      }
-                    }}
-                  >
-                    {value}
+            {hasTickets && isPersonalized && (
+              <div className="space-y-4 rounded-xl bg-muted/20 px-3 py-6">
+                {(personalizedTicketStatus === "returned" || personalizedTicketStatus === "unclaimed" || personalizedCalledAtTime || showTicketNotInDrawingMessage) && (
+                  <div className="rounded-lg border bg-card p-4">
+                    <p className="text-base leading-relaxed text-muted-foreground">
+                      {personalizedTicketStatus === "returned" ? (
+                        <LanguageMorphText text={t("returnedTicketMessage")} />
+                      ) : personalizedTicketStatus === "unclaimed" ? (
+                        <LanguageMorphText text={t("unclaimedTicketMessage")} />
+                      ) : personalizedCalledAtTime ? (
+                        <>
+                          <LanguageMorphText text={t("calledAtMessage")} /> {personalizedCalledAtTime}
+                        </>
+                      ) : (
+                        <LanguageMorphText text={t("ticketNotInDrawingYetMessage")} />
+                      )}
+                    </p>
                   </div>
-                );
-              })}
-            </div>
+                )}
 
-            <div className="mt-5 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <span className="size-3 rounded-full border ticket-upcoming" />
-                <LanguageMorphText text={t("notCalled")} />
+                <div className="space-y-4 rounded-lg border bg-card p-4">
+                  <div className="space-y-1 border-b border-border/60 pb-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                      <LanguageMorphText text={t("yourTicketNumberLabel")} />
+                    </p>
+                    <p className="text-2xl font-bold text-foreground">{personalizedTicketDisplay}</p>
+                  </div>
+
+                  <div className="space-y-1 border-b border-border/60 pb-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                      <LanguageMorphText text={t("yourEstimatedWaitLabel")} />
+                    </p>
+                    <p className="text-2xl font-bold text-foreground">
+                      <LanguageMorphText text={personalizedEstimatedWaitDisplay} />
+                    </p>
+                  </div>
+
+                  <div className="space-y-1 border-b border-border/60 pb-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                      <LanguageMorphText text={t("ticketsAheadOfYouLabel")} />
+                    </p>
+                    <p className="text-2xl font-bold text-foreground">
+                      <LanguageMorphText text={personalizedTicketsAheadDisplay} />
+                    </p>
+                  </div>
+
+                  <div className="space-y-1">
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                      <LanguageMorphText text={t("yourTicketPositionLabel")} />
+                    </p>
+                    <p className="text-2xl font-bold text-foreground">
+                      <LanguageMorphText text={personalizedTicketPositionDisplay} />
+                    </p>
+                  </div>
+                </div>
+
+                {onRequestTicketChange ? (
+                  <div className="flex justify-end">
+                    <Button type="button" onClick={onRequestTicketChange}>
+                      <LanguageMorphText text={t("changeTicket")} />
+                    </Button>
+                  </div>
+                ) : null}
               </div>
-              <div className="flex items-center gap-2">
-                <span className="size-3 rounded-full border ticket-serving" />
-                <LanguageMorphText text={t("nowServing")} />
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="size-3 rounded-full border ticket-served" />
-                <LanguageMorphText text={t("called")} />
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="size-3 rounded-full border ticket-unclaimed" />
-                <LanguageMorphText text={t("unclaimed")} />
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="size-3 rounded-full border ticket-returned" />
-                <LanguageMorphText text={t("returned")} />
-              </div>
-            </div>
+            )}
+
+            {hasTickets && !isPersonalized && (
+              <>
+                <div className="grid grid-cols-[repeat(auto-fill,minmax(96px,1fr))] gap-3 md:gap-4">
+                  {generatedOrder.map((value, index) => {
+                    const baseClasses =
+                      "flex items-center justify-center rounded-xl border text-center text-2xl font-extrabold leading-[1.2] px-3 py-3 cursor-pointer transition-transform hover:scale-[1.03]";
+                    const ticketStatus = state?.ticketStatus?.[value];
+                    const stateClass =
+                      ticketStatus === "returned"
+                        ? "ticket-returned"
+                        : ticketStatus === "unclaimed"
+                          ? "ticket-unclaimed"
+                          : value === currentlyServing
+                            ? "ticket-serving"
+                            : currentIndex !== -1 && index < currentIndex
+                              ? "ticket-served"
+                              : "ticket-upcoming";
+                    return (
+                      <div
+                        key={value}
+                        className={`${baseClasses} ${stateClass} animate-fade-in`}
+                        style={{ animationDelay: `${Math.min(index * 30, 1500)}ms` }}
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => setSelectedTicket(value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            setSelectedTicket(value);
+                          }
+                        }}
+                      >
+                        {value}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-5 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <span className="size-3 rounded-full border ticket-upcoming" />
+                    <LanguageMorphText text={t("notCalled")} />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="size-3 rounded-full border ticket-serving" />
+                    <LanguageMorphText text={t("nowServing")} />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="size-3 rounded-full border ticket-served" />
+                    <LanguageMorphText text={t("called")} />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="size-3 rounded-full border ticket-unclaimed" />
+                    <LanguageMorphText text={t("unclaimed")} />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="size-3 rounded-full border ticket-returned" />
+                    <LanguageMorphText text={t("returned")} />
+                  </div>
+                </div>
+              </>
+            )}
 
             <div
               className={`text-sm ${hasError ? "text-destructive" : "text-muted-foreground"}`}
@@ -617,7 +732,7 @@ export const ReadOnlyDisplay = ({
             </div>
           </CardContent>
         </Card>
-        {selectedTicket !== null && getTicketDetails(selectedTicket) && (
+        {!isPersonalized && selectedTicket !== null && getTicketDetails(selectedTicket) && (
           <TicketDetailDialog
             open={selectedTicket !== null}
             onOpenChange={(open) => {
@@ -628,23 +743,25 @@ export const ReadOnlyDisplay = ({
             language={language}
           />
         )}
-        <Dialog open={notFoundDialogOpen} onOpenChange={(open) => setNotFoundDialogOpen(open)}>
-          <DialogContent className="max-w-sm">
-            <DialogHeader>
-              <DialogTitle>
-                <LanguageMorphText text={t("ticketNotFoundTitle")} />
-              </DialogTitle>
-              <DialogDescription>
-                <LanguageMorphText text={t("ticketNotFoundMessage")} />
-              </DialogDescription>
-            </DialogHeader>
-            <div className="mt-6 flex justify-end">
-              <Button variant="outline" onClick={() => setNotFoundDialogOpen(false)}>
-                <LanguageMorphText text={t("close")} />
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+        {!isPersonalized && (
+          <Dialog open={notFoundDialogOpen} onOpenChange={(open) => setNotFoundDialogOpen(open)}>
+            <DialogContent className="max-w-sm">
+              <DialogHeader>
+                <DialogTitle>
+                  <LanguageMorphText text={t("ticketNotFoundTitle")} />
+                </DialogTitle>
+                <DialogDescription>
+                  <LanguageMorphText text={t("ticketNotFoundMessage")} />
+                </DialogDescription>
+              </DialogHeader>
+              <div className="mt-6 flex justify-end">
+                <Button variant="outline" onClick={() => setNotFoundDialogOpen(false)}>
+                  <LanguageMorphText text={t("close")} />
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
     </div>
   );

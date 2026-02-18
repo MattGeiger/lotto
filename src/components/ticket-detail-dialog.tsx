@@ -79,12 +79,17 @@ export function TicketDetailDialog({
           ) : (
             <>
               <div className="flex items-center gap-3 rounded-lg border bg-card p-4">
-                <ListOrdered className="h-6 w-6 text-primary dark:text-[color:var(--ticket-serving-border)]" />
+                <Clock
+                  className="h-6 w-6 text-primary dark:text-[color:var(--ticket-serving-border)]"
+                  animateOnHover
+                />
                 <div className="flex-1">
                   <p className="text-sm font-medium text-muted-foreground">
-                    <LanguageMorphText text={t("queuePosition")} />
+                    <LanguageMorphText text={t("estimatedWait")} />
                   </p>
-                  <p className="text-2xl font-bold text-foreground">{queuePosition}</p>
+                  <p className="text-2xl font-bold text-foreground">
+                    {formatWaitTime(estimatedWaitMinutes, language)}
+                  </p>
                 </div>
               </div>
 
@@ -102,17 +107,12 @@ export function TicketDetailDialog({
               </div>
 
               <div className="flex items-center gap-3 rounded-lg border bg-card p-4">
-                <Clock
-                  className="h-6 w-6 text-primary dark:text-[color:var(--ticket-serving-border)]"
-                  animateOnHover
-                />
+                <ListOrdered className="h-6 w-6 text-primary dark:text-[color:var(--ticket-serving-border)]" />
                 <div className="flex-1">
                   <p className="text-sm font-medium text-muted-foreground">
-                    <LanguageMorphText text={t("estimatedWait")} />
+                    <LanguageMorphText text={t("queuePosition")} />
                   </p>
-                  <p className="text-2xl font-bold text-foreground">
-                    {formatWaitTime(estimatedWaitMinutes, language)}
-                  </p>
+                  <p className="text-2xl font-bold text-foreground">{queuePosition}</p>
                 </div>
               </div>
             </>

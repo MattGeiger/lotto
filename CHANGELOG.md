@@ -14,6 +14,16 @@
 - Removed the redundant board-row logo on homepage (`/`) so `NOW SERVING` is centered beneath the top-bar logo, while `/display` keeps its original board-row logo.
 - Added a homepage (`/`) load-time language-picker modal (“Choose your language”) with buttons for all supported languages, wired to the existing language context/localStorage selection flow.
 - Updated the homepage language-picker modal title to auto-cycle through supported-language variants every 5 seconds using the same morph-text animation pattern used elsewhere for language transitions.
+- Extended homepage (`/`) onboarding to a second modal step that prompts for a ticket number after language selection and submits directly into the existing display ticket lookup flow.
+- Added homepage ticket-input normalization for deli-style formats (`C17`, `B07`, `X53`) and plain numeric input (`53`), collapsing all accepted formats to a shared numeric `00`-`99` lookup value.
+- Refined homepage onboarding ticket-entry copy: title now reads “Enter your ticket number,” placeholder reads “ENTER TICKET #,” primary action reads “Submit,” and the extra helper sentence was removed.
+- Added a top-left back-arrow control on the homepage ticket-entry modal step so users can return to language selection before submitting a ticket.
+- Reordered ticket detail modal metrics to the new hierarchy (`Estimated Wait`, then `Tickets Ahead`, then `Queue Position`), while preserving existing returned/unclaimed/called status messaging behavior.
+- Replaced homepage (`/`) `DRAWING ORDER` ticket grid card content with a personalized ticket card variant (`YOUR TICKET`) that shows inline ticket-specific rows, status notes, and an `Enter a new ticket number` action.
+- Scoped personalized-card behavior to homepage (`/`) only: `/display` retains the existing searchable full-grid board with legend/key and ticket detail modal interactions.
+- Added homepage inline fallback handling for tickets not yet present in draw order, showing a localized check-back message plus `CHECK BACK SOON` value placeholders.
+- Added localized personalized-card labels/actions/messages across all supported display languages and introduced targeted tests for the modal order and homepage personalized card behavior.
+- Corrected ticket-ahead and wait-time calculations so the currently serving shopper is counted as ahead for upcoming tickets (for example, next-in-queue now shows `1` ahead with an estimated `2 minutes` wait).
 - Added Arcade-scoped 8bitcn-style shadcn wrappers under `src/arcade/ui/8bit/*` and isolated Arcade styling in `src/arcade/styles/arcade.css` to avoid collisions with shared raffle UI.
 - Added `@8bitcn` registry metadata in `components.json` for future retro component pulls while keeping current imports separated in Arcade paths.
 - Added self-hosted `Press Start 2P` font asset (`src/arcade/fonts/PressStart2P-Regular.ttf`) and applied it via `next/font/local` to Arcade-only layout typography.
