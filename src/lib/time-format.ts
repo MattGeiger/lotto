@@ -15,6 +15,18 @@ export function formatWaitTime(minutes: number, language: Language): string {
   return `${formatHours(hours, language)}, ${formatMinutes(mins, language)}`;
 }
 
+export function formatWaitTimeAsHoursAndMinutes(minutes: number, language: Language): string {
+  const safeMinutes = Math.max(0, Math.round(minutes));
+  const hours = Math.floor(safeMinutes / 60);
+  const mins = safeMinutes % 60;
+
+  if (hours === 0) {
+    return formatMinutes(mins, language);
+  }
+
+  return `${formatHours(hours, language)} ${formatMinutes(mins, language)}`;
+}
+
 function formatMinutes(n: number, lang: Language): string {
   switch (lang) {
     case "zh":

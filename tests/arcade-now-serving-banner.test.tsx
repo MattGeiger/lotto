@@ -1,7 +1,7 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { ARCADE_TICKET_CALLED_EVENT } from "@/arcade/lib/events";
+import { ARCADE_PLAY_RESUMED_EVENT, ARCADE_TICKET_CALLED_EVENT } from "@/arcade/lib/events";
 import { NowServingBanner } from "@/arcade/components/now-serving-banner";
 import { LanguageProvider } from "@/contexts/language-context";
 import { HOMEPAGE_TICKET_STORAGE_KEY } from "@/lib/home-ticket-storage";
@@ -81,7 +81,7 @@ describe("NowServingBanner", () => {
     renderBanner();
 
     expect(await screen.findByText("ESTIMATED WAIT")).toBeInTheDocument();
-    expect(await screen.findByText("0h 4m")).toBeInTheDocument();
+    expect(await screen.findByText("4 minutes")).toBeInTheDocument();
   });
 
   it("dispatches pause event and triggers confetti when the ticket is called", async () => {
@@ -98,6 +98,12 @@ describe("NowServingBanner", () => {
     const dispatchSpy = vi.spyOn(window, "dispatchEvent");
     renderBanner();
 
+    expect(await screen.findByText("TICKET CALLED!")).toBeInTheDocument();
+    expect(await screen.findByText("PLEASE CHECK-IN")).toBeInTheDocument();
+    expect(screen.queryByText("ESTIMATED WAIT")).not.toBeInTheDocument();
+    expect(screen.getByText("Now Serving:")).toBeInTheDocument();
+    expect(screen.getByText("#14")).toBeInTheDocument();
+
     await waitFor(() => {
       expect(
         dispatchSpy.mock.calls.some(
@@ -105,8 +111,25 @@ describe("NowServingBanner", () => {
         ),
       ).toBe(true);
     });
+
     await waitFor(() => {
       expect(confettiFireMock).toHaveBeenCalled();
+    });
+
+    const initialConfettiCalls = confettiFireMock.mock.calls.length;
+    await waitFor(
+      () => {
+        expect(confettiFireMock.mock.calls.length).toBeGreaterThan(initialConfettiCalls);
+      },
+      { timeout: 3500 },
+    );
+
+    await act(async () => {
+      window.dispatchEvent(new CustomEvent(ARCADE_PLAY_RESUMED_EVENT));
+    });
+    await waitFor(() => {
+      expect(screen.queryByText("TICKET CALLED!")).not.toBeInTheDocument();
+      expect(screen.queryByText("PLEASE CHECK-IN")).not.toBeInTheDocument();
     });
   });
 });

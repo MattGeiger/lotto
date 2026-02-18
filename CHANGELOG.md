@@ -30,6 +30,18 @@
 - Styled the homepage personalized-card Arcade CTA with an Arcade-like pixel treatment (retro frame + action colors) and applied the same Arcade display font to the CTA text (emoji excluded), while keeping implementation scoped to core display code.
 - Added ticket-aware Arcade banner behavior that reads persisted homepage ticket selection: no ticket keeps animated `NOW SERVING`, while tracked tickets show `ESTIMATED WAIT` in `#h #m` format.
 - Added called-ticket Arcade reaction flow using `react-canvas-confetti`: when the tracked ticket is called, Arcade dispatches a pause event and Snake auto-pauses active runs before confetti celebration.
+- Updated Arcade tracked-ticket wait formatting to full units with a sub-hour exception (`# minutes` when under one hour; otherwise `# hours # minutes`), removed the tracked wait value border frame, and reduced `ESTIMATED WAIT` label sizing so longer localized strings fit within the banner.
+- Fixed Arcade Snake settings card surface fill by applying panel background through the full card wrapper (removing the transparent top strip).
+- Localized the Snake settings card title by replacing hardcoded `DIFFICULTY SETTING` with a new translated `snakeDifficultySettingTitle` key across all supported languages.
+- Increased Arcade banner typography scale for Arabic, Persian, and Chinese locales (approximately 2x) to improve readability for `NOW SERVING` and `ESTIMATED WAIT` states.
+- Increased Arabic/Persian/Chinese typography in Snake gameplay surfaces so the readout labels (`SCORE`, `LENGTH`), settings-row value line (`SETTING: ...`), and center control label (`START`/`PAUSE`/`PLAY`) render at a larger, easier-to-read size.
+- Refactored Snake board rendering to a single canvas paint path (grid + snake + pellet) and removed CSS pseudo-grid layering to eliminate small-screen subpixel drift/misalignment between grid cells and gameplay pixels.
+- Updated Arcade tracked-ticket called-state UX: when a ticket is called, the banner now replaces wait copy with `TICKET CALLED!` / `PLEASE CHECK-IN`, animates the alert into viewport center for 10 seconds with flashing emphasis, and repeats confetti bursts during that alert window.
+- Moved the called-state Arcade check-in callout to a fixed center overlay with responsive max-width/clamp typography so translated callout text no longer crops on smaller screens during center-scale animation.
+- Added runtime viewport-fit scaling for the called-state check-in overlay (client-side measured) so longer localized strings like Russian dynamically downscale to stay fully visible during center animation.
+- Added a temporary called-state backdrop dimmer behind the centered check-in callout (matching `GAME OVER` darkening treatment) while the 10-second ticket-called alert animation runs.
+- During active ticket-called overlays, the top banner now remains populated with live `NOW SERVING: #<ticket>` status instead of hiding banner content.
+- Fixed called-state overlay persistence by limiting center callout rendering to the active alert window and dismissing it immediately when Arcade play resumes.
 - Added Arcade-scoped 8bitcn-style shadcn wrappers under `src/arcade/ui/8bit/*` and isolated Arcade styling in `src/arcade/styles/arcade.css` to avoid collisions with shared raffle UI.
 - Added `@8bitcn` registry metadata in `components.json` for future retro component pulls while keeping current imports separated in Arcade paths.
 - Added self-hosted `Press Start 2P` font asset (`src/arcade/fonts/PressStart2P-Regular.ttf`) and applied it via `next/font/local` to Arcade-only layout typography.

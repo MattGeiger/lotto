@@ -124,9 +124,18 @@ public/
 - Completed: Arcade `NOW SERVING` banner uses a retro alert pulse on ticket changes to improve in-game call visibility.
 - Completed: Arcade banner now reads persisted homepage ticket selection; when present it switches from `NOW SERVING` to `ESTIMATED WAIT` and renders wait in `#h #m` format.
 - Completed: When a tracked ticket is called, Arcade triggers a confetti burst and dispatches a ticket-called event so Snake auto-pauses from `RUNNING` to `PAUSED`.
+- Completed: Arcade tracked-ticket wait output now uses conditional full units (`# minutes` under one hour; `# hours # minutes` at one hour and above), the wait-value frame border is removed in tracked mode, and the `ESTIMATED WAIT` label is downsized to better fit longer translations.
 - Completed: Snake accessibility controls now use one Arcade slider with six presets (`VERY EASY`, `EASY`, `NORMAL`, `HARD`, `VERY HARD`, `NIGHTMARE`) that combine speed + spawn rules, including Nightmare pellet expiry/respawn.
 - Completed: Arcade slider contrast tokens were tuned for WCAG non-text contrast in dark mode (and parity checked in light mode) for track, range, and thumb visibility.
 - Completed: Small Snake UI text (mode label and score/length readout) no longer uses the hard pseudo-bold shadow, improving readability in dark mode while preserving larger retro headings.
+- Completed: Arabic, Persian, and Chinese locale typography is enlarged on Snake gameplay readout labels (`SCORE`, `LENGTH`), the settings value row (`SETTING: ...`), and the center control label (`START`/`PAUSE`/`PLAY`) for stronger legibility.
+- Completed: Snake board visuals now render through a single canvas path (grid + snake + pellet), replacing separate CSS grid overlays and DOM cells to prevent responsive subpixel misalignment on small screens.
+- Completed: Tracked-ticket called-state behavior now replaces wait text with an explicit `TICKET CALLED!` / `PLEASE CHECK-IN` banner, animates that alert to viewport center for 10 seconds with flash emphasis, and repeats confetti during the same window.
+- Completed: Called-state check-in callout now renders as a fixed centered overlay with responsive width/typography constraints to prevent message cropping on smaller screens while center-scale animation runs.
+- Completed: Called-state overlay now computes a runtime viewport-fit scale in-browser from measured rendered dimensions, ensuring long localized strings (for example, Russian) remain fully visible during center-scale animation.
+- Completed: During the active called-state animation window, Arcade now applies a temporary dim backdrop behind the centered check-in overlay, mirroring Snake `GAME OVER` play-area darkening.
+- Completed: While ticket-called overlay messaging is active, the top Arcade banner continues to show `NOW SERVING: #<ticket>` for live queue context.
+- Completed: Ticket-called center overlay now auto-hides when the alert window ends and also dismisses immediately when the player resumes Arcade gameplay.
 - Not yet completed: Snake gameplay engine modules under `src/arcade/game/snake/*`.
 
 ## Accessibility Issue: Snake Reflex Controls (Implemented - 2026-02-16)

@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 
-import { ARCADE_TICKET_CALLED_EVENT } from "@/arcade/lib/events";
+import { ARCADE_PLAY_RESUMED_EVENT, ARCADE_TICKET_CALLED_EVENT } from "@/arcade/lib/events";
 import {
   ChevronArrowDownIcon,
   ChevronArrowLeftIcon,
@@ -12,6 +12,7 @@ import {
 } from "@/arcade/components/icons/chevron-arrow-left-icon";
 import { Button, Card, CardContent, CardHeader, CardTitle, Slider } from "@/arcade/ui/8bit";
 import { useLanguage } from "@/contexts/language-context";
+import { cn } from "@/lib/utils";
 
 type Direction = "UP" | "DOWN" | "LEFT" | "RIGHT";
 type GridPoint = { x: number; y: number };
@@ -31,6 +32,7 @@ type SnakeModePreset = {
 };
 
 const GRID_SIZE = 20;
+const CANVAS_CELL_SIZE = 20;
 const INITIAL_SNAKE_LENGTH = 3;
 const TICK_INTERVAL_MS = 180;
 const FAST_TICK_INTERVAL_MS = Math.max(60, Math.floor(TICK_INTERVAL_MS / 2));
@@ -181,7 +183,8 @@ const createFoodPellet = (
 };
 
 export default function SnakePage() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const isLargeSnakeTextLocale = language === "ar" || language === "fa" || language === "zh";
   const [snake, setSnake] = React.useState<GridPoint[]>(() => createInitialSnake());
   const snakeRef = React.useRef<GridPoint[]>(snake);
   const [food, setFood] = React.useState<GridPoint>(() =>
@@ -197,6 +200,7 @@ export default function SnakePage() {
   const [status, setStatus] = React.useState<GameStatus>("READY");
   const [modeIndex, setModeIndex] = React.useState(DEFAULT_MODE_INDEX);
   const playAreaRef = React.useRef<HTMLElement>(null);
+  const boardCanvasRef = React.useRef<HTMLCanvasElement>(null);
   const modePreset = SNAKE_MODE_PRESETS[modeIndex] ?? SNAKE_MODE_PRESETS[DEFAULT_MODE_INDEX];
 
   const resetGame = React.useCallback((nextStatus: Exclude<GameStatus, "GAME_OVER">) => {
@@ -246,6 +250,96 @@ export default function SnakePage() {
     queuedDirectionRef.current = null;
   }, [status]);
 
+  const drawSnakeBoard = React.useCallback(() => {
+    if (typeof navigator !== "undefined" && /\bjsdom\b/i.test(navigator.userAgent)) {
+      return;
+    }
+
+    const canvas = boardCanvasRef.current;
+    if (!canvas) {
+      return;
+    }
+
+    const context = canvas.getContext("2d");
+    if (!context) {
+      return;
+    }
+
+    const boardPixelSize = GRID_SIZE * CANVAS_CELL_SIZE;
+    if (canvas.width !== boardPixelSize || canvas.height !== boardPixelSize) {
+      canvas.width = boardPixelSize;
+      canvas.height = boardPixelSize;
+    }
+
+    const styles = getComputedStyle(canvas);
+    const gridLineColor =
+      styles.getPropertyValue("--arcade-snake-grid-line").trim() || "rgba(59, 124, 255, 0.22)";
+    const pelletColor = styles.getPropertyValue("--arcade-pellet").trim() || "#74f84a";
+    const snakeBodyColor = styles.getPropertyValue("--arcade-snake-body").trim() || "#ffd75c";
+    const snakeHeadColor = styles.getPropertyValue("--arcade-snake-head").trim() || "#ff9a3c";
+
+    context.clearRect(0, 0, boardPixelSize, boardPixelSize);
+
+    context.save();
+    context.strokeStyle = gridLineColor;
+    context.lineWidth = 1;
+    for (let lineIndex = 0; lineIndex <= GRID_SIZE; lineIndex += 1) {
+      const offset = lineIndex * CANVAS_CELL_SIZE + 0.5;
+      context.beginPath();
+      context.moveTo(offset, 0);
+      context.lineTo(offset, boardPixelSize);
+      context.stroke();
+      context.beginPath();
+      context.moveTo(0, offset);
+      context.lineTo(boardPixelSize, offset);
+      context.stroke();
+    }
+    context.restore();
+
+    context.fillStyle = pelletColor;
+    context.fillRect(
+      food.x * CANVAS_CELL_SIZE,
+      food.y * CANVAS_CELL_SIZE,
+      CANVAS_CELL_SIZE,
+      CANVAS_CELL_SIZE,
+    );
+
+    snake.forEach((segment, index) => {
+      context.fillStyle = index === 0 ? snakeHeadColor : snakeBodyColor;
+      context.fillRect(
+        segment.x * CANVAS_CELL_SIZE,
+        segment.y * CANVAS_CELL_SIZE,
+        CANVAS_CELL_SIZE,
+        CANVAS_CELL_SIZE,
+      );
+    });
+  }, [food, snake]);
+
+  React.useEffect(() => {
+    drawSnakeBoard();
+  }, [drawSnakeBoard]);
+
+  React.useEffect(() => {
+    const handleRedraw = () => {
+      drawSnakeBoard();
+    };
+    const rootObserver = new MutationObserver(handleRedraw);
+    rootObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class", "style"],
+    });
+
+    window.addEventListener("resize", handleRedraw);
+    return () => {
+      rootObserver.disconnect();
+      window.removeEventListener("resize", handleRedraw);
+    };
+  }, [drawSnakeBoard]);
+
+  const notifyPlayResumed = React.useCallback(() => {
+    window.dispatchEvent(new CustomEvent(ARCADE_PLAY_RESUMED_EVENT));
+  }, []);
+
   const handleDirection = React.useCallback(
     (nextDirection: Direction) => {
       if (status === "GAME_OVER" || status === "PAUSED") {
@@ -261,9 +355,10 @@ export default function SnakePage() {
       queuedDirectionRef.current = nextDirection;
       if (status === "READY") {
         setStatus("RUNNING");
+        notifyPlayResumed();
       }
     },
-    [status],
+    [notifyPlayResumed, status],
   );
 
   const handleModeChange = React.useCallback((values: number[]) => {
@@ -289,11 +384,13 @@ export default function SnakePage() {
   const handlePlayNow = React.useCallback(() => {
     if (status === "READY" || status === "PAUSED") {
       setStatus("RUNNING");
+      notifyPlayResumed();
     } else if (status === "GAME_OVER") {
       restartRun();
+      notifyPlayResumed();
     }
     focusPlayArea();
-  }, [focusPlayArea, restartRun, status]);
+  }, [focusPlayArea, notifyPlayResumed, restartRun, status]);
 
   const handleCenterControl = React.useCallback(() => {
     if (status === "RUNNING") {
@@ -303,18 +400,21 @@ export default function SnakePage() {
     }
     if (status === "PAUSED") {
       setStatus("RUNNING");
+      notifyPlayResumed();
       return;
     }
     if (status === "READY") {
       setStatus("RUNNING");
+      notifyPlayResumed();
       focusPlayArea();
       return;
     }
     if (status === "GAME_OVER") {
       restartRun();
+      notifyPlayResumed();
       focusPlayArea();
     }
-  }, [focusPlayArea, restartRun, status]);
+  }, [focusPlayArea, notifyPlayResumed, restartRun, status]);
 
   React.useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -460,13 +560,18 @@ export default function SnakePage() {
       <Card className="mx-auto mt-4 w-full max-w-3xl">
         <CardHeader className="space-y-1 pb-2">
           <CardTitle className="text-2xl text-[var(--arcade-dot)] sm:text-3xl">
-            DIFFICULTY SETTING
+            {t("snakeDifficultySettingTitle")}
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-2">
           <div className="arcade-snake-settings arcade-ui">
             <div className="arcade-snake-slider-group">
-              <p className="arcade-snake-slider-title text-[11px] text-[var(--arcade-dot)]">
+              <p
+                className={cn(
+                  "arcade-snake-slider-title text-[var(--arcade-dot)]",
+                  isLargeSnakeTextLocale ? "text-[22px] leading-tight sm:text-[24px]" : "text-[11px]",
+                )}
+              >
                 {t("snakeSettingLabel")}: {t(modePreset.labelKey)}
               </p>
               <Slider
@@ -513,8 +618,22 @@ export default function SnakePage() {
         aria-label="Snake play area"
       >
         <div className="arcade-snake-readout arcade-snake-readout-metrics arcade-ui">
-          <p className="text-[13px] text-[var(--arcade-dot)]">{t("score")}: {score}</p>
-          <p className="text-[13px] text-[var(--arcade-dot)]">{t("length")}: {snake.length}</p>
+          <p
+            className={cn(
+              "text-[var(--arcade-dot)]",
+              isLargeSnakeTextLocale ? "text-[26px] sm:text-[28px]" : "text-[13px]",
+            )}
+          >
+            {t("score")}: {score}
+          </p>
+          <p
+            className={cn(
+              "text-[var(--arcade-dot)]",
+              isLargeSnakeTextLocale ? "text-[26px] sm:text-[28px]" : "text-[13px]",
+            )}
+          >
+            {t("length")}: {snake.length}
+          </p>
         </div>
 
         <div
@@ -523,29 +642,7 @@ export default function SnakePage() {
           aria-label="Snake board movement demo"
           onClick={status === "GAME_OVER" ? restartRun : undefined}
         >
-          <div className="arcade-snake-track" aria-hidden="true">
-            <div
-              className="arcade-snake-pellet"
-              style={{
-                left: `${(food.x / GRID_SIZE) * 100}%`,
-                top: `${(food.y / GRID_SIZE) * 100}%`,
-              }}
-            />
-            {snake.map((segment, index) => (
-              <div
-                key={`${segment.x}-${segment.y}-${index}`}
-                className={
-                  index === 0
-                    ? "arcade-snake-segment arcade-snake-segment-head"
-                    : "arcade-snake-segment"
-                }
-                style={{
-                  left: `${(segment.x / GRID_SIZE) * 100}%`,
-                  top: `${(segment.y / GRID_SIZE) * 100}%`,
-                }}
-              />
-            ))}
-          </div>
+          <canvas ref={boardCanvasRef} className="arcade-snake-canvas pixelated" aria-hidden="true" />
           {status === "GAME_OVER" ? (
             <div className="arcade-snake-overlay">
               <p className="arcade-retro text-5xl text-[var(--arcade-neon)] sm:text-7xl">{t("gameOver")}</p>
@@ -584,7 +681,10 @@ export default function SnakePage() {
           <Button
             type="button"
             variant="default"
-            className="arcade-snake-control-btn arcade-ui text-[13px]"
+            className={cn(
+              "arcade-snake-control-btn arcade-ui",
+              isLargeSnakeTextLocale ? "text-[20px] sm:text-[22px]" : "text-[13px]",
+            )}
             aria-label={centerControlAriaLabel}
             onClick={handleCenterControl}
           >

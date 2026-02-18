@@ -15,7 +15,12 @@ type ArcadeCardProps = React.ComponentProps<"div"> & {
 
 function Card({ className, font, ...props }: ArcadeCardProps) {
   return (
-    <div className={cn("relative border-y-4 border-[var(--arcade-panel-border)] p-0", className)}>
+    <div
+      className={cn(
+        "relative border-y-4 border-[var(--arcade-panel-border)] bg-[var(--arcade-panel)] p-0",
+        className,
+      )}
+    >
       <ShadcnCard
         {...props}
         className={cn(
