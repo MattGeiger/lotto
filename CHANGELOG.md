@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.5.2] - 2026-02-19
+### Added
+- Expanded automated test coverage from ~25-30% to ~60-65% with 226 new test cases across 13 new test files covering pure utilities (RTL, date, time, class merging), all 15 API route action handlers, the Postgres state manager (full CRUD + snapshots), admin page interactions and v1.5.1 memoized computations, and key UI components (public display page, confirmation dialog, operating hours editor, public board variant).
+- Updated `docs/V2.0_PLANNED_FEATURES.md` with cross-cutting test coverage expansion section.
+
 ## [1.5.1] - 2026-02-19
 ### Changed
 - Memoized all admin page derived computations (`returnedTickets`, `unclaimedTickets`, `currentIndex`, `nextFive`, `nextServingIndex`, `prevServingIndex`, `ticketsCalled`, `peopleWaiting`, `drawnSet`, `serverUndrawnCount`, `previewUndrawnCount`) with `React.useMemo` to eliminate redundant recomputation on every keystroke.

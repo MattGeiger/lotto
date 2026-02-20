@@ -396,6 +396,7 @@ After batch sorting started, staff could still type into Start/End inputs. The U
 
 ### Status
 - **Partially resolved in v1.5.1.** Phases 1, 2, and 4a implemented. Further phases (component splitting, animation caps, CSS fallbacks) planned.
+- **v1.5.2:** Expanded admin page test coverage (29 tests across admin-page-actions and admin-memoization) to provide a regression safety net for future Phase 3 component splitting work.
 
 ### Observed
 - On slower devices (for example iPad mini 4), typing in admin inputs and tapping buttons can lag significantly (up to ~5 seconds in worst cases).
