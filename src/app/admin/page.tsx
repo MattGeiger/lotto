@@ -30,7 +30,7 @@ import { AdminAnimatedIcon } from "@/components/admin-animated-icon";
 
 import { ConfirmAction } from "@/components/confirm-action";
 import { OperatingHoursEditor } from "@/components/operating-hours-editor";
-import { ArchiveIcon } from "@/components/lucide-animated/archive";
+import { ArchiveIcon, type ArchiveIconHandle } from "@/components/lucide-animated/archive";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -85,6 +85,7 @@ type Snapshot = {
 
 const SNAPSHOT_RENDER_PAGE_SIZE = 100;
 const DRAW_SNAPSHOT_REFRESH_DELAY_MS = 1500;
+const ARCHIVE_ICON_RESET_DELAY_MS = 260;
 
 type DrawNavigationPayload = Extract<
   ActionPayload,
@@ -947,6 +948,8 @@ const AdminPage = () => {
   const queuedDrawActionRef = React.useRef<QueuedDrawAction | null>(null);
   const optimisticIdRef = React.useRef(0);
   const snapshotRefreshTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const archiveIconRef = React.useRef<ArchiveIconHandle | null>(null);
+  const archiveIconResetTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const setInFlightActionSync = React.useCallback((next: InFlightAction | null) => {
     inFlightActionRef.current = next;
@@ -1037,9 +1040,23 @@ const AdminPage = () => {
       if (snapshotRefreshTimerRef.current) {
         clearTimeout(snapshotRefreshTimerRef.current);
       }
+      if (archiveIconResetTimerRef.current) {
+        clearTimeout(archiveIconResetTimerRef.current);
+      }
     },
     [],
   );
+
+  const triggerArchiveIconAnimation = React.useCallback(() => {
+    archiveIconRef.current?.startAnimation();
+    if (archiveIconResetTimerRef.current) {
+      clearTimeout(archiveIconResetTimerRef.current);
+    }
+    archiveIconResetTimerRef.current = setTimeout(() => {
+      archiveIconRef.current?.stopAnimation();
+      archiveIconResetTimerRef.current = null;
+    }, ARCHIVE_ICON_RESET_DELAY_MS);
+  }, []);
 
   React.useEffect(() => {
     if (typeof window !== "undefined") {
@@ -2306,11 +2323,20 @@ const AdminPage = () => {
                       <Checkbox
                         id="show-older-snapshots"
                         checked={showOlderSnapshots}
-                        onCheckedChange={(checked) => setShowOlderSnapshots(checked === true)}
+                        onCheckedChange={(checked) => {
+                          setShowOlderSnapshots(checked === true);
+                          triggerArchiveIconAnimation();
+                        }}
                         disabled={loading}
                       />
                       <span className="inline-flex items-center gap-2">
-                        <ArchiveIcon className="size-4 text-muted-foreground" size={16} />
+                        <ArchiveIcon
+                          ref={archiveIconRef}
+                          className="size-4 text-muted-foreground"
+                          size={16}
+                          onMouseEnter={() => archiveIconRef.current?.startAnimation()}
+                          onMouseLeave={() => archiveIconRef.current?.stopAnimation()}
+                        />
                         Show older snapshots
                       </span>
                     </label>
