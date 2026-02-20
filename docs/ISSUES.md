@@ -395,8 +395,9 @@ After batch sorting started, staff could still type into Start/End inputs. The U
 ## Issue 14: `/admin` input and button interactions lag on slower devices (iPad mini 4)
 
 ### Status
-- **Partially resolved in v1.5.1.** Phases 1, 2, and 4a implemented. Further phases (component splitting, animation caps, CSS fallbacks) planned.
-- **v1.5.2:** Expanded admin page test coverage (29 tests across admin-page-actions and admin-memoization) to provide a regression safety net for future Phase 3 component splitting work.
+- **Partially resolved through v1.5.2 (2026-02-20).**
+- v1.5.1 delivered phases 1, 2, and 4a.
+- v1.5.2 expanded admin test coverage and implemented the first component-isolation pass (range/reset inputs) plus O(1) range-preview optimization.
 
 ### Observed
 - On slower devices (for example iPad mini 4), typing in admin inputs and tapping buttons can lag significantly (up to ~5 seconds in worst cases).
@@ -419,15 +420,19 @@ After batch sorting started, staff could still type into Start/End inputs. The U
 - Apple's current major iPadOS compatibility starts at iPad mini (5th generation), while security updates still list iPadOS 15.8.6 for iPad mini 4.
 - This combination (older CPU + large render work + repeated snapshot/history requests) aligns with field reports of multi-second interaction lag.
 
-### Fixes Applied (v1.5.1)
+### Fixes Applied
 - **Phase 1**: Memoized all admin derived values (`returnedTickets`, `unclaimedTickets`, `currentIndex`, `nextFive`, `nextServingIndex`, `prevServingIndex`, `ticketsCalled`, `peopleWaiting`, `drawnSet`, `serverUndrawnCount`, `previewUndrawnCount`) with `React.useMemo` and precise dependency arrays. Split `undrawnCount` into a stable server-derived value + lightweight form-preview fallback. Single shared `drawnSet` eliminates duplicate `Set` construction.
 - **Phase 2**: Removed duplicate `useEffect([state])` snapshot fetch; `canUndo` now derived from already-loaded `snapshots` array. DB `listSnapshots` query changed from `select id, created_at, payload` to `select id, created_at` (metadata only).
 - **Phase 4a**: Added `touch-action: manipulation` to all interactive elements in `globals.css` to eliminate ~300ms iOS Safari tap delay.
+- **Phase 4 (critical-path subset)**: Isolated Start/End range inputs into local-state `RangeGenerationControls` and isolated reset phrase input into local-state `ResetActionControls` so these keystrokes no longer re-render root `AdminPage`.
+- **Phase 6 (dominant path)**: Replaced O(range) range-preview loop with O(1) math for end-range extension previews (`serverUndrawnCount + (previewEnd - currentEnd)`).
+- **Async hardening**: Draw-navigation action handlers now catch `sendAction` rejections after toast reporting, removing the unhandled rejection seen in tests.
 
 ### Remaining Recommendations
-- Phase 3: Extract form sections into isolated child components to limit per-keystroke re-render scope.
-- Phase 5: Cap ticket grid animations for large grids; simplify MorphingText for static labels.
-- Phase 6: Add `color-mix()` CSS fallbacks for iPadOS 15.
+- P0: Decouple snapshot refresh from action completion so tap latency is not coupled to snapshot listing time.
+- P1: Continue isolating any remaining high-frequency admin inputs if profiling still shows keystroke long tasks.
+- P2: Cap ticket grid animations for large grids; simplify MorphingText for static labels.
+- P2: Verify generated CSS fallbacks on iPad mini 4 before adding manual `color-mix()` fallbacks.
 - See `docs/V1.5_OPTIMIZATIONS.md` for full plan.
 
 ---

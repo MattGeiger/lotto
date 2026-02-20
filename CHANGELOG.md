@@ -9,6 +9,8 @@
 ### Fixed
 - Corrected `/admin` Live State `Tickets issued` so reset sentinel state (`startNumber=0`, `endNumber=0`) now renders `—` instead of `1`, and added a regression test in `tests/admin-page-actions.test.tsx`.
 - Prevented unhandled promise rejections in `/admin` draw-navigation handlers (`next`, `prev`, and direct serving updates) by catching `sendAction` failures after toast reporting.
+- Isolated `/admin` Start/End range inputs and reset phrase input into local-state memoized sections so keystrokes no longer trigger root-page re-renders, and optimized range preview undrawn math to an O(1) end-extension path.
+- Updated `docs/V1.5_OPTIMIZATIONS.md` and `docs/ISSUES.md` to reflect the shipped keystroke-isolation and range-preview optimizations.
 
 ## [1.5.1] - 2026-02-19
 ### Changed

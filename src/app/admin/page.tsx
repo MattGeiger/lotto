@@ -80,23 +80,351 @@ type Snapshot = {
   timestamp: number;
 };
 
+type RangeGenerationControlsProps = {
+  state: RaffleState | null;
+  hasDrawStarted: boolean;
+  isRangeExhausted: boolean;
+  loading: boolean;
+  pendingAction: string | null;
+  onGenerate: (startNumber: number, endNumber: number) => Promise<void>;
+  onGenerateBatch: (
+    startNumber: number,
+    endNumber: number,
+    batchSize: number,
+  ) => Promise<void>;
+};
+
+const RangeGenerationControls = React.memo(function RangeGenerationControls({
+  state,
+  hasDrawStarted,
+  isRangeExhausted,
+  loading,
+  pendingAction,
+  onGenerate,
+  onGenerateBatch,
+}: RangeGenerationControlsProps) {
+  const [rangeForm, setRangeForm] = React.useState({ startNumber: "", endNumber: "" });
+  const [batchSize, setBatchSize] = React.useState("10");
+  const [batchDialogOpen, setBatchDialogOpen] = React.useState(false);
+  const [batchDrawing, setBatchDrawing] = React.useState(false);
+
+  React.useEffect(() => {
+    setRangeForm({
+      startNumber: state?.startNumber ? String(state.startNumber) : "",
+      endNumber: state?.endNumber ? String(state.endNumber) : "",
+    });
+  }, [state?.startNumber, state?.endNumber]);
+
+  const hasActiveRange = !!state && !(state.startNumber === 0 && state.endNumber === 0);
+
+  const serverUndrawnCount = React.useMemo(() => {
+    if (!state || !hasActiveRange) return 0;
+    const drawnSet = new Set(state.generatedOrder);
+    let count = 0;
+    for (let ticket = state.startNumber; ticket <= state.endNumber; ticket += 1) {
+      if (!drawnSet.has(ticket)) count += 1;
+    }
+    return count;
+  }, [hasActiveRange, state?.generatedOrder, state?.startNumber, state?.endNumber]);
+
+  const parsedStartNumber = Number(rangeForm.startNumber);
+  const parsedEndNumber = Number(rangeForm.endNumber);
+  const hasGenerateRangeInputs =
+    rangeForm.startNumber.trim() !== "" && rangeForm.endNumber.trim() !== "";
+  const hasValidGenerateRange =
+    hasGenerateRangeInputs &&
+    Number.isInteger(parsedStartNumber) &&
+    Number.isInteger(parsedEndNumber) &&
+    parsedStartNumber > 0 &&
+    parsedEndNumber > 0 &&
+    parsedEndNumber > parsedStartNumber;
+  const canGenerateFull =
+    hasValidGenerateRange &&
+    !state?.orderLocked &&
+    !loading &&
+    pendingAction === null;
+
+  const previewUndrawnCount = React.useMemo(() => {
+    if (!state || !hasActiveRange) {
+      if (
+        Number.isInteger(parsedStartNumber) &&
+        Number.isInteger(parsedEndNumber) &&
+        parsedEndNumber > parsedStartNumber
+      ) {
+        return parsedEndNumber - parsedStartNumber + 1;
+      }
+      return 0;
+    }
+    if (!hasDrawStarted || serverUndrawnCount === 0) {
+      return serverUndrawnCount;
+    }
+    const previewEnd =
+      Number.isInteger(parsedEndNumber) && parsedEndNumber > state.endNumber
+        ? parsedEndNumber
+        : state.endNumber;
+    if (previewEnd === state.endNumber) {
+      return serverUndrawnCount;
+    }
+    // O(1): all tickets beyond current end are necessarily undrawn.
+    return serverUndrawnCount + (previewEnd - state.endNumber);
+  }, [
+    hasActiveRange,
+    hasDrawStarted,
+    parsedEndNumber,
+    parsedStartNumber,
+    serverUndrawnCount,
+    state?.endNumber,
+    state,
+  ]);
+
+  const handleGenerateConfirm = async () => {
+    await onGenerate(parsedStartNumber, parsedEndNumber);
+  };
+
+  const handleGenerateBatchConfirm = async () => {
+    const size = Number(batchSize);
+    await onGenerateBatch(parsedStartNumber, parsedEndNumber, size);
+  };
+
+  return (
+    <>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor="start">Start Number</Label>
+          <div
+            onClick={() => {
+              if (hasDrawStarted && state) {
+                toast.error(
+                  `Start number is locked at ${state.startNumber} after the first draw. Reset to start a new range.`,
+                );
+              }
+            }}
+          >
+            <Input
+              id="start"
+              type="text"
+              inputMode="numeric"
+              pattern="\d*"
+              maxLength={6}
+              value={rangeForm.startNumber}
+              onChange={(event) =>
+                setRangeForm((prev) => ({
+                  ...prev,
+                  startNumber: event.target.value.replace(/\D/g, "").slice(0, 6),
+                }))
+              }
+              disabled={hasDrawStarted}
+              className="appearance-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+            />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="end">End Number</Label>
+          <div
+            onClick={() => {
+              if (isRangeExhausted && hasDrawStarted) {
+                toast.error(
+                  "All tickets in this range are sorted. Use Append to increase the end number.",
+                );
+              }
+            }}
+          >
+            <Input
+              id="end"
+              type="text"
+              inputMode="numeric"
+              pattern="\d*"
+              maxLength={6}
+              value={rangeForm.endNumber}
+              onChange={(event) =>
+                setRangeForm((prev) => ({
+                  ...prev,
+                  endNumber: event.target.value.replace(/\D/g, "").slice(0, 6),
+                }))
+              }
+              disabled={isRangeExhausted && hasDrawStarted}
+              className="appearance-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+            />
+          </div>
+        </div>
+      </div>
+
+      <AlertDialog
+        open={batchDialogOpen}
+        onOpenChange={(open) => {
+          if (!batchDrawing) setBatchDialogOpen(open);
+        }}
+      >
+        <AlertDialogContent className="overflow-x-hidden">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Generate batch from undrawn pool</AlertDialogTitle>
+            <AlertDialogDescription>
+              Draw a subset of tickets from the {previewUndrawnCount} remaining undrawn tickets
+              and append to the draw order. Existing positions will not change.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-2 py-2">
+            <Label htmlFor="batch-size" className="text-sm font-medium">
+              Batch size
+            </Label>
+            <Input
+              id="batch-size"
+              type="text"
+              inputMode="numeric"
+              pattern="\d*"
+              maxLength={4}
+              value={batchSize}
+              onChange={(event) =>
+                setBatchSize(event.target.value.replace(/\D/g, "").slice(0, 4))
+              }
+              className="w-28 appearance-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+            />
+            <p className="text-xs text-muted-foreground">{previewUndrawnCount} tickets remaining</p>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={batchDrawing}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                setBatchDrawing(true);
+                try {
+                  await handleGenerateBatchConfirm();
+                } finally {
+                  setBatchDrawing(false);
+                  setBatchDialogOpen(false);
+                }
+              }}
+              disabled={
+                batchDrawing ||
+                Number(batchSize) <= 0 ||
+                !Number.isInteger(Number(batchSize)) ||
+                Number(batchSize) > previewUndrawnCount
+              }
+            >
+              {batchDrawing ? "Working..." : "Draw batch"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <div className="flex flex-wrap items-end gap-3">
+        <div
+          className="inline-flex"
+          onClick={() => {
+            if (state?.orderLocked) {
+              toast.error(
+                "Drawing order is locked. Use \"Reset for New Day\" to start a fresh lottery.",
+              );
+              return;
+            }
+
+            if (loading || pendingAction !== null || canGenerateFull) {
+              return;
+            }
+
+            if (!hasGenerateRangeInputs) {
+              toast.error(
+                "Enter both Start Number and End Number before generating the draw order.",
+              );
+              return;
+            }
+
+            if (parsedEndNumber <= parsedStartNumber) {
+              toast.error(
+                "End Number must be greater than Start Number.",
+              );
+              return;
+            }
+
+            toast.error(
+              "Start Number and End Number must be whole numbers greater than 0.",
+            );
+          }}
+        >
+          <ConfirmAction
+            triggerLabel="Generate full"
+            actionLabel="Generate"
+            title="Generate ticket order"
+            description="Creates a fresh order for the selected range and mode."
+            onConfirm={handleGenerateConfirm}
+            disabled={!canGenerateFull}
+            triggerTitle={
+              state?.orderLocked
+                ? "Order locked. Use Reset to start new lottery."
+                : !hasGenerateRangeInputs
+                  ? "Enter both Start Number and End Number first."
+                  : parsedEndNumber <= parsedStartNumber
+                    ? "End Number must be greater than Start Number."
+                    : !hasValidGenerateRange
+                      ? "Start and End must be whole numbers greater than 0."
+                      : undefined
+            }
+          />
+        </div>
+        <Button
+          variant="outline"
+          disabled={loading || pendingAction !== null || previewUndrawnCount === 0}
+          onClick={() => setBatchDialogOpen(true)}
+        >
+          Generate batch
+        </Button>
+      </div>
+    </>
+  );
+});
+
+type ResetActionControlsProps = {
+  loading: boolean;
+  pendingAction: string | null;
+  onReset: () => Promise<void>;
+};
+
+const ResetActionControls = React.memo(function ResetActionControls({
+  loading,
+  pendingAction,
+  onReset,
+}: ResetActionControlsProps) {
+  const [resetPhrase, setResetPhrase] = React.useState("");
+  const canReset = resetPhrase === "RESET" && !loading && pendingAction === null;
+
+  return (
+    <>
+      <Input
+        value={resetPhrase}
+        onChange={(event) => setResetPhrase(event.target.value)}
+        placeholder='Type "RESET" to enable'
+      />
+      <ConfirmAction
+        title="Confirm Lottery Reset"
+        description="This will completely clear the current lottery and all client positions. Clients who have seen their numbers will lose their place. Only do this to start a new daily cycle. You can reverse this action by clicking 'Undo' in the History section."
+        confirmText="Yes, Reset Lottery"
+        confirmVariant="destructive"
+        onConfirm={async () => {
+          await onReset();
+          setResetPhrase("");
+        }}
+        disabled={!canReset}
+        variant="destructive"
+      >
+        <Button variant="destructive" disabled={!canReset}>
+          Reset for New Day
+        </Button>
+      </ConfirmAction>
+    </>
+  );
+});
+
 const AdminPage = () => {
   const [state, setState] = React.useState<RaffleState | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [pendingAction, setPendingAction] = React.useState<string | null>(null);
-  const [rangeForm, setRangeForm] = React.useState({ startNumber: "", endNumber: "" });
   const [mode, setMode] = React.useState<Mode>("random");
   const [appendEnd, setAppendEnd] = React.useState("");
-  const [batchSize, setBatchSize] = React.useState("10");
-  const [batchDialogOpen, setBatchDialogOpen] = React.useState(false);
-  const [batchDrawing, setBatchDrawing] = React.useState(false);
   const [returnedTicket, setReturnedTicket] = React.useState("");
   const [unclaimedTicket, setUnclaimedTicket] = React.useState("");
   const [modeConfirmOpen, setModeConfirmOpen] = React.useState(false);
   const [pendingModeChoice, setPendingModeChoice] = React.useState<Mode | null>(null);
   const [modeChanging, setModeChanging] = React.useState(false);
-  const [resetPhrase, setResetPhrase] = React.useState("");
   const [cleanupMessage, setCleanupMessage] = React.useState<string | null>(null);
   const [displayUrl, setDisplayUrl] = React.useState("https://example.com/");
   const [customDisplayUrl, setCustomDisplayUrl] = React.useState<string | null>(null);
@@ -202,14 +530,9 @@ const AdminPage = () => {
   }, [snapshots]);
 
   React.useEffect(() => {
-    if (state) {
-      setRangeForm({
-        startNumber: state.startNumber ? String(state.startNumber) : "",
-        endNumber: state.endNumber ? String(state.endNumber) : "",
-      });
-      setMode(state.mode);
-      setAppendEnd(state.endNumber ? String(state.endNumber + 1) : "");
-    }
+    if (!state) return;
+    setMode(state.mode);
+    setAppendEnd(state.endNumber ? String(state.endNumber + 1) : "");
   }, [state]);
 
   React.useEffect(() => {
@@ -252,20 +575,19 @@ const AdminPage = () => {
     [refreshSnapshots],
   );
 
-  const handleGenerate = async () => {
-    const start = Number(rangeForm.startNumber);
-    const end = Number(rangeForm.endNumber);
+  const handleGenerate = React.useCallback(async (start: number, end: number) => {
     if (!Number.isInteger(start) || !Number.isInteger(end)) {
       toast.error("Start and end must be whole numbers.");
       throw new Error("Invalid input");
     }
     await sendAction({ action: "generate", startNumber: start, endNumber: end, mode });
-  };
+  }, [mode, sendAction]);
 
-  const handleGenerateBatch = async () => {
-    const size = Number(batchSize);
-    const start = Number(rangeForm.startNumber);
-    const end = Number(rangeForm.endNumber);
+  const handleGenerateBatch = React.useCallback(async (
+    start: number,
+    end: number,
+    size: number,
+  ) => {
     if (!Number.isInteger(size) || size <= 0) {
       toast.error("Batch size must be a positive whole number.");
       throw new Error("Invalid input");
@@ -280,7 +602,7 @@ const AdminPage = () => {
       endNumber: end,
       batchSize: size,
     });
-  };
+  }, [sendAction]);
 
   const handleAppend = async () => {
     const newEnd = Number(appendEnd);
@@ -310,14 +632,9 @@ const AdminPage = () => {
     }
   };
 
-  const handleReset = async () => {
-    if (resetPhrase !== "RESET") {
-      toast.error('Type "RESET" to confirm.');
-      throw new Error("Reset phrase missing");
-    }
+  const handleReset = React.useCallback(async () => {
     await sendAction({ action: "reset" });
-    setResetPhrase("");
-  };
+  }, [sendAction]);
 
   const saveOperatingHours = React.useCallback(async () => {
     if (!pendingHours) return;
@@ -547,7 +864,7 @@ const AdminPage = () => {
   const MINUTES_PER_TICKET = 2.2;
   const maxWaitMinutes = peopleWaiting > 0 ? Math.round(peopleWaiting * MINUTES_PER_TICKET) : null;
 
-  // Shared drawn set — built once per server state change, shared by undrawnCount + previewUndrawnCount
+  // Shared drawn set — built once per server state change.
   const drawnSet = React.useMemo(
     () => new Set(state?.generatedOrder ?? []),
     [state?.generatedOrder],
@@ -563,62 +880,15 @@ const AdminPage = () => {
     return count;
   }, [state?.startNumber, state?.endNumber, drawnSet]);
 
-  // Undrawn count: use form-preview only in the pre-generation state (no server range yet)
-  const undrawnCount = (() => {
-    if (!state || (state.startNumber === 0 && state.endNumber === 0)) {
-      const s = Number(rangeForm.startNumber);
-      const e = Number(rangeForm.endNumber);
-      if (Number.isInteger(s) && Number.isInteger(e) && e > s) return e - s + 1;
-      return 0;
-    }
-    return serverUndrawnCount;
-  })();
+  const undrawnCount = serverUndrawnCount;
 
   const hasDrawStarted = (state?.generatedOrder.length ?? 0) > 0;
   const isRangeExhausted = hasDrawStarted && undrawnCount === 0;
-
-  const previewUndrawnCount = React.useMemo(() => {
-    // Pre-generation: fall back to form inputs (mirrors undrawnCount logic)
-    if (!state || (state.startNumber === 0 && state.endNumber === 0)) {
-      const s = Number(rangeForm.startNumber);
-      const e = Number(rangeForm.endNumber);
-      if (Number.isInteger(s) && Number.isInteger(e) && e > s) return e - s + 1;
-      return 0;
-    }
-    if (!hasDrawStarted || (hasDrawStarted && serverUndrawnCount === 0)) {
-      return serverUndrawnCount;
-    }
-    const parsedEnd = Number(rangeForm.endNumber);
-    const previewEnd =
-      Number.isInteger(parsedEnd) && parsedEnd > state.endNumber ? parsedEnd : state.endNumber;
-    if (previewEnd === state.endNumber) return serverUndrawnCount;
-    let count = 0;
-    for (let ticket = state.startNumber; ticket <= previewEnd; ticket += 1) {
-      if (!drawnSet.has(ticket)) count += 1;
-    }
-    return count;
-  }, [state?.startNumber, state?.endNumber, drawnSet, hasDrawStarted, serverUndrawnCount, rangeForm.startNumber, rangeForm.endNumber]);
 
   const canAppend = !!state && !!appendEnd && !loading && undrawnCount === 0;
   const hasActiveRange = !!state && !(state.startNumber === 0 && state.endNumber === 0);
   const ticketsIssued =
     hasActiveRange && state ? state.endNumber - state.startNumber + 1 : null;
-  const parsedStartNumber = Number(rangeForm.startNumber);
-  const parsedEndNumber = Number(rangeForm.endNumber);
-  const hasGenerateRangeInputs =
-    rangeForm.startNumber.trim() !== "" && rangeForm.endNumber.trim() !== "";
-  const hasValidGenerateRange =
-    hasGenerateRangeInputs &&
-    Number.isInteger(parsedStartNumber) &&
-    Number.isInteger(parsedEndNumber) &&
-    parsedStartNumber > 0 &&
-    parsedEndNumber > 0 &&
-    parsedEndNumber > parsedStartNumber;
-  const canGenerateFull =
-    hasValidGenerateRange &&
-    !state?.orderLocked &&
-    !loading &&
-    pendingAction === null;
   const appendMin = (state?.endNumber ?? 0) + 1;
   const parsedAppendValue = Number(appendEnd);
   const resolvedAppendValue =
@@ -878,67 +1148,6 @@ const AdminPage = () => {
                 </Alert>
               )}
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="start">Start Number</Label>
-                  <div
-                    onClick={() => {
-                      if (hasDrawStarted && state) {
-                        toast.error(
-                          `Start number is locked at ${state.startNumber} after the first draw. Reset to start a new range.`,
-                        );
-                      }
-                    }}
-                  >
-                    <Input
-                      id="start"
-                      type="text"
-                      inputMode="numeric"
-                      pattern="\d*"
-                      maxLength={6}
-                      value={rangeForm.startNumber}
-                      onChange={(e) =>
-                        setRangeForm((prev) => ({
-                          ...prev,
-                          startNumber: e.target.value.replace(/\D/g, "").slice(0, 6),
-                        }))
-                      }
-                      disabled={hasDrawStarted}
-                      className="appearance-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="end">End Number</Label>
-                  <div
-                    onClick={() => {
-                      if (isRangeExhausted && hasDrawStarted) {
-                        toast.error(
-                          "All tickets in this range are sorted. Use Append to increase the end number.",
-                        );
-                      }
-                    }}
-                  >
-                    <Input
-                      id="end"
-                      type="text"
-                      inputMode="numeric"
-                      pattern="\d*"
-                      maxLength={6}
-                      value={rangeForm.endNumber}
-                      onChange={(e) =>
-                        setRangeForm((prev) => ({
-                          ...prev,
-                          endNumber: e.target.value.replace(/\D/g, "").slice(0, 6),
-                        }))
-                      }
-                      disabled={isRangeExhausted && hasDrawStarted}
-                      className="appearance-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                    />
-                  </div>
-                </div>
-              </div>
-
               <div className="flex items-center justify-between rounded-lg border border-border bg-gradient-card-info p-3">
                 <div>
                   <p className="text-sm font-semibold text-foreground">Order mode</p>
@@ -988,120 +1197,15 @@ const AdminPage = () => {
                 </AlertDialogContent>
               </AlertDialog>
 
-              <AlertDialog open={batchDialogOpen} onOpenChange={(open) => {
-                if (!batchDrawing) setBatchDialogOpen(open);
-              }}>
-                <AlertDialogContent className="overflow-x-hidden">
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Generate batch from undrawn pool</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Draw a subset of tickets from the {previewUndrawnCount} remaining undrawn tickets
-                      and append to the draw order. Existing positions will not change.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <div className="space-y-2 py-2">
-                    <Label htmlFor="batch-size" className="text-sm font-medium">
-                      Batch size
-                    </Label>
-                    <Input
-                      id="batch-size"
-                      type="text"
-                      inputMode="numeric"
-                      pattern="\d*"
-                      maxLength={4}
-                      value={batchSize}
-                      onChange={(e) => setBatchSize(e.target.value.replace(/\D/g, "").slice(0, 4))}
-                      className="w-28 appearance-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                    />
-                    <p className="text-xs text-muted-foreground">{previewUndrawnCount} tickets remaining</p>
-                  </div>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel disabled={batchDrawing}>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={async () => {
-                        setBatchDrawing(true);
-                        try {
-                          await handleGenerateBatch();
-                        } finally {
-                          setBatchDrawing(false);
-                          setBatchDialogOpen(false);
-                        }
-                      }}
-                      disabled={
-                        batchDrawing ||
-                        Number(batchSize) <= 0 ||
-                        !Number.isInteger(Number(batchSize)) ||
-                        Number(batchSize) > previewUndrawnCount
-                      }
-                    >
-                      {batchDrawing ? "Working..." : "Draw batch"}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-
-              <div className="flex flex-wrap items-end gap-3">
-                <div
-                  className="inline-flex"
-                  onClick={() => {
-                    if (state?.orderLocked) {
-                      toast.error(
-                        "Drawing order is locked. Use \"Reset for New Day\" to start a fresh lottery.",
-                      );
-                      return;
-                    }
-
-                    if (loading || pendingAction !== null || canGenerateFull) {
-                      return;
-                    }
-
-                    if (!hasGenerateRangeInputs) {
-                      toast.error(
-                        "Enter both Start Number and End Number before generating the draw order.",
-                      );
-                      return;
-                    }
-
-                    if (parsedEndNumber <= parsedStartNumber) {
-                      toast.error(
-                        "End Number must be greater than Start Number.",
-                      );
-                      return;
-                    }
-
-                    toast.error(
-                      "Start Number and End Number must be whole numbers greater than 0.",
-                    );
-                  }}
-                >
-                  <ConfirmAction
-                    triggerLabel="Generate full"
-                    actionLabel="Generate"
-                    title="Generate ticket order"
-                    description="Creates a fresh order for the selected range and mode."
-                    onConfirm={handleGenerate}
-                    disabled={!canGenerateFull}
-                    triggerTitle={
-                      state?.orderLocked
-                        ? "Order locked. Use Reset to start new lottery."
-                        : !hasGenerateRangeInputs
-                          ? "Enter both Start Number and End Number first."
-                          : parsedEndNumber <= parsedStartNumber
-                            ? "End Number must be greater than Start Number."
-                            : !hasValidGenerateRange
-                              ? "Start and End must be whole numbers greater than 0."
-                              : undefined
-                    }
-                  />
-                </div>
-                <Button
-                  variant="outline"
-                  disabled={loading || pendingAction !== null || previewUndrawnCount === 0}
-                  onClick={() => setBatchDialogOpen(true)}
-                >
-                  Generate batch
-                </Button>
-              </div>
+              <RangeGenerationControls
+                state={state}
+                hasDrawStarted={hasDrawStarted}
+                isRangeExhausted={isRangeExhausted}
+                loading={loading}
+                pendingAction={pendingAction}
+                onGenerate={handleGenerate}
+                onGenerateBatch={handleGenerateBatch}
+              />
 
               <Separator />
 
@@ -1553,24 +1657,11 @@ const AdminPage = () => {
                 )}
               </div>
               <Separator />
-              <Input
-                value={resetPhrase}
-                onChange={(e) => setResetPhrase(e.target.value)}
-                placeholder='Type "RESET" to enable'
+              <ResetActionControls
+                loading={loading}
+                pendingAction={pendingAction}
+                onReset={handleReset}
               />
-              <ConfirmAction
-                title="Confirm Lottery Reset"
-                description="This will completely clear the current lottery and all client positions. Clients who have seen their numbers will lose their place. Only do this to start a new daily cycle. You can reverse this action by clicking 'Undo' in the History section."
-                confirmText="Yes, Reset Lottery"
-                confirmVariant="destructive"
-                onConfirm={handleReset}
-                disabled={resetPhrase !== "RESET" || loading}
-                variant="destructive"
-              >
-                <Button variant="destructive" disabled={resetPhrase !== "RESET" || loading}>
-                  Reset for New Day
-                </Button>
-              </ConfirmAction>
             </CardContent>
           </Card>
 

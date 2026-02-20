@@ -236,6 +236,20 @@ describe("Admin page actions", () => {
     expect(screen.getByLabelText("End Number")).toBeInTheDocument();
   });
 
+  it("enables reset action only when RESET phrase is entered", async () => {
+    render(<AdminPage />);
+    await screen.findByText("System reset");
+
+    const resetButton = screen.getByRole("button", { name: "Reset for New Day" });
+    expect(resetButton).toBeDisabled();
+
+    const resetInput = screen.getByPlaceholderText('Type "RESET" to enable');
+    const user = userEvent.setup();
+    await user.type(resetInput, "RESET");
+
+    expect(resetButton).not.toBeDisabled();
+  });
+
   it("shows dash for Tickets issued when reset state has no active range", async () => {
     currentState = {
       ...baseState,
