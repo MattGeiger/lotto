@@ -30,7 +30,7 @@ export default function Home() {
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div className="space-y-2">
             <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-              <span className="block">LOTTO: Lots Of Time To Occupy</span>
+              <span className="block">LOTTO: Line Order Transparency & Ticketing Organizer</span>
               <span className="mt-2 block text-lg font-medium text-muted-foreground sm:text-xl">
                 A fun, fair, and simple queue management system
               </span>
