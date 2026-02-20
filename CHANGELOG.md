@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.5.1] - 2026-02-19
+### Changed
+- Memoized all admin page derived computations (`returnedTickets`, `unclaimedTickets`, `currentIndex`, `nextFive`, `nextServingIndex`, `prevServingIndex`, `ticketsCalled`, `peopleWaiting`, `drawnSet`, `serverUndrawnCount`, `previewUndrawnCount`) with `React.useMemo` to eliminate redundant recomputation on every keystroke.
+- Removed duplicate snapshot fetch (`useEffect([state])` calling `listSnapshots`) from admin page; `canUndo` is now derived from the already-loaded `snapshots` array.
+- Changed DB `listSnapshots` query to fetch metadata only (`id`, `created_at`), omitting full `payload` column; reduces snapshot listing response size by ~95%.
+- Added `touch-action: manipulation` to all interactive elements (`a`, `button`, `input`, `select`, `textarea`, `[role="button"]`) in `globals.css` to eliminate ~300ms iOS Safari double-tap delay.
+- Updated `docs/V1.5_OPTIMIZATIONS.md` with implementation status for Phases 1, 2, and 4a.
+- Updated `docs/ISSUES.md` Issue 14 status to reflect partial resolution.
+
 ## [1.5.0] - 2026-02-18
 ### Changed
 - Promoted the public board routes for production testing: `/` is now the default public display and `/display` remains a live alias with the same behavior.
@@ -7,6 +16,7 @@
 - Added a shared public-display page implementation used by both `/` and `/display` to keep behavior parity while maintaining separate URLs.
 - Marked Arcade as a v1.5.0 preview feature with one playable game (`Snake`) available under `/arcade` and `/arcade/snake`.
 - Updated the `FOOD PANTRY SERVICE FOR` card to show device-local, locale-aware service time once drawing starts, including clearer RTL clock rendering.
+- Documented a new admin performance issue in `docs/ISSUES.md` capturing significant input/tap lag on slower devices (for example iPad mini 4), including root-cause references for render-time queue computations and repeated snapshot-history fetches.
 
 ## [1.4.4] - 2026-02-14
 ### Changed

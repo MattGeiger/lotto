@@ -504,8 +504,8 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
 
   const listSnapshots = async () => {
     const rows = (await withTimeout(sql`
-      select id, created_at, payload from raffle_snapshots order by created_at desc, id desc;
-    `)) as Array<{ id: string; created_at: string; payload: RaffleState }>;
+      select id, created_at from raffle_snapshots order by created_at desc, id desc;
+    `)) as Array<{ id: string; created_at: string }>;
     return rows.map((row) => ({
       id: row.id,
       timestamp: row.created_at ? new Date(row.created_at).getTime() : Date.now(),

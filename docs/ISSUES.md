@@ -392,6 +392,45 @@ After batch sorting started, staff could still type into Start/End inputs. The U
 
 ---
 
+## Issue 14: `/admin` input and button interactions lag on slower devices (iPad mini 4)
+
+### Status
+- **Partially resolved in v1.5.1.** Phases 1, 2, and 4a implemented. Further phases (component splitting, animation caps, CSS fallbacks) planned.
+
+### Observed
+- On slower devices (for example iPad mini 4), typing in admin inputs and tapping buttons can lag significantly (up to ~5 seconds in worst cases).
+- Lag is most visible while editing range inputs and while triggering action buttons that refresh history/snapshots.
+
+### Root Cause
+- `src/app/admin/page.tsx` performs several expensive derived computations on every render (including every keystroke):
+  - `returnedTickets` and `unclaimedTickets` rebuild from `ticketStatus` using `filter` + `map` + `sort`.
+  - `ticketsCalled` and `peopleWaiting` iterate the draw order.
+  - `undrawnCount` and `previewUndrawnCount` scan full ticket ranges and rebuild `Set(state.generatedOrder)`.
+- The configured ticket ceiling is 6 digits (`MAX_TICKET_NUMBER = 999_999`), so these render-time loops can become very large on active lotteries.
+- Snapshot history is also fetched repeatedly from `/admin`:
+  - Initial `fetchState()` requests both state and snapshots.
+  - `sendAction()` awaits `refreshSnapshots()` after each mutation.
+  - A separate `useEffect([state])` calls `listSnapshots` again to compute undo availability.
+- In DB mode, snapshot listing currently queries full snapshot payloads (`select id, created_at, payload ...`) even though the admin history selector only needs id/timestamp (`src/lib/state-manager-db.ts`), which increases server response time and can hit the 5000ms DB timeout path (`DATABASE_TIMEOUT_MS` default).
+
+### Device Context (iPad mini 4)
+- iPad mini 4 is legacy hardware (A8 generation) and is on the iPadOS 15 security branch.
+- Apple's current major iPadOS compatibility starts at iPad mini (5th generation), while security updates still list iPadOS 15.8.6 for iPad mini 4.
+- This combination (older CPU + large render work + repeated snapshot/history requests) aligns with field reports of multi-second interaction lag.
+
+### Fixes Applied (v1.5.1)
+- **Phase 1**: Memoized all admin derived values (`returnedTickets`, `unclaimedTickets`, `currentIndex`, `nextFive`, `nextServingIndex`, `prevServingIndex`, `ticketsCalled`, `peopleWaiting`, `drawnSet`, `serverUndrawnCount`, `previewUndrawnCount`) with `React.useMemo` and precise dependency arrays. Split `undrawnCount` into a stable server-derived value + lightweight form-preview fallback. Single shared `drawnSet` eliminates duplicate `Set` construction.
+- **Phase 2**: Removed duplicate `useEffect([state])` snapshot fetch; `canUndo` now derived from already-loaded `snapshots` array. DB `listSnapshots` query changed from `select id, created_at, payload` to `select id, created_at` (metadata only).
+- **Phase 4a**: Added `touch-action: manipulation` to all interactive elements in `globals.css` to eliminate ~300ms iOS Safari tap delay.
+
+### Remaining Recommendations
+- Phase 3: Extract form sections into isolated child components to limit per-keystroke re-render scope.
+- Phase 5: Cap ticket grid animations for large grids; simplify MorphingText for static labels.
+- Phase 6: Add `color-mix()` CSS fallbacks for iPadOS 15.
+- See `docs/V1.5_OPTIMIZATIONS.md` for full plan.
+
+---
+
 ## Manual Test Checklist (for later implementation)
 - **Returned skip:** Mark a mid-queue ticket returned, then advance Next; verify the returned ticket is skipped. Repeat with Prev.
 - **Modal close:** Mark returned/unclaimed with successful response; modal closes immediately. Simulate a failed network response and confirm modal behavior matches the chosen approach.

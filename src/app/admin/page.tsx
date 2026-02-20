@@ -196,22 +196,10 @@ const AdminPage = () => {
     }
   }, [state?.displayUrl]);
 
+  // Derive canUndo from the already-loaded snapshots array (no extra fetch needed)
   React.useEffect(() => {
-    fetch("/api/state", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "listSnapshots" }),
-    })
-      .then((response) => response.json())
-      .then((snapshots) => {
-        const undoAvailable = Array.isArray(snapshots) && snapshots.length >= 2;
-        setCanUndo(undoAvailable);
-      })
-      .catch(() => {
-        setCanUndo(false);
-        setCanRedo(false);
-      });
-  }, [state]);
+    setCanUndo(snapshots.length >= 2);
+  }, [snapshots]);
 
   React.useEffect(() => {
     if (state) {
@@ -471,91 +459,111 @@ const AdminPage = () => {
     setUrlError("");
   };
 
-  const nextFive = state?.generatedOrder
-    ? state.generatedOrder.slice(
-        Math.max(
-          0,
-          state.currentlyServing
-            ? state.generatedOrder.indexOf(state.currentlyServing) + 1
-            : 0,
-        ),
-        state.currentlyServing
-          ? state.generatedOrder.indexOf(state.currentlyServing) + 6
-          : 5,
-      )
-    : [];
-  const returnedTickets = state?.ticketStatus
-    ? Object.entries(state.ticketStatus)
-        .filter(([, status]) => status === "returned")
-        .map(([ticket]) => Number(ticket))
-        .filter((ticket) => Number.isInteger(ticket))
-        .sort((a, b) => a - b)
-    : [];
-  const unclaimedTickets = state?.ticketStatus
-    ? Object.entries(state.ticketStatus)
-        .filter(([, status]) => status === "unclaimed")
-        .map(([ticket]) => Number(ticket))
-        .filter((ticket) => Number.isInteger(ticket))
-        .sort((a, b) => a - b)
-    : [];
+  // --- Memoized derived values (avoid recomputation on every keystroke) ---
 
-  const currentIndex =
-    state?.generatedOrder && state.currentlyServing !== null
-      ? state.generatedOrder.indexOf(state.currentlyServing)
-      : -1;
+  const returnedTickets = React.useMemo(() => {
+    if (!state?.ticketStatus) return [];
+    return Object.entries(state.ticketStatus)
+      .filter(([, status]) => status === "returned")
+      .map(([ticket]) => Number(ticket))
+      .filter((ticket) => Number.isInteger(ticket))
+      .sort((a, b) => a - b);
+  }, [state?.ticketStatus]);
+
+  const unclaimedTickets = React.useMemo(() => {
+    if (!state?.ticketStatus) return [];
+    return Object.entries(state.ticketStatus)
+      .filter(([, status]) => status === "unclaimed")
+      .map(([ticket]) => Number(ticket))
+      .filter((ticket) => Number.isInteger(ticket))
+      .sort((a, b) => a - b);
+  }, [state?.ticketStatus]);
+
+  const currentIndex = React.useMemo(
+    () =>
+      state?.generatedOrder && state.currentlyServing !== null
+        ? state.generatedOrder.indexOf(state.currentlyServing)
+        : -1,
+    [state?.generatedOrder, state?.currentlyServing],
+  );
+
   const currentDrawNumber = currentIndex >= 0 ? currentIndex + 1 : null;
   const totalTickets = state?.generatedOrder.length ?? 0;
   const currentTicket =
     currentIndex >= 0 && state?.generatedOrder ? state.generatedOrder[currentIndex] : null;
-  const getNextNonReturnedIndex = (startIndex: number, step: 1 | -1) => {
-    if (!state?.generatedOrder?.length) return -1;
-    const order = state.generatedOrder;
-    const status = state.ticketStatus ?? {};
-    for (let i = startIndex + step; i >= 0 && i < order.length; i += step) {
-      if (status[order[i]] !== "returned") {
-        return i;
+
+  const nextFive = React.useMemo(() => {
+    if (!state?.generatedOrder) return [];
+    return state.generatedOrder.slice(
+      Math.max(0, currentIndex >= 0 ? currentIndex + 1 : 0),
+      currentIndex >= 0 ? currentIndex + 6 : 5,
+    );
+  }, [state?.generatedOrder, currentIndex]);
+
+  const { nextServingIndex, prevServingIndex } = React.useMemo(() => {
+    const getNextNonReturnedIndex = (startIdx: number, step: 1 | -1) => {
+      if (!state?.generatedOrder?.length) return -1;
+      const order = state.generatedOrder;
+      const status = state.ticketStatus ?? {};
+      for (let i = startIdx + step; i >= 0 && i < order.length; i += step) {
+        if (status[order[i]] !== "returned") return i;
       }
-    }
-    return -1;
-  };
-  const nextServingIndex = getNextNonReturnedIndex(currentIndex, 1);
-  const prevServingIndex =
-    currentIndex === -1 ? getNextNonReturnedIndex(-1, 1) : getNextNonReturnedIndex(currentIndex, -1);
+      return -1;
+    };
+    return {
+      nextServingIndex: getNextNonReturnedIndex(currentIndex, 1),
+      prevServingIndex:
+        currentIndex === -1
+          ? getNextNonReturnedIndex(-1, 1)
+          : getNextNonReturnedIndex(currentIndex, -1),
+    };
+  }, [state?.generatedOrder, state?.ticketStatus, currentIndex]);
+
   const canAdvanceNext = totalTickets > 0 && nextServingIndex !== -1;
   const canAdvancePrev = totalTickets > 0 && prevServingIndex !== -1;
 
-  // Tickets called: count from index 0 through currentIndex, excluding returned
-  const ticketsCalled = (() => {
+  const ticketsCalled = React.useMemo(() => {
     if (!state?.generatedOrder || currentIndex < 0) return 0;
     let count = 0;
     for (let i = 0; i <= currentIndex; i++) {
       const ticket = state.generatedOrder[i];
-      if (state.ticketStatus?.[ticket] !== "returned") {
-        count++;
-      }
+      if (state.ticketStatus?.[ticket] !== "returned") count++;
     }
     return count;
-  })();
+  }, [state?.generatedOrder, state?.ticketStatus, currentIndex]);
 
-  // People waiting: tickets after currentlyServing that are not returned
-  const peopleWaiting = (() => {
+  const peopleWaiting = React.useMemo(() => {
     if (!state?.generatedOrder || currentIndex < 0) return totalTickets;
     let count = 0;
     for (let i = currentIndex + 1; i < state.generatedOrder.length; i++) {
       const ticket = state.generatedOrder[i];
-      if (state.ticketStatus?.[ticket] !== "returned") {
-        count++;
-      }
+      if (state.ticketStatus?.[ticket] !== "returned") count++;
     }
     return count;
-  })();
+  }, [state?.generatedOrder, state?.ticketStatus, currentIndex, totalTickets]);
 
   // Max wait time: ETA for the last person in the queue
   // Uses the same 2.2 min/ticket constant as the public display (readonly-display.tsx:307)
   const MINUTES_PER_TICKET = 2.2;
   const maxWaitMinutes = peopleWaiting > 0 ? Math.round(peopleWaiting * MINUTES_PER_TICKET) : null;
 
-  // Undrawn count: tickets in range NOT yet in generatedOrder
+  // Shared drawn set — built once per server state change, shared by undrawnCount + previewUndrawnCount
+  const drawnSet = React.useMemo(
+    () => new Set(state?.generatedOrder ?? []),
+    [state?.generatedOrder],
+  );
+
+  // Server-derived undrawn count (stable between mutations — does NOT depend on form keystrokes)
+  const serverUndrawnCount = React.useMemo(() => {
+    if (!state || (state.startNumber === 0 && state.endNumber === 0)) return 0;
+    let count = 0;
+    for (let i = state.startNumber; i <= state.endNumber; i++) {
+      if (!drawnSet.has(i)) count++;
+    }
+    return count;
+  }, [state?.startNumber, state?.endNumber, drawnSet]);
+
+  // Undrawn count: use form-preview only in the pre-generation state (no server range yet)
   const undrawnCount = (() => {
     if (!state || (state.startNumber === 0 && state.endNumber === 0)) {
       const s = Number(rangeForm.startNumber);
@@ -563,34 +571,26 @@ const AdminPage = () => {
       if (Number.isInteger(s) && Number.isInteger(e) && e > s) return e - s + 1;
       return 0;
     }
-    const drawn = new Set(state.generatedOrder);
-    let count = 0;
-    for (let i = state.startNumber; i <= state.endNumber; i++) {
-      if (!drawn.has(i)) count++;
-    }
-    return count;
+    return serverUndrawnCount;
   })();
+
   const hasDrawStarted = (state?.generatedOrder.length ?? 0) > 0;
   const isRangeExhausted = hasDrawStarted && undrawnCount === 0;
-  const previewUndrawnCount = (() => {
-    if (!state || !hasDrawStarted || isRangeExhausted) {
-      return undrawnCount;
-    }
 
+  const previewUndrawnCount = React.useMemo(() => {
+    if (!state || !hasDrawStarted || (hasDrawStarted && serverUndrawnCount === 0)) {
+      return serverUndrawnCount;
+    }
     const parsedEnd = Number(rangeForm.endNumber);
     const previewEnd =
       Number.isInteger(parsedEnd) && parsedEnd > state.endNumber ? parsedEnd : state.endNumber;
-    const drawn = new Set(state.generatedOrder);
+    if (previewEnd === state.endNumber) return serverUndrawnCount;
     let count = 0;
-
     for (let ticket = state.startNumber; ticket <= previewEnd; ticket += 1) {
-      if (!drawn.has(ticket)) {
-        count += 1;
-      }
+      if (!drawnSet.has(ticket)) count += 1;
     }
-
     return count;
-  })();
+  }, [state?.startNumber, state?.endNumber, drawnSet, hasDrawStarted, serverUndrawnCount, rangeForm.endNumber]);
 
   const canAppend = !!state && !!appendEnd && !loading && undrawnCount === 0;
   const parsedStartNumber = Number(rangeForm.startNumber);

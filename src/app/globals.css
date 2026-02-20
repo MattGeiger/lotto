@@ -500,6 +500,11 @@ a {
   text-decoration: none;
 }
 
+/* Eliminate ~300ms tap delay on iOS Safari (iPad Mini 4 / iPadOS 15) */
+a, button, input, select, textarea, [role="button"] {
+  touch-action: manipulation;
+}
+
 ::selection {
   background: var(--primary);
   color: var(--primary-foreground);
