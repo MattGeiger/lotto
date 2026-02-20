@@ -4,6 +4,7 @@
 ### Added
 - Expanded automated test coverage from ~25-30% to ~60-65% with 226 new test cases across 13 new test files covering pure utilities (RTL, date, time, class merging), all 15 API route action handlers, the Postgres state manager (full CRUD + snapshots), admin page interactions and v1.5.1 memoized computations, and key UI components (public display page, confirmation dialog, operating hours editor, public board variant).
 - Updated `docs/V2.0_PLANNED_FEATURES.md` with cross-cutting test coverage expansion section.
+- Refreshed `docs/V1.5_OPTIMIZATIONS.md` with a source-backed compatibility baseline check for iPad mini 4 (best-effort support), updated unresolved `/admin` latency risks, and revised optimization priorities.
 
 ## [1.5.1] - 2026-02-19
 ### Changed
