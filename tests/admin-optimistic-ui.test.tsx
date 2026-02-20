@@ -122,6 +122,50 @@ describe("Admin optimistic UI", () => {
     });
   });
 
+  it("keeps non-draw controls enabled while draw action is pending", async () => {
+    const advanceResolvers: Array<(response: Response) => void> = [];
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
+        const method = init?.method ?? "GET";
+        if (method === "GET") {
+          return new Response(JSON.stringify(baseState), { status: 200 });
+        }
+
+        const body = init?.body ? JSON.parse(String(init.body)) : {};
+        if (body.action === "listSnapshots") {
+          return new Response(JSON.stringify([]), { status: 200 });
+        }
+
+        if (body.action === "advanceServing") {
+          return await new Promise<Response>((resolve) => {
+            advanceResolvers.push(resolve);
+          });
+        }
+
+        return new Response(JSON.stringify(baseState), { status: 200 });
+      }),
+    );
+
+    render(<AdminPage />);
+    await screen.findByText("Now Serving");
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: "Next draw" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("switch", { name: "Toggle random order" })).not.toBeDisabled();
+    });
+
+    await act(async () => {
+      advanceResolvers[0]?.(
+        new Response(JSON.stringify({ ...baseState, currentlyServing: 7 }), { status: 200 }),
+      );
+      await Promise.resolve();
+    });
+  });
+
   it("queues one draw action, sends exactly two sequential requests, and ignores a third rapid tap", async () => {
     const postBodies: Record<string, unknown>[] = [];
     const advanceResolvers: Array<(response: Response) => void> = [];

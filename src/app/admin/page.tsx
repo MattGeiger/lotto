@@ -81,6 +81,9 @@ type Snapshot = {
   timestamp: number;
 };
 
+const SNAPSHOT_RENDER_PAGE_SIZE = 100;
+const DRAW_SNAPSHOT_REFRESH_DELAY_MS = 1500;
+
 type DrawNavigationPayload = Extract<
   ActionPayload,
   { action: "advanceServing" | "updateServing" }
@@ -929,6 +932,9 @@ const AdminPage = () => {
   const [urlError, setUrlError] = React.useState("");
   const [copied, setCopied] = React.useState(false);
   const [snapshots, setSnapshots] = React.useState<Snapshot[]>([]);
+  const [snapshotRenderLimit, setSnapshotRenderLimit] = React.useState(
+    SNAPSHOT_RENDER_PAGE_SIZE,
+  );
   const [selectedSnapshot, setSelectedSnapshot] = React.useState<string>("");
   const [canUndo, setCanUndo] = React.useState(false);
   const [canRedo, setCanRedo] = React.useState(false);
@@ -940,6 +946,7 @@ const AdminPage = () => {
   const inFlightActionRef = React.useRef<InFlightAction | null>(null);
   const queuedDrawActionRef = React.useRef<QueuedDrawAction | null>(null);
   const optimisticIdRef = React.useRef(0);
+  const snapshotRefreshTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const setInFlightActionSync = React.useCallback((next: InFlightAction | null) => {
     inFlightActionRef.current = next;
@@ -961,6 +968,17 @@ const AdminPage = () => {
 
   const pendingAction = pendingNonDrawAction ?? pendingDrawAction;
   const nonDrawActionPending = pendingNonDrawAction !== null;
+  const hasMoreSnapshots = snapshots.length > snapshotRenderLimit;
+  const snapshotOptions = React.useMemo(() => {
+    const visible = snapshots.slice(0, snapshotRenderLimit);
+    if (selectedSnapshot && !visible.some((snapshot) => snapshot.id === selectedSnapshot)) {
+      const selected = snapshots.find((snapshot) => snapshot.id === selectedSnapshot);
+      if (selected) {
+        return [...visible, selected];
+      }
+    }
+    return visible;
+  }, [selectedSnapshot, snapshotRenderLimit, snapshots]);
 
   React.useEffect(() => {
     stateRef.current = state;
@@ -975,15 +993,50 @@ const AdminPage = () => {
       });
       if (response.ok) {
         const snaps = (await response.json()) as Snapshot[];
-        setSnapshots(snaps);
-        setSelectedSnapshot((current) =>
-          snaps.length && !current ? snaps[0].id : current,
-        );
+        setSnapshots((current) => {
+          const unchanged =
+            current.length === snaps.length &&
+            current.every(
+              (snapshot, index) =>
+                snapshot.id === snaps[index]?.id &&
+                snapshot.timestamp === snaps[index]?.timestamp,
+            );
+          return unchanged ? current : snaps;
+        });
+        setSelectedSnapshot((current) => {
+          if (!snaps.length) return "";
+          if (current && snaps.some((snapshot) => snapshot.id === current)) {
+            return current;
+          }
+          return snaps[0].id;
+        });
       }
     } catch {
       // ignore snapshot refresh errors in UI
     }
   }, []);
+
+  const scheduleSnapshotRefresh = React.useCallback(
+    (delayMs = 0) => {
+      if (snapshotRefreshTimerRef.current) {
+        clearTimeout(snapshotRefreshTimerRef.current);
+      }
+      snapshotRefreshTimerRef.current = setTimeout(() => {
+        snapshotRefreshTimerRef.current = null;
+        void refreshSnapshots();
+      }, delayMs);
+    },
+    [refreshSnapshots],
+  );
+
+  React.useEffect(
+    () => () => {
+      if (snapshotRefreshTimerRef.current) {
+        clearTimeout(snapshotRefreshTimerRef.current);
+      }
+    },
+    [],
+  );
 
   React.useEffect(() => {
     if (typeof window !== "undefined") {
@@ -1103,7 +1156,9 @@ const AdminPage = () => {
           setCanRedo(false);
         }
         // Snapshot history refresh is non-critical and should not block action completion UI.
-        void refreshSnapshots();
+        scheduleSnapshotRefresh(
+          isDrawNavigationPayload(payload) ? DRAW_SNAPSHOT_REFRESH_DELAY_MS : 0,
+        );
         return data;
       } catch (err) {
         const message = err instanceof Error ? err.message : "Unexpected error while saving.";
@@ -1113,7 +1168,12 @@ const AdminPage = () => {
         clearPendingForPayload(payload);
       }
     },
-    [clearPendingForPayload, markPendingStart, postAction, refreshSnapshots],
+    [
+      clearPendingForPayload,
+      markPendingStart,
+      postAction,
+      scheduleSnapshotRefresh,
+    ],
   );
 
   const nextOptimisticId = React.useCallback(() => {
@@ -1143,7 +1203,11 @@ const AdminPage = () => {
               prev.filter((patch) => patch.id !== appliedPatchId),
             );
           }
-          void refreshSnapshots();
+          scheduleSnapshotRefresh(
+            isDrawNavigationPayload(currentItem.payload)
+              ? DRAW_SNAPSHOT_REFRESH_DELAY_MS
+              : 0,
+          );
           currentItem.resolve(data);
         } catch (err) {
           const message =
@@ -1183,7 +1247,7 @@ const AdminPage = () => {
       fetchState,
       markPendingStart,
       postAction,
-      refreshSnapshots,
+      scheduleSnapshotRefresh,
       setInFlightActionSync,
       setQueuedDrawActionSync,
     ],
@@ -2192,7 +2256,7 @@ const AdminPage = () => {
                   type="button"
                   variant="ghost"
                   size="sm"
-                  onClick={refreshSnapshots}
+                  onClick={() => scheduleSnapshotRefresh()}
                   disabled={loading}
                 >
                   Refresh snapshots
@@ -2211,7 +2275,7 @@ const AdminPage = () => {
                     aria-labelledby="snapshot-label"
                   >
                     {snapshots.length === 0 && <option value="">No snapshots yet</option>}
-                    {snapshots.map((snap) => (
+                    {snapshotOptions.map((snap) => (
                       <option key={snap.id} value={snap.id}>
                         {new Date(snap.timestamp).toLocaleString()}
                       </option>
@@ -2226,6 +2290,24 @@ const AdminPage = () => {
                   >
                     Restore
                   </Button>
+                </div>
+                <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                  <span>
+                    Showing {Math.min(snapshotRenderLimit, snapshots.length)} of {snapshots.length} snapshots
+                  </span>
+                  {hasMoreSnapshots && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() =>
+                        setSnapshotRenderLimit((current) => current + SNAPSHOT_RENDER_PAGE_SIZE)
+                      }
+                      disabled={loading}
+                    >
+                      Show older snapshots
+                    </Button>
+                  )}
                 </div>
               </div>
             </CardContent>

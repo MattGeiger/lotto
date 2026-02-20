@@ -400,12 +400,14 @@ After batch sorting started, staff could still type into Start/End inputs. The U
 - v1.5.2 expanded admin test coverage, implemented the first component-isolation pass (range/reset inputs), added O(1) range-preview optimization, and decoupled snapshot refresh from action completion.
 - Latest on-device iPad mini 4 validation (2026-02-20) confirms typed-input lag is now mostly resolved, but button/tap latency remains measurable (several seconds in worst draw-position taps).
 - Feature-flagged optimistic action UX is now implemented for `/admin` (`NEXT_PUBLIC_ADMIN_OPTIMISTIC_UI`) to reduce perceived button delay while preserving server-authoritative reconciliation.
-- Current WIP pass (2026-02-20): split pending-state channels (`pendingDrawAction` vs `pendingNonDrawAction`) and isolated Draw Position controls into a memoized component so draw taps no longer mute unrelated controls.
+- Latest pass (2026-02-20): split pending-state channels (`pendingDrawAction` vs `pendingNonDrawAction`) and isolated Draw Position controls into a memoized component so draw taps no longer mute unrelated controls.
+- Latest pass (2026-02-20): deferred draw-triggered snapshot refresh and capped History `<select>` rendering with progressive "Show older snapshots" loading to reduce iPad layout cost from large option lists.
 
 ### Observed
 - On slower devices (for example iPad mini 4), typing in admin inputs and tapping buttons can lag significantly (up to ~5 seconds in worst cases).
 - Input-isolation work materially reduced typing lag in range/reset fields.
 - Remaining lag is now most visible on action taps (especially Draw Position next/prev/clear), where UI waited on server persistence roundtrip before showing updates.
+- Manual cleanup of snapshots older than 7 days produced an immediate lag reduction on iPad mini 4, further confirming snapshot-history rendering/load cost as a contributing factor.
 
 ### Root Cause
 - `src/app/admin/page.tsx` performs several expensive derived computations on every render (including every keystroke):
@@ -416,6 +418,7 @@ After batch sorting started, staff could still type into Start/End inputs. The U
 - Snapshot history is no longer on the critical action path, so residual button delay now correlates more strongly with write/read persistence latency.
 - In DB mode, each mutation still includes server-side state read + transaction write (state + snapshot) and runs under a 5000ms timeout budget, which aligns with observed multi-second tap latency in adverse conditions.
 - Prior UI coupling also contributed: one global pending flag caused broad control disable/mute cycles on draw taps, creating additional perception of system-wide lag.
+- Large snapshot lists in the History `<select>` can create expensive layout/reflow work on iPad mini 4 when refreshed on each draw action.
 
 ### Device Context (iPad mini 4)
 - iPad mini 4 is legacy hardware (A8 generation) and is on the iPadOS 15 security branch.
@@ -432,10 +435,12 @@ After batch sorting started, staff could still type into Start/End inputs. The U
 - **Phase 3**: Decoupled snapshot refresh from action completion and initial interactive load path (`sendAction`, `fetchState`, and undo/redo flow), so slow snapshot listing no longer blocks visible state updates.
 - **Phase 11 (new)**: Added a feature-flagged optimistic dispatcher for `/admin` actions with immediate local patching, single-flight request processing, and queue-one behavior for draw navigation (`advanceServing`/`updateServing`). Failure path now rolls back optimistic state and triggers safety resync.
 - **Phase 11.1 (new)**: Split pending-state management so draw actions no longer drive non-draw control muting, and extracted Draw Position controls into memoized `DrawPositionControls` to reduce render fan-out during tap interactions.
+- **Phase 11.2 (new)**: Deferred draw-path snapshot refresh timing and introduced capped History option rendering (`SNAPSHOT_RENDER_PAGE_SIZE` + "Show older snapshots"), reducing non-critical history rendering work during draw advancement.
 
 ### Remaining Recommendations
 - P0: Validate optimistic mode on iPad mini 4 and tune rollout guardrails (enable flag in staging first, verify rollback behavior under network failures).
 - P0: Continue breaking up heavy `/admin` sections so draw-path updates only repaint draw-critical UI (avoid page-wide render churn on each tap).
+- P0: Measure iPad mini 4 draw latency after snapshot defer/capping pass and tune refresh delay/page size as needed.
 - P1: Continue profiling residual iPad mini 4 typing lag and isolate any remaining high-frequency input sections (for example returned/unclaimed fields) if long tasks persist.
 - P2: Cap ticket grid animations for large grids; simplify MorphingText for static labels.
 - P2: Verify generated CSS fallbacks on iPad mini 4 before adding manual `color-mix()` fallbacks.
