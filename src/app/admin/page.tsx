@@ -491,7 +491,7 @@ type RangeGenerationControlsProps = {
   hasDrawStarted: boolean;
   isRangeExhausted: boolean;
   loading: boolean;
-  pendingAction: string | null;
+  pendingNonDrawAction: string | null;
   onGenerate: (startNumber: number, endNumber: number) => Promise<void>;
   onGenerateBatch: (
     startNumber: number,
@@ -505,7 +505,7 @@ const RangeGenerationControls = React.memo(function RangeGenerationControls({
   hasDrawStarted,
   isRangeExhausted,
   loading,
-  pendingAction,
+  pendingNonDrawAction,
   onGenerate,
   onGenerateBatch,
 }: RangeGenerationControlsProps) {
@@ -548,7 +548,7 @@ const RangeGenerationControls = React.memo(function RangeGenerationControls({
     hasValidGenerateRange &&
     !state?.orderLocked &&
     !loading &&
-    pendingAction === null;
+    pendingNonDrawAction === null;
 
   const previewUndrawnCount = React.useMemo(() => {
     if (!state || !hasActiveRange) {
@@ -723,7 +723,7 @@ const RangeGenerationControls = React.memo(function RangeGenerationControls({
               return;
             }
 
-            if (loading || pendingAction !== null || canGenerateFull) {
+            if (loading || pendingNonDrawAction !== null || canGenerateFull) {
               return;
             }
 
@@ -768,7 +768,7 @@ const RangeGenerationControls = React.memo(function RangeGenerationControls({
         </div>
         <Button
           variant="outline"
-          disabled={loading || pendingAction !== null || previewUndrawnCount === 0}
+          disabled={loading || pendingNonDrawAction !== null || previewUndrawnCount === 0}
           onClick={() => setBatchDialogOpen(true)}
         >
           Generate batch
@@ -780,17 +780,17 @@ const RangeGenerationControls = React.memo(function RangeGenerationControls({
 
 type ResetActionControlsProps = {
   loading: boolean;
-  pendingAction: string | null;
+  pendingNonDrawAction: string | null;
   onReset: () => Promise<void>;
 };
 
 const ResetActionControls = React.memo(function ResetActionControls({
   loading,
-  pendingAction,
+  pendingNonDrawAction,
   onReset,
 }: ResetActionControlsProps) {
   const [resetPhrase, setResetPhrase] = React.useState("");
-  const canReset = resetPhrase === "RESET" && !loading && pendingAction === null;
+  const canReset = resetPhrase === "RESET" && !loading && pendingNonDrawAction === null;
 
   return (
     <>
@@ -819,6 +819,90 @@ const ResetActionControls = React.memo(function ResetActionControls({
   );
 });
 
+type DrawPositionControlsProps = {
+  currentTicket: number | null;
+  currentDrawNumber: number | null;
+  totalTickets: number;
+  canAdvancePrev: boolean;
+  canAdvanceNext: boolean;
+  loading: boolean;
+  hasState: boolean;
+  drawActionsDisabled: boolean;
+  canClear: boolean;
+  onPrev: () => Promise<void>;
+  onNext: () => Promise<void>;
+  onClear: () => Promise<void>;
+  formatOrdinal: (value: number) => string;
+};
+
+const DrawPositionControls = React.memo(function DrawPositionControls({
+  currentTicket,
+  currentDrawNumber,
+  totalTickets,
+  canAdvancePrev,
+  canAdvanceNext,
+  loading,
+  hasState,
+  drawActionsDisabled,
+  canClear,
+  onPrev,
+  onNext,
+  onClear,
+  formatOrdinal,
+}: DrawPositionControlsProps) {
+  return (
+    <div className="flex flex-col gap-3 rounded-lg border border-border bg-gradient-card-info p-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="space-y-1">
+        <p className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
+          <TicketCheck className="size-4" />
+          Draw position
+        </p>
+        <p className="text-2xl font-semibold text-foreground">
+          Ticket {currentTicket ? `#${currentTicket}` : "—"}
+        </p>
+        <p className="text-sm text-muted-foreground">
+          Draw position {currentDrawNumber ? formatOrdinal(currentDrawNumber) : "—"} of{" "}
+          {totalTickets || "—"}
+        </p>
+      </div>
+      <div className="flex items-center gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          onClick={onPrev}
+          disabled={loading || !hasState || !canAdvancePrev || drawActionsDisabled}
+          aria-label="Previous draw"
+          className={!canAdvancePrev || drawActionsDisabled ? "opacity-50" : ""}
+        >
+          <ChevronLeft className="size-4" animateOnHover animateOnTap animateOnView />
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          onClick={onNext}
+          disabled={loading || !hasState || !canAdvanceNext || drawActionsDisabled}
+          aria-label="Next draw"
+          className={!canAdvanceNext || drawActionsDisabled ? "opacity-50" : ""}
+        >
+          <ChevronRight className="size-4" animateOnHover animateOnTap animateOnView />
+        </Button>
+        <ConfirmAction
+          triggerLabel="Clear"
+          actionLabel="Clear position"
+          title="Clear draw position"
+          description="This will reset the “Now Serving” display back to the beginning. Clients will no longer see an active position. You can undo this action."
+          onConfirm={onClear}
+          disabled={loading || !hasState || !canClear || drawActionsDisabled}
+          variant="ghost"
+          size="sm"
+        />
+      </div>
+    </div>
+  );
+});
+
 const AdminPage = () => {
   const optimisticUiEnabled = process.env.NEXT_PUBLIC_ADMIN_OPTIMISTIC_UI === "true";
 
@@ -828,7 +912,8 @@ const AdminPage = () => {
   const [queuedDrawAction, setQueuedDrawAction] = React.useState<QueuedDrawAction | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
-  const [pendingAction, setPendingAction] = React.useState<string | null>(null);
+  const [pendingDrawAction, setPendingDrawAction] = React.useState<string | null>(null);
+  const [pendingNonDrawAction, setPendingNonDrawAction] = React.useState<string | null>(null);
   const [mode, setMode] = React.useState<Mode>("random");
   const [appendEnd, setAppendEnd] = React.useState("");
   const [returnedTicket, setReturnedTicket] = React.useState("");
@@ -873,6 +958,9 @@ const AdminPage = () => {
     }
     return optimisticPatches.reduce((current, patch) => patch.apply(current), confirmedState);
   }, [confirmedState, optimisticPatches, optimisticUiEnabled]);
+
+  const pendingAction = pendingNonDrawAction ?? pendingDrawAction;
+  const nonDrawActionPending = pendingNonDrawAction !== null;
 
   React.useEffect(() => {
     stateRef.current = state;
@@ -989,9 +1077,25 @@ const AdminPage = () => {
     return (await response.json()) as RaffleState;
   }, []);
 
+  const markPendingStart = React.useCallback((payload: ActionPayload) => {
+    if (isDrawNavigationPayload(payload)) {
+      setPendingDrawAction(payload.action);
+      return;
+    }
+    setPendingNonDrawAction(payload.action);
+  }, []);
+
+  const clearPendingForPayload = React.useCallback((payload: ActionPayload) => {
+    if (isDrawNavigationPayload(payload)) {
+      setPendingDrawAction(null);
+      return;
+    }
+    setPendingNonDrawAction(null);
+  }, []);
+
   const sendActionLegacy = React.useCallback(
     async (payload: ActionPayload) => {
-      setPendingAction(payload.action);
+      markPendingStart(payload);
       try {
         const data = await postAction(payload);
         setConfirmedState(data);
@@ -1006,10 +1110,10 @@ const AdminPage = () => {
         toast.error(message);
         throw err;
       } finally {
-        setPendingAction(null);
+        clearPendingForPayload(payload);
       }
     },
-    [postAction, refreshSnapshots],
+    [clearPendingForPayload, markPendingStart, postAction, refreshSnapshots],
   );
 
   const nextOptimisticId = React.useCallback(() => {
@@ -1024,7 +1128,7 @@ const AdminPage = () => {
 
       while (currentItem) {
         setInFlightActionSync({ id: currentItem.id, payload: currentItem.payload });
-        setPendingAction(currentItem.payload.action);
+        markPendingStart(currentItem.payload);
 
         try {
           const data = await postAction(currentItem.payload);
@@ -1053,7 +1157,7 @@ const AdminPage = () => {
           setQueuedDrawActionSync(null);
           currentItem.reject(err);
           setInFlightActionSync(null);
-          setPendingAction(null);
+          clearPendingForPayload(currentItem.payload);
           void fetchState();
           throw err;
         }
@@ -1069,12 +1173,20 @@ const AdminPage = () => {
       }
 
       setInFlightActionSync(null);
-      setPendingAction(null);
+      clearPendingForPayload(initialItem.payload);
 
       if (latestState) return latestState;
       throw new Error("No state returned from action chain.");
     },
-    [fetchState, postAction, refreshSnapshots, setInFlightActionSync, setQueuedDrawActionSync],
+    [
+      clearPendingForPayload,
+      fetchState,
+      markPendingStart,
+      postAction,
+      refreshSnapshots,
+      setInFlightActionSync,
+      setQueuedDrawActionSync,
+    ],
   );
 
   const sendActionOptimistic = React.useCallback(
@@ -1231,7 +1343,7 @@ const AdminPage = () => {
 
   const handleCleanup = async (days: number) => {
     setCleanupMessage(null);
-    setPendingAction("cleanup");
+    setPendingNonDrawAction("cleanup");
     try {
       const response = await fetch("/api/state/cleanup", {
         method: "POST",
@@ -1249,7 +1361,7 @@ const AdminPage = () => {
     } catch {
       toast.error("Cleanup request failed.");
     } finally {
-      setPendingAction(null);
+      setPendingNonDrawAction(null);
     }
   };
 
@@ -1465,6 +1577,9 @@ const AdminPage = () => {
     optimisticUiEnabled &&
     !!inFlightAction &&
     (!inFlightIsDrawAction || drawQueueCount > 0);
+  const drawActionsDisabled =
+    pendingDrawAction !== null &&
+    (!optimisticUiEnabled || drawActionsBlockedByQueuePolicy);
 
   const formatOrdinal = (value: number) => {
     const remainder = value % 100;
@@ -1709,7 +1824,7 @@ const AdminPage = () => {
                       handleModeToggleRequest(checked ? "random" : "sequential")
                     }
                     aria-label="Toggle random order"
-                    disabled={modeChanging || pendingAction !== null}
+                    disabled={modeChanging || nonDrawActionPending}
                   />
                   <span className="text-xs uppercase tracking-wide text-muted-foreground">Random</span>
                 </div>
@@ -1748,7 +1863,7 @@ const AdminPage = () => {
                 hasDrawStarted={hasDrawStarted}
                 isRangeExhausted={isRangeExhausted}
                 loading={loading}
-                pendingAction={pendingAction}
+                pendingNonDrawAction={pendingNonDrawAction}
                 onGenerate={handleGenerate}
                 onGenerateBatch={handleGenerateBatch}
               />
@@ -1834,55 +1949,21 @@ const AdminPage = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex flex-col gap-3 rounded-lg border border-border bg-gradient-card-info p-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="space-y-1">
-                  <p className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-                    <TicketCheck className="size-4" />
-                    Draw position
-                  </p>
-                  <p className="text-2xl font-semibold text-foreground">
-                    Ticket {currentTicket ? `#${currentTicket}` : "—"}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Draw position {currentDrawNumber ? formatOrdinal(currentDrawNumber) : "—"} of{" "}
-                    {totalTickets || "—"}
-                  </p>
-                </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={handlePrevServing}
-                  disabled={loading || !state || !canAdvancePrev || drawActionsBlockedByQueuePolicy}
-                  aria-label="Previous draw"
-                  className={!canAdvancePrev || drawActionsBlockedByQueuePolicy ? "opacity-50" : ""}
-                >
-                  <ChevronLeft className="size-4" animateOnHover animateOnTap animateOnView />
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={handleNextServing}
-                  disabled={loading || !state || !canAdvanceNext || drawActionsBlockedByQueuePolicy}
-                  aria-label="Next draw"
-                  className={!canAdvanceNext || drawActionsBlockedByQueuePolicy ? "opacity-50" : ""}
-                >
-                  <ChevronRight className="size-4" animateOnHover animateOnTap animateOnView />
-                </Button>
-                <ConfirmAction
-                  triggerLabel="Clear"
-                  actionLabel="Clear position"
-                  title="Clear draw position"
-                  description="This will reset the “Now Serving” display back to the beginning. Clients will no longer see an active position. You can undo this action."
-                  onConfirm={() => setServingByIndex(null)}
-                  disabled={loading || !state || currentIndex === -1 || drawActionsBlockedByQueuePolicy}
-                  variant="ghost"
-                  size="sm"
-                />
-              </div>
-            </div>
+              <DrawPositionControls
+                currentTicket={currentTicket}
+                currentDrawNumber={currentDrawNumber}
+                totalTickets={totalTickets}
+                canAdvancePrev={canAdvancePrev}
+                canAdvanceNext={canAdvanceNext}
+                loading={loading}
+                hasState={Boolean(state)}
+                drawActionsDisabled={drawActionsDisabled}
+                canClear={currentIndex !== -1}
+                onPrev={handlePrevServing}
+                onNext={handleNextServing}
+                onClear={() => setServingByIndex(null)}
+                formatOrdinal={formatOrdinal}
+              />
 
             <div className="ticket-returned space-y-3 rounded-lg border p-4">
               <div>
@@ -1916,7 +1997,7 @@ const AdminPage = () => {
                   title="Mark ticket as returned"
                   description={`This will mark ${returnedTicketLabel} as returned so it no longer counts in the active queue. You can undo this action.`}
                   onConfirm={handleMarkReturned}
-                  disabled={!canMarkReturned || loading || pendingAction !== null}
+                  disabled={!canMarkReturned || loading || nonDrawActionPending}
                   variant="default"
                 />
               </div>
@@ -1954,7 +2035,7 @@ const AdminPage = () => {
                   title="Mark ticket as unclaimed"
                   description={`This will mark ${unclaimedTicketLabel} as unclaimed so it no longer counts in the active queue. You can undo this action.`}
                   onConfirm={handleMarkUnclaimed}
-                  disabled={!canMarkUnclaimed || loading || pendingAction !== null}
+                  disabled={!canMarkUnclaimed || loading || nonDrawActionPending}
                   variant="default"
                 />
               </div>
@@ -2086,7 +2167,7 @@ const AdminPage = () => {
                   variant="outline"
                   size="sm"
                   onClick={handleUndo}
-                  disabled={!canUndo || loading || pendingAction !== null}
+                  disabled={!canUndo || loading || nonDrawActionPending}
                   title="Undo last action"
                 >
                   <AdminAnimatedIcon>
@@ -2099,7 +2180,7 @@ const AdminPage = () => {
                   variant="outline"
                   size="sm"
                   onClick={handleRedo}
-                  disabled={!canRedo || loading || pendingAction !== null}
+                  disabled={!canRedo || loading || nonDrawActionPending}
                   title="Redo last undone action"
                 >
                   <AdminAnimatedIcon>
@@ -2141,7 +2222,7 @@ const AdminPage = () => {
                     variant="default"
                     size="sm"
                     onClick={handleRestoreSnapshot}
-                    disabled={!selectedSnapshot || loading || pendingAction !== null}
+                    disabled={!selectedSnapshot || loading || nonDrawActionPending}
                   >
                     Restore
                   </Button>
@@ -2174,7 +2255,7 @@ const AdminPage = () => {
                     confirmText="Yes, delete old snapshots"
                     confirmVariant="destructive"
                     onConfirm={() => handleCleanup(7)}
-                    disabled={loading || pendingAction !== null}
+                    disabled={loading || nonDrawActionPending}
                     variant="outline"
                     size="sm"
                   />
@@ -2186,7 +2267,7 @@ const AdminPage = () => {
                     confirmText="Yes, delete old snapshots"
                     confirmVariant="destructive"
                     onConfirm={() => handleCleanup(30)}
-                    disabled={loading || pendingAction !== null}
+                    disabled={loading || nonDrawActionPending}
                     variant="outline"
                     size="sm"
                   />
@@ -2205,7 +2286,7 @@ const AdminPage = () => {
               <Separator />
               <ResetActionControls
                 loading={loading}
-                pendingAction={pendingAction}
+                pendingNonDrawAction={pendingNonDrawAction}
                 onReset={handleReset}
               />
             </CardContent>
@@ -2287,7 +2368,7 @@ const AdminPage = () => {
                   timezone={pendingTimezone}
                   onChange={setPendingHours}
                   onTimezoneChange={setPendingTimezone}
-                  disabled={loading || pendingAction !== null}
+                  disabled={loading || nonDrawActionPending}
                 />
               ) : (
                 <p className="text-sm text-muted-foreground">Loading hours…</p>
@@ -2296,7 +2377,7 @@ const AdminPage = () => {
                 variant="default"
                 size="sm"
                 onClick={handleSaveOperatingHours}
-                disabled={!pendingHours || loading || pendingAction !== null}
+                disabled={!pendingHours || loading || nonDrawActionPending}
               >
                 Save operating hours
               </Button>
@@ -2310,10 +2391,10 @@ const AdminPage = () => {
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel disabled={pendingAction !== null}>Cancel</AlertDialogCancel>
+                    <AlertDialogCancel disabled={nonDrawActionPending}>Cancel</AlertDialogCancel>
                     <AlertDialogAction
                       onClick={handleConfirmTimezoneMismatch}
-                      disabled={pendingAction !== null}
+                      disabled={nonDrawActionPending}
                     >
                       Continue and Save
                     </AlertDialogAction>

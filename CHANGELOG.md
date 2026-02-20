@@ -8,6 +8,7 @@
 - Documented `docs/ISSUES.md` Issue 16 covering the reset-state admin regression where "Tickets issued" displays `1` with no active range, including proposed guard-based fix and validation checklist.
 - Added optimistic-admin regression coverage (`tests/admin-optimistic-ui.test.tsx`) for immediate draw updates, queue-one tap behavior, and rollback on failed actions.
 - Updated `docs/ISSUES.md` Issue 14 and `docs/V1.5_OPTIMIZATIONS.md` to log the post-input-optimization finding that button latency remains the primary iPad mini 4 pain point and to document optimistic-action rollout criteria.
+- Updated `docs/ISSUES.md` and `docs/V1.5_OPTIMIZATIONS.md` to track the new draw-path pending/render isolation pass (split draw vs non-draw pending channels and memoized Draw Position controls).
 ### Fixed
 - Corrected `/admin` Live State `Tickets issued` so reset sentinel state (`startNumber=0`, `endNumber=0`) now renders `—` instead of `1`, and added a regression test in `tests/admin-page-actions.test.tsx`.
 - Prevented unhandled promise rejections in `/admin` draw-navigation handlers (`next`, `prev`, and direct serving updates) by catching `sendAction` failures after toast reporting.
@@ -18,6 +19,8 @@
 - Updated docs to note on-device iPad mini 4 validation: responsiveness improved, but input lag remains a known issue.
 - Implemented feature-flagged optimistic `/admin` action dispatch (`NEXT_PUBLIC_ADMIN_OPTIMISTIC_UI`) with deterministic local patches, queue-one draw navigation intents, rollback-safe failure handling, and background snapshot refresh reconciliation.
 - Routed display URL writes through the unified `/admin` action dispatcher (`setDisplayUrl`) so optimistic and non-optimistic paths share consistent error handling and state reconciliation.
+- Split `/admin` pending state into `pendingDrawAction` and `pendingNonDrawAction` so draw-position taps no longer mute unrelated controls like mode/settings/history sections.
+- Isolated draw-position controls into memoized `DrawPositionControls`, reducing draw-path render fan-out on older devices.
 
 ## [1.5.1] - 2026-02-19
 ### Changed

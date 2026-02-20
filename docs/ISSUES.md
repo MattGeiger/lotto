@@ -400,6 +400,7 @@ After batch sorting started, staff could still type into Start/End inputs. The U
 - v1.5.2 expanded admin test coverage, implemented the first component-isolation pass (range/reset inputs), added O(1) range-preview optimization, and decoupled snapshot refresh from action completion.
 - Latest on-device iPad mini 4 validation (2026-02-20) confirms typed-input lag is now mostly resolved, but button/tap latency remains measurable (several seconds in worst draw-position taps).
 - Feature-flagged optimistic action UX is now implemented for `/admin` (`NEXT_PUBLIC_ADMIN_OPTIMISTIC_UI`) to reduce perceived button delay while preserving server-authoritative reconciliation.
+- Current WIP pass (2026-02-20): split pending-state channels (`pendingDrawAction` vs `pendingNonDrawAction`) and isolated Draw Position controls into a memoized component so draw taps no longer mute unrelated controls.
 
 ### Observed
 - On slower devices (for example iPad mini 4), typing in admin inputs and tapping buttons can lag significantly (up to ~5 seconds in worst cases).
@@ -414,6 +415,7 @@ After batch sorting started, staff could still type into Start/End inputs. The U
 - The configured ticket ceiling is 6 digits (`MAX_TICKET_NUMBER = 999_999`), so these render-time loops can become very large on active lotteries.
 - Snapshot history is no longer on the critical action path, so residual button delay now correlates more strongly with write/read persistence latency.
 - In DB mode, each mutation still includes server-side state read + transaction write (state + snapshot) and runs under a 5000ms timeout budget, which aligns with observed multi-second tap latency in adverse conditions.
+- Prior UI coupling also contributed: one global pending flag caused broad control disable/mute cycles on draw taps, creating additional perception of system-wide lag.
 
 ### Device Context (iPad mini 4)
 - iPad mini 4 is legacy hardware (A8 generation) and is on the iPadOS 15 security branch.
@@ -429,9 +431,11 @@ After batch sorting started, staff could still type into Start/End inputs. The U
 - **Async hardening**: Draw-navigation action handlers now catch `sendAction` rejections after toast reporting, removing the unhandled rejection seen in tests.
 - **Phase 3**: Decoupled snapshot refresh from action completion and initial interactive load path (`sendAction`, `fetchState`, and undo/redo flow), so slow snapshot listing no longer blocks visible state updates.
 - **Phase 11 (new)**: Added a feature-flagged optimistic dispatcher for `/admin` actions with immediate local patching, single-flight request processing, and queue-one behavior for draw navigation (`advanceServing`/`updateServing`). Failure path now rolls back optimistic state and triggers safety resync.
+- **Phase 11.1 (new)**: Split pending-state management so draw actions no longer drive non-draw control muting, and extracted Draw Position controls into memoized `DrawPositionControls` to reduce render fan-out during tap interactions.
 
 ### Remaining Recommendations
 - P0: Validate optimistic mode on iPad mini 4 and tune rollout guardrails (enable flag in staging first, verify rollback behavior under network failures).
+- P0: Continue breaking up heavy `/admin` sections so draw-path updates only repaint draw-critical UI (avoid page-wide render churn on each tap).
 - P1: Continue profiling residual iPad mini 4 typing lag and isolate any remaining high-frequency input sections (for example returned/unclaimed fields) if long tasks persist.
 - P2: Cap ticket grid animations for large grids; simplify MorphingText for static labels.
 - P2: Verify generated CSS fallbacks on iPad mini 4 before adding manual `color-mix()` fallbacks.
