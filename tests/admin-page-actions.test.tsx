@@ -104,6 +104,7 @@ const installFetch = () => {
 
 describe("Admin page actions", () => {
   beforeEach(() => {
+    delete process.env.NEXT_PUBLIC_ADMIN_OPTIMISTIC_UI;
     currentState = { ...baseState };
     currentSnapshots = [...twoSnapshots];
     postBodies = [];

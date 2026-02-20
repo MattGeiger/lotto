@@ -69,6 +69,7 @@ const installMatchMedia = () => {
 
 describe("Admin range locking UX", () => {
   beforeEach(() => {
+    delete process.env.NEXT_PUBLIC_ADMIN_OPTIMISTIC_UI;
     toastError.mockReset();
     installMatchMedia();
     vi.stubGlobal("fetch", vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {

@@ -56,7 +56,7 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeSwitcher } from "@/components/theme-switcher";
-import type { Mode, OperatingHours, RaffleState } from "@/lib/state-manager";
+import { defaultState, type Mode, type OperatingHours, type RaffleState } from "@/lib/state-types";
 import { formatWaitTime } from "@/lib/time-format";
 import { shouldWarnTimezoneMismatch } from "@/lib/timezone-utils";
 
@@ -72,12 +72,418 @@ type ActionPayload =
   | { action: "undo" }
   | { action: "redo" }
   | { action: "restoreSnapshot"; id: string }
+  | { action: "setDisplayUrl"; url: string | null }
   | { action: "setOperatingHours"; hours: OperatingHours; timezone: string }
   | { action: "generateBatch"; startNumber: number; endNumber: number; batchSize: number };
 
 type Snapshot = {
   id: string;
   timestamp: number;
+};
+
+type DrawNavigationPayload = Extract<
+  ActionPayload,
+  { action: "advanceServing" | "updateServing" }
+>;
+
+type OptimisticActionKind = ActionPayload["action"];
+
+type OptimisticPatch = {
+  id: string;
+  kind: OptimisticActionKind;
+  apply: (state: RaffleState) => RaffleState;
+};
+
+type InFlightAction = {
+  id: string;
+  payload: ActionPayload;
+};
+
+type OptimisticDispatchItem = {
+  id: string;
+  payload: ActionPayload;
+  patch: OptimisticPatch | null;
+  resolve: (state: RaffleState) => void;
+  reject: (reason: unknown) => void;
+};
+
+type QueuedDrawAction = {
+  id: string;
+  payload: DrawNavigationPayload;
+  patch: OptimisticPatch | null;
+  resolve: (state: RaffleState) => void;
+  reject: (reason: unknown) => void;
+};
+
+const buildSequentialRange = (start: number, end: number) =>
+  Array.from({ length: end - start + 1 }, (_, index) => start + index);
+
+const hasConfiguredRange = (state: RaffleState) =>
+  !(state.startNumber === 0 && state.endNumber === 0);
+
+const countUndrawnTickets = (state: RaffleState) => {
+  if (!hasConfiguredRange(state)) return 0;
+  const drawnSet = new Set(state.generatedOrder);
+  let count = 0;
+  for (let ticket = state.startNumber; ticket <= state.endNumber; ticket += 1) {
+    if (!drawnSet.has(ticket)) count += 1;
+  }
+  return count;
+};
+
+const isDrawNavigationPayload = (
+  payload: ActionPayload | null | undefined,
+): payload is DrawNavigationPayload =>
+  payload?.action === "advanceServing" || payload?.action === "updateServing";
+
+const applyAdvanceServingOptimistic = (
+  state: RaffleState,
+  direction: "next" | "prev",
+): RaffleState => {
+  if (!hasConfiguredRange(state) || state.generatedOrder.length === 0) return state;
+  const order = state.generatedOrder;
+  const status = state.ticketStatus ?? {};
+  const currentIndex =
+    state.currentlyServing !== null ? order.indexOf(state.currentlyServing) : -1;
+  const step = direction === "next" ? 1 : -1;
+  const startIndex = currentIndex === -1 ? -1 : currentIndex;
+
+  const findNextIndex = (start: number, stepValue: number) => {
+    for (let i = start + stepValue; i >= 0 && i < order.length; i += stepValue) {
+      const ticketNumber = order[i];
+      if (status[ticketNumber] !== "returned") return i;
+    }
+    return -1;
+  };
+
+  const nextIndex =
+    direction === "prev" && currentIndex === -1
+      ? findNextIndex(-1, 1)
+      : findNextIndex(startIndex, step);
+
+  if (nextIndex === -1) return state;
+  const nextTicket = order[nextIndex];
+  if (nextTicket === state.currentlyServing) return state;
+
+  const nextCalledAt = { ...(state.calledAt ?? {}) };
+  nextCalledAt[nextTicket] = Date.now();
+
+  return {
+    ...state,
+    currentlyServing: nextTicket,
+    calledAt: nextCalledAt,
+  };
+};
+
+const applyUpdateServingOptimistic = (
+  state: RaffleState,
+  currentlyServing: number | null,
+): RaffleState => {
+  if (!hasConfiguredRange(state)) return state;
+  if (
+    currentlyServing !== null &&
+    (currentlyServing < state.startNumber || currentlyServing > state.endNumber)
+  ) {
+    return state;
+  }
+
+  const nextCalledAt = { ...(state.calledAt ?? {}) };
+  if (currentlyServing !== null) {
+    nextCalledAt[currentlyServing] = Date.now();
+  }
+
+  return {
+    ...state,
+    currentlyServing,
+    calledAt: nextCalledAt,
+  };
+};
+
+const applyMarkReturnedOptimistic = (
+  state: RaffleState,
+  ticketNumber: number,
+): RaffleState => {
+  if (!hasConfiguredRange(state) || state.generatedOrder.length === 0) return state;
+  if (!Number.isInteger(ticketNumber) || ticketNumber <= 0) return state;
+  if (ticketNumber < state.startNumber || ticketNumber > state.endNumber) return state;
+
+  const nextStatus = {
+    ...(state.ticketStatus ?? {}),
+    [ticketNumber]: "returned",
+  } as RaffleState["ticketStatus"];
+  let nextServing = state.currentlyServing;
+  const nextCalledAt = { ...(state.calledAt ?? {}) };
+
+  if (ticketNumber === state.currentlyServing) {
+    const currentIndex = state.generatedOrder.indexOf(ticketNumber);
+    if (currentIndex !== -1) {
+      nextServing = null;
+      for (let i = currentIndex + 1; i < state.generatedOrder.length; i += 1) {
+        const nextTicket = state.generatedOrder[i];
+        if (nextStatus[nextTicket] !== "returned") {
+          nextServing = nextTicket;
+          nextCalledAt[nextTicket] = Date.now();
+          break;
+        }
+      }
+    }
+  }
+
+  return {
+    ...state,
+    ticketStatus: nextStatus,
+    currentlyServing: nextServing,
+    calledAt: nextCalledAt,
+  };
+};
+
+const applyMarkUnclaimedOptimistic = (
+  state: RaffleState,
+  ticketNumber: number,
+): RaffleState => {
+  if (!hasConfiguredRange(state) || state.generatedOrder.length === 0) return state;
+  if (!Number.isInteger(ticketNumber) || ticketNumber <= 0) return state;
+  if (ticketNumber < state.startNumber || ticketNumber > state.endNumber) return state;
+
+  const currentIndex =
+    state.currentlyServing !== null
+      ? state.generatedOrder.indexOf(state.currentlyServing)
+      : -1;
+  if (currentIndex === -1) return state;
+
+  const ticketIndex = state.generatedOrder.indexOf(ticketNumber);
+  if (ticketIndex === -1 || ticketIndex > currentIndex) return state;
+
+  const nextStatus = {
+    ...(state.ticketStatus ?? {}),
+    [ticketNumber]: "unclaimed",
+  } as RaffleState["ticketStatus"];
+
+  return {
+    ...state,
+    ticketStatus: nextStatus,
+  };
+};
+
+const applySetModeOptimistic = (state: RaffleState, mode: Mode): RaffleState => {
+  if (!hasConfiguredRange(state)) {
+    return { ...state, mode };
+  }
+
+  if (state.generatedOrder.length === 0 && mode === "sequential") {
+    return {
+      ...state,
+      mode,
+      generatedOrder: buildSequentialRange(state.startNumber, state.endNumber),
+    };
+  }
+
+  return {
+    ...state,
+    mode,
+  };
+};
+
+const applyResetOptimistic = (state: RaffleState): RaffleState => ({
+  ...defaultState,
+  ticketStatus: {},
+  calledAt: {},
+  operatingHours: state.operatingHours ?? defaultState.operatingHours,
+  timezone: state.timezone ?? defaultState.timezone,
+});
+
+const applyGenerateSequentialOptimistic = (
+  state: RaffleState,
+  startNumber: number,
+  endNumber: number,
+): RaffleState => {
+  if (state.orderLocked) return state;
+  if (!Number.isInteger(startNumber) || !Number.isInteger(endNumber)) return state;
+  if (startNumber <= 0 || endNumber <= 0 || endNumber <= startNumber) return state;
+
+  return {
+    ...state,
+    startNumber,
+    endNumber,
+    mode: "sequential",
+    generatedOrder: buildSequentialRange(startNumber, endNumber),
+    currentlyServing: null,
+    ticketStatus: {},
+    calledAt: {},
+    orderLocked: true,
+    displayUrl: state.displayUrl ?? null,
+    operatingHours: state.operatingHours ?? defaultState.operatingHours,
+    timezone: state.timezone ?? defaultState.timezone,
+  };
+};
+
+const applyGenerateBatchSequentialOptimistic = (
+  state: RaffleState,
+  startNumber: number,
+  endNumber: number,
+  batchSize: number,
+): RaffleState => {
+  if (!Number.isInteger(batchSize) || batchSize <= 0) return state;
+
+  const hasRange = hasConfiguredRange(state);
+  let effectiveStart = state.startNumber;
+  let effectiveEnd = state.endNumber;
+
+  if (!hasRange) {
+    if (!Number.isInteger(startNumber) || !Number.isInteger(endNumber)) return state;
+    if (startNumber <= 0 || endNumber <= 0 || endNumber <= startNumber) return state;
+    effectiveStart = startNumber;
+    effectiveEnd = endNumber;
+  } else {
+    if (startNumber !== state.startNumber) return state;
+    if (!Number.isInteger(endNumber) || endNumber <= 0) return state;
+    if (endNumber < state.endNumber) return state;
+    effectiveStart = state.startNumber;
+    effectiveEnd = endNumber;
+  }
+
+  const drawn = new Set(state.generatedOrder);
+  const pool = buildSequentialRange(effectiveStart, effectiveEnd).filter(
+    (ticket) => !drawn.has(ticket),
+  );
+  if (pool.length === 0 || batchSize > pool.length) return state;
+
+  return {
+    ...state,
+    startNumber: effectiveStart,
+    endNumber: effectiveEnd,
+    generatedOrder: [...state.generatedOrder, ...pool.slice(0, batchSize)],
+    orderLocked: true,
+  };
+};
+
+const applyAppendSequentialOptimistic = (
+  state: RaffleState,
+  endNumber: number,
+): RaffleState => {
+  if (!hasConfiguredRange(state)) return state;
+  if (!Number.isInteger(endNumber) || endNumber <= 0) return state;
+  if (endNumber <= state.endNumber) return state;
+  if (countUndrawnTickets(state) > 0) return state;
+
+  const additions = buildSequentialRange(state.endNumber + 1, endNumber);
+  return {
+    ...state,
+    endNumber,
+    generatedOrder: [...state.generatedOrder, ...additions],
+  };
+};
+
+const applySetDisplayUrlOptimistic = (
+  state: RaffleState,
+  url: string | null,
+): RaffleState => ({
+  ...state,
+  displayUrl: url,
+});
+
+const applySetOperatingHoursOptimistic = (
+  state: RaffleState,
+  hours: OperatingHours,
+  timezone: string,
+): RaffleState => ({
+  ...state,
+  operatingHours: hours,
+  timezone,
+});
+
+const buildOptimisticPatch = (
+  id: string,
+  payload: ActionPayload,
+  currentState: RaffleState | null,
+): OptimisticPatch | null => {
+  if (!currentState) return null;
+
+  switch (payload.action) {
+    case "advanceServing":
+      return {
+        id,
+        kind: payload.action,
+        apply: (state) => applyAdvanceServingOptimistic(state, payload.direction),
+      };
+    case "updateServing":
+      return {
+        id,
+        kind: payload.action,
+        apply: (state) => applyUpdateServingOptimistic(state, payload.currentlyServing),
+      };
+    case "markReturned":
+      return {
+        id,
+        kind: payload.action,
+        apply: (state) => applyMarkReturnedOptimistic(state, payload.ticketNumber),
+      };
+    case "markUnclaimed":
+      return {
+        id,
+        kind: payload.action,
+        apply: (state) => applyMarkUnclaimedOptimistic(state, payload.ticketNumber),
+      };
+    case "setMode":
+      return {
+        id,
+        kind: payload.action,
+        apply: (state) => applySetModeOptimistic(state, payload.mode),
+      };
+    case "reset":
+      return {
+        id,
+        kind: payload.action,
+        apply: (state) => applyResetOptimistic(state),
+      };
+    case "setDisplayUrl":
+      return {
+        id,
+        kind: payload.action,
+        apply: (state) => applySetDisplayUrlOptimistic(state, payload.url),
+      };
+    case "setOperatingHours":
+      return {
+        id,
+        kind: payload.action,
+        apply: (state) =>
+          applySetOperatingHoursOptimistic(state, payload.hours, payload.timezone),
+      };
+    case "generate":
+      if (payload.mode !== "sequential") return null;
+      return {
+        id,
+        kind: payload.action,
+        apply: (state) =>
+          applyGenerateSequentialOptimistic(
+            state,
+            payload.startNumber,
+            payload.endNumber,
+          ),
+      };
+    case "generateBatch":
+      if (currentState.mode !== "sequential") return null;
+      return {
+        id,
+        kind: payload.action,
+        apply: (state) =>
+          applyGenerateBatchSequentialOptimistic(
+            state,
+            payload.startNumber,
+            payload.endNumber,
+            payload.batchSize,
+          ),
+      };
+    case "append":
+      if (currentState.mode !== "sequential") return null;
+      return {
+        id,
+        kind: payload.action,
+        apply: (state) => applyAppendSequentialOptimistic(state, payload.endNumber),
+      };
+    default:
+      return null;
+  }
 };
 
 type RangeGenerationControlsProps = {
@@ -414,7 +820,12 @@ const ResetActionControls = React.memo(function ResetActionControls({
 });
 
 const AdminPage = () => {
-  const [state, setState] = React.useState<RaffleState | null>(null);
+  const optimisticUiEnabled = process.env.NEXT_PUBLIC_ADMIN_OPTIMISTIC_UI === "true";
+
+  const [confirmedState, setConfirmedState] = React.useState<RaffleState | null>(null);
+  const [optimisticPatches, setOptimisticPatches] = React.useState<OptimisticPatch[]>([]);
+  const [inFlightAction, setInFlightAction] = React.useState<InFlightAction | null>(null);
+  const [queuedDrawAction, setQueuedDrawAction] = React.useState<QueuedDrawAction | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [pendingAction, setPendingAction] = React.useState<string | null>(null);
@@ -440,6 +851,32 @@ const AdminPage = () => {
   const [pendingTimezone, setPendingTimezone] = React.useState<string>("America/Los_Angeles");
   const [timezoneMismatchOpen, setTimezoneMismatchOpen] = React.useState(false);
   const browserOriginRef = React.useRef<string | null>(null);
+  const stateRef = React.useRef<RaffleState | null>(null);
+  const inFlightActionRef = React.useRef<InFlightAction | null>(null);
+  const queuedDrawActionRef = React.useRef<QueuedDrawAction | null>(null);
+  const optimisticIdRef = React.useRef(0);
+
+  const setInFlightActionSync = React.useCallback((next: InFlightAction | null) => {
+    inFlightActionRef.current = next;
+    setInFlightAction(next);
+  }, []);
+
+  const setQueuedDrawActionSync = React.useCallback((next: QueuedDrawAction | null) => {
+    queuedDrawActionRef.current = next;
+    setQueuedDrawAction(next);
+  }, []);
+
+  const state = React.useMemo(() => {
+    if (!confirmedState) return null;
+    if (!optimisticUiEnabled || optimisticPatches.length === 0) {
+      return confirmedState;
+    }
+    return optimisticPatches.reduce((current, patch) => patch.apply(current), confirmedState);
+  }, [confirmedState, optimisticPatches, optimisticUiEnabled]);
+
+  React.useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
 
   const refreshSnapshots = React.useCallback(async () => {
     try {
@@ -476,7 +913,11 @@ const AdminPage = () => {
         throw new Error("Unable to load state.");
       }
       const data = (await stateResp.json()) as RaffleState;
-      setState(data);
+      setConfirmedState(data);
+      if (!inFlightActionRef.current) {
+        setOptimisticPatches([]);
+        setQueuedDrawActionSync(null);
+      }
       setError(null);
       // Keep first interactive state render independent of snapshot-list latency.
       void refreshSnapshots();
@@ -488,7 +929,7 @@ const AdminPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [refreshSnapshots]);
+  }, [refreshSnapshots, setQueuedDrawActionSync]);
 
   React.useEffect(() => {
     fetchState();
@@ -535,21 +976,25 @@ const AdminPage = () => {
     }
   }, [state?.operatingHours, state?.timezone]);
 
-  const sendAction = React.useCallback(
+  const postAction = React.useCallback(async (payload: ActionPayload) => {
+    const response = await fetch("/api/state", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw new Error(body?.error ?? "Unable to apply action.");
+    }
+    return (await response.json()) as RaffleState;
+  }, []);
+
+  const sendActionLegacy = React.useCallback(
     async (payload: ActionPayload) => {
       setPendingAction(payload.action);
       try {
-        const response = await fetch("/api/state", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        if (!response.ok) {
-          const body = await response.json().catch(() => ({}));
-          throw new Error(body?.error ?? "Unable to apply action.");
-        }
-        const data = (await response.json()) as RaffleState;
-        setState(data);
+        const data = await postAction(payload);
+        setConfirmedState(data);
         if (payload.action !== "undo" && payload.action !== "redo") {
           setCanRedo(false);
         }
@@ -564,7 +1009,144 @@ const AdminPage = () => {
         setPendingAction(null);
       }
     },
-    [refreshSnapshots],
+    [postAction, refreshSnapshots],
+  );
+
+  const nextOptimisticId = React.useCallback(() => {
+    optimisticIdRef.current += 1;
+    return `optimistic-${optimisticIdRef.current}`;
+  }, []);
+
+  const processOptimisticChain = React.useCallback(
+    async (initialItem: OptimisticDispatchItem): Promise<RaffleState> => {
+      let currentItem: OptimisticDispatchItem | QueuedDrawAction | null = initialItem;
+      let latestState: RaffleState | null = null;
+
+      while (currentItem) {
+        setInFlightActionSync({ id: currentItem.id, payload: currentItem.payload });
+        setPendingAction(currentItem.payload.action);
+
+        try {
+          const data = await postAction(currentItem.payload);
+          latestState = data;
+          setConfirmedState(data);
+          if (currentItem.payload.action !== "undo" && currentItem.payload.action !== "redo") {
+            setCanRedo(false);
+          }
+          if (currentItem.patch) {
+            const appliedPatchId = currentItem.patch.id;
+            setOptimisticPatches((prev) =>
+              prev.filter((patch) => patch.id !== appliedPatchId),
+            );
+          }
+          void refreshSnapshots();
+          currentItem.resolve(data);
+        } catch (err) {
+          const message =
+            err instanceof Error ? err.message : "Unexpected error while saving.";
+          toast.error(message);
+          setOptimisticPatches([]);
+          const queued = queuedDrawActionRef.current;
+          if (queued) {
+            queued.reject(err);
+          }
+          setQueuedDrawActionSync(null);
+          currentItem.reject(err);
+          setInFlightActionSync(null);
+          setPendingAction(null);
+          void fetchState();
+          throw err;
+        }
+
+        const nextQueued = queuedDrawActionRef.current;
+        if (nextQueued) {
+          setQueuedDrawActionSync(null);
+          currentItem = nextQueued;
+          continue;
+        }
+
+        currentItem = null;
+      }
+
+      setInFlightActionSync(null);
+      setPendingAction(null);
+
+      if (latestState) return latestState;
+      throw new Error("No state returned from action chain.");
+    },
+    [fetchState, postAction, refreshSnapshots, setInFlightActionSync, setQueuedDrawActionSync],
+  );
+
+  const sendActionOptimistic = React.useCallback(
+    async (payload: ActionPayload) => {
+      const currentState = stateRef.current ?? confirmedState;
+      const createActionItem = (actionId: string, patch: OptimisticPatch | null) => {
+        let resolvePromise!: (state: RaffleState) => void;
+        let rejectPromise!: (reason: unknown) => void;
+        const actionPromise = new Promise<RaffleState>((resolve, reject) => {
+          resolvePromise = resolve;
+          rejectPromise = reject;
+        });
+
+        const actionItem: OptimisticDispatchItem = {
+          id: actionId,
+          payload,
+          patch,
+          resolve: resolvePromise,
+          reject: rejectPromise,
+        };
+
+        return { actionItem, actionPromise };
+      };
+
+      const inFlight = inFlightActionRef.current;
+      if (inFlight) {
+        if (isDrawNavigationPayload(payload) && isDrawNavigationPayload(inFlight.payload)) {
+          if (queuedDrawActionRef.current) {
+            if (currentState) return currentState;
+            throw new Error("State unavailable while action queue is full.");
+          }
+          const actionId = nextOptimisticId();
+          const patch = buildOptimisticPatch(actionId, payload, currentState);
+          const { actionItem, actionPromise } = createActionItem(actionId, patch);
+          const queuedPatch = actionItem.patch;
+          if (queuedPatch) {
+            setOptimisticPatches((prev) => [...prev, queuedPatch]);
+          }
+          setQueuedDrawActionSync({
+            ...actionItem,
+            payload,
+          });
+          return actionPromise;
+        }
+        throw new Error("Another action is still processing.");
+      }
+
+      const actionId = nextOptimisticId();
+      const patch = buildOptimisticPatch(actionId, payload, currentState);
+      const { actionItem, actionPromise } = createActionItem(actionId, patch);
+
+      const immediatePatch = actionItem.patch;
+      if (immediatePatch) {
+        setOptimisticPatches((prev) => [...prev, immediatePatch]);
+      }
+
+      void processOptimisticChain(actionItem).catch(() => {
+        // Failures are routed to the originating caller via actionPromise rejection.
+      });
+      return actionPromise;
+    },
+    [confirmedState, nextOptimisticId, processOptimisticChain, setQueuedDrawActionSync],
+  );
+
+  const sendAction = React.useCallback(
+    async (payload: ActionPayload) => {
+      if (!optimisticUiEnabled) {
+        return sendActionLegacy(payload);
+      }
+      return sendActionOptimistic(payload);
+    },
+    [optimisticUiEnabled, sendActionLegacy, sendActionOptimistic],
   );
 
   const handleGenerate = React.useCallback(async (start: number, end: number) => {
@@ -664,11 +1246,11 @@ const AdminPage = () => {
       setCleanupMessage(
         `Deleted ${data.deletedCount} snapshots older than ${data.retentionDays} days.`,
       );
-	} catch {
-	  toast.error("Cleanup request failed.");
-	} finally {
-	  setPendingAction(null);
-	}
+    } catch {
+      toast.error("Cleanup request failed.");
+    } finally {
+      setPendingAction(null);
+    }
   };
 
   const handleModeToggleRequest = (newMode: Mode) => {
@@ -706,37 +1288,22 @@ const AdminPage = () => {
       toast.error("URL must be 64 characters or less");
       return;
     }
-	try {
-	  const parsedUrl = new URL(urlInput);
-	  void parsedUrl;
-	} catch {
-	  setUrlError("Invalid URL format");
-    toast.error("Invalid URL format");
-	  return;
-	}
+    try {
+      const parsedUrl = new URL(urlInput);
+      void parsedUrl;
+    } catch {
+      setUrlError("Invalid URL format");
+      toast.error("Invalid URL format");
+      return;
+    }
 
     try {
-      const response = await fetch("/api/state", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "setDisplayUrl", url: urlInput }),
-      });
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        const message = data.error || "Failed to save URL";
-        setUrlError(message);
-        toast.error(message);
-        return;
-      }
-      setCustomDisplayUrl(urlInput);
-      setDisplayUrl(urlInput);
-      if (state) {
-        setState({ ...state, displayUrl: urlInput });
-      }
+      setUrlError("");
+      await sendAction({ action: "setDisplayUrl", url: urlInput });
       setEditingUrl(false);
-    } catch {
-      setUrlError("Failed to save URL");
-      toast.error("Failed to save URL");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to save URL";
+      setUrlError(message);
     }
   };
 
@@ -745,21 +1312,14 @@ const AdminPage = () => {
       ? `${window.location.origin}/`
       : "");
     try {
-      await fetch("/api/state", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "setDisplayUrl", url: null }),
-      });
+      await sendAction({ action: "setDisplayUrl", url: null });
       setCustomDisplayUrl(null);
       setDisplayUrl(browserUrl);
-      if (state) {
-        setState({ ...state, displayUrl: null });
-      }
       setEditingUrl(false);
       setUrlError("");
-    } catch {
-      setUrlError("Failed to reset URL");
-      toast.error("Failed to reset URL");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to reset URL";
+      setUrlError(message);
     }
   };
 
@@ -899,6 +1459,12 @@ const AdminPage = () => {
     parsedUnclaimedNumber > 0 &&
     unclaimedTicket.trim() !== "";
   const unclaimedTicketLabel = unclaimedTicket ? `#${unclaimedTicket}` : "this ticket";
+  const drawQueueCount = queuedDrawAction ? 1 : 0;
+  const inFlightIsDrawAction = isDrawNavigationPayload(inFlightAction?.payload);
+  const drawActionsBlockedByQueuePolicy =
+    optimisticUiEnabled &&
+    !!inFlightAction &&
+    (!inFlightIsDrawAction || drawQueueCount > 0);
 
   const formatOrdinal = (value: number) => {
     const remainder = value % 100;
@@ -1086,7 +1652,8 @@ const AdminPage = () => {
               className="flex items-center gap-2 animate-pulse-subtle"
             >
               <Loader2 className="size-3" />
-              {pendingAction}...
+              {pendingAction}
+              {drawQueueCount > 0 ? `... +${drawQueueCount} queued` : "..."}
             </Badge>
           )}
         </div>
@@ -1287,9 +1854,9 @@ const AdminPage = () => {
                   variant="outline"
                   size="icon"
                   onClick={handlePrevServing}
-                  disabled={loading || !state || !canAdvancePrev}
+                  disabled={loading || !state || !canAdvancePrev || drawActionsBlockedByQueuePolicy}
                   aria-label="Previous draw"
-                  className={!canAdvancePrev ? "opacity-50" : ""}
+                  className={!canAdvancePrev || drawActionsBlockedByQueuePolicy ? "opacity-50" : ""}
                 >
                   <ChevronLeft className="size-4" animateOnHover animateOnTap animateOnView />
                 </Button>
@@ -1298,9 +1865,9 @@ const AdminPage = () => {
                   variant="outline"
                   size="icon"
                   onClick={handleNextServing}
-                  disabled={loading || !state || !canAdvanceNext}
+                  disabled={loading || !state || !canAdvanceNext || drawActionsBlockedByQueuePolicy}
                   aria-label="Next draw"
-                  className={!canAdvanceNext ? "opacity-50" : ""}
+                  className={!canAdvanceNext || drawActionsBlockedByQueuePolicy ? "opacity-50" : ""}
                 >
                   <ChevronRight className="size-4" animateOnHover animateOnTap animateOnView />
                 </Button>
@@ -1310,7 +1877,7 @@ const AdminPage = () => {
                   title="Clear draw position"
                   description="This will reset the “Now Serving” display back to the beginning. Clients will no longer see an active position. You can undo this action."
                   onConfirm={() => setServingByIndex(null)}
-                  disabled={loading || !state || currentIndex === -1}
+                  disabled={loading || !state || currentIndex === -1 || drawActionsBlockedByQueuePolicy}
                   variant="ghost"
                   size="sm"
                 />

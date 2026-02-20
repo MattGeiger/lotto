@@ -6,6 +6,8 @@
 - Updated `docs/V2.0_PLANNED_FEATURES.md` with cross-cutting test coverage expansion section.
 - Refreshed `docs/V1.5_OPTIMIZATIONS.md` with a source-backed compatibility baseline check for iPad mini 4 (best-effort support), updated unresolved `/admin` latency risks, and revised optimization priorities.
 - Documented `docs/ISSUES.md` Issue 16 covering the reset-state admin regression where "Tickets issued" displays `1` with no active range, including proposed guard-based fix and validation checklist.
+- Added optimistic-admin regression coverage (`tests/admin-optimistic-ui.test.tsx`) for immediate draw updates, queue-one tap behavior, and rollback on failed actions.
+- Updated `docs/ISSUES.md` Issue 14 and `docs/V1.5_OPTIMIZATIONS.md` to log the post-input-optimization finding that button latency remains the primary iPad mini 4 pain point and to document optimistic-action rollout criteria.
 ### Fixed
 - Corrected `/admin` Live State `Tickets issued` so reset sentinel state (`startNumber=0`, `endNumber=0`) now renders `—` instead of `1`, and added a regression test in `tests/admin-page-actions.test.tsx`.
 - Prevented unhandled promise rejections in `/admin` draw-navigation handlers (`next`, `prev`, and direct serving updates) by catching `sendAction` failures after toast reporting.
@@ -14,6 +16,8 @@
 - Added regression coverage for slow snapshot listing to verify load/action UI is not blocked (`tests/admin-page-actions.test.tsx`).
 - Updated `docs/V1.5_OPTIMIZATIONS.md` and `docs/ISSUES.md` to reflect the shipped keystroke-isolation and range-preview optimizations.
 - Updated docs to note on-device iPad mini 4 validation: responsiveness improved, but input lag remains a known issue.
+- Implemented feature-flagged optimistic `/admin` action dispatch (`NEXT_PUBLIC_ADMIN_OPTIMISTIC_UI`) with deterministic local patches, queue-one draw navigation intents, rollback-safe failure handling, and background snapshot refresh reconciliation.
+- Routed display URL writes through the unified `/admin` action dispatcher (`setDisplayUrl`) so optimistic and non-optimistic paths share consistent error handling and state reconciliation.
 
 ## [1.5.1] - 2026-02-19
 ### Changed
