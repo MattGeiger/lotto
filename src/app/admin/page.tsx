@@ -578,7 +578,14 @@ const AdminPage = () => {
   const isRangeExhausted = hasDrawStarted && undrawnCount === 0;
 
   const previewUndrawnCount = React.useMemo(() => {
-    if (!state || !hasDrawStarted || (hasDrawStarted && serverUndrawnCount === 0)) {
+    // Pre-generation: fall back to form inputs (mirrors undrawnCount logic)
+    if (!state || (state.startNumber === 0 && state.endNumber === 0)) {
+      const s = Number(rangeForm.startNumber);
+      const e = Number(rangeForm.endNumber);
+      if (Number.isInteger(s) && Number.isInteger(e) && e > s) return e - s + 1;
+      return 0;
+    }
+    if (!hasDrawStarted || (hasDrawStarted && serverUndrawnCount === 0)) {
       return serverUndrawnCount;
     }
     const parsedEnd = Number(rangeForm.endNumber);
@@ -590,7 +597,7 @@ const AdminPage = () => {
       if (!drawnSet.has(ticket)) count += 1;
     }
     return count;
-  }, [state?.startNumber, state?.endNumber, drawnSet, hasDrawStarted, serverUndrawnCount, rangeForm.endNumber]);
+  }, [state?.startNumber, state?.endNumber, drawnSet, hasDrawStarted, serverUndrawnCount, rangeForm.startNumber, rangeForm.endNumber]);
 
   const canAppend = !!state && !!appendEnd && !loading && undrawnCount === 0;
   const parsedStartNumber = Number(rangeForm.startNumber);

@@ -441,3 +441,25 @@ After batch sorting started, staff could still type into Start/End inputs. The U
 - **Visibility pause:** Hide the display tab, confirm polling stops, and verify it refreshes immediately on return.
 - **Snake unified settings slider:** Sweep `VERY EASY` -> `NIGHTMARE` and verify speed + spawn rules update to each mode profile.
 - **Snake nightmare mode:** Leave a pellet uneaten for >5 seconds and verify automatic respawn to a new location.
+
+---
+
+## Issue 15: "Generate Batch" button stays disabled after entering start/end range
+
+### Status
+- Fixed in production.
+
+### Observed
+After entering a Start Number and End Number in the admin page, only the "Generate Full" button becomes enabled. "Generate Batch" remains permanently muted/disabled even though both buttons should activate together when a valid range is entered.
+
+### Root Cause
+- The "Generate batch" button is disabled when `previewUndrawnCount === 0` (`src/app/admin/page.tsx`).
+- Pre-generation (before any draw exists), `previewUndrawnCount` entered the early-return branch `if (!state || !hasDrawStarted || ...)` and returned `serverUndrawnCount`.
+- `serverUndrawnCount` reads from **server state** (`state.startNumber`, `state.endNumber`), which are both `0` before the first generation — so it always returned `0`.
+- Meanwhile, `canGenerateFull` (used by the "Generate Full" button) checks `hasValidGenerateRange`, which reads directly from **form inputs** (`rangeForm`), so it correctly became enabled when the user typed valid numbers.
+- The parallel `undrawnCount` variable already had a form-value fallback for the pre-generation state, but `previewUndrawnCount` was missing this same fallback path.
+
+### Fix
+- Added a form-input fallback to `previewUndrawnCount` for the pre-generation state, mirroring the pattern already used by `undrawnCount`.
+- When `state.startNumber === 0 && state.endNumber === 0`, the memo now reads from `rangeForm.startNumber` and `rangeForm.endNumber` instead of returning `serverUndrawnCount`.
+- Added `rangeForm.startNumber` to the `useMemo` dependency array.
