@@ -309,7 +309,7 @@ describe("Admin page actions", () => {
     expect(ticketsIssuedLabel.nextElementSibling).toHaveTextContent("—");
   });
 
-  it("caps snapshot options and loads older entries on demand", async () => {
+  it("caps snapshot options and toggles older entries with checkbox", async () => {
     currentSnapshots = Array.from({ length: 250 }, (_, index) => ({
       id: `snap-${index + 1}`,
       timestamp: Date.now() - index * 1000,
@@ -323,10 +323,16 @@ describe("Admin page actions", () => {
     expect(snapshotSelect.querySelectorAll("option")).toHaveLength(100);
 
     const user = userEvent.setup();
-    await user.click(screen.getByRole("button", { name: "Show older snapshots" }));
+    await user.click(screen.getByRole("checkbox", { name: "Show older snapshots" }));
 
     await waitFor(() => {
-      expect(snapshotSelect.querySelectorAll("option")).toHaveLength(200);
+      expect(snapshotSelect.querySelectorAll("option")).toHaveLength(250);
+    });
+
+    await user.click(screen.getByRole("checkbox", { name: "Show older snapshots" }));
+
+    await waitFor(() => {
+      expect(snapshotSelect.querySelectorAll("option")).toHaveLength(100);
     });
   });
 });

@@ -30,6 +30,7 @@ import { AdminAnimatedIcon } from "@/components/admin-animated-icon";
 
 import { ConfirmAction } from "@/components/confirm-action";
 import { OperatingHoursEditor } from "@/components/operating-hours-editor";
+import { ArchiveIcon } from "@/components/lucide-animated/archive";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,6 +44,7 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card,
   CardContent,
@@ -932,9 +934,7 @@ const AdminPage = () => {
   const [urlError, setUrlError] = React.useState("");
   const [copied, setCopied] = React.useState(false);
   const [snapshots, setSnapshots] = React.useState<Snapshot[]>([]);
-  const [snapshotRenderLimit, setSnapshotRenderLimit] = React.useState(
-    SNAPSHOT_RENDER_PAGE_SIZE,
-  );
+  const [showOlderSnapshots, setShowOlderSnapshots] = React.useState(false);
   const [selectedSnapshot, setSelectedSnapshot] = React.useState<string>("");
   const [canUndo, setCanUndo] = React.useState(false);
   const [canRedo, setCanRedo] = React.useState(false);
@@ -968,7 +968,10 @@ const AdminPage = () => {
 
   const pendingAction = pendingNonDrawAction ?? pendingDrawAction;
   const nonDrawActionPending = pendingNonDrawAction !== null;
-  const hasMoreSnapshots = snapshots.length > snapshotRenderLimit;
+  const snapshotRenderLimit = showOlderSnapshots
+    ? snapshots.length
+    : SNAPSHOT_RENDER_PAGE_SIZE;
+  const hasMoreSnapshots = snapshots.length > SNAPSHOT_RENDER_PAGE_SIZE;
   const snapshotOptions = React.useMemo(() => {
     const visible = snapshots.slice(0, snapshotRenderLimit);
     if (selectedSnapshot && !visible.some((snapshot) => snapshot.id === selectedSnapshot)) {
@@ -2291,22 +2294,26 @@ const AdminPage = () => {
                     Restore
                   </Button>
                 </div>
-                <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                <div className="space-y-1 text-xs text-muted-foreground">
                   <span>
                     Showing {Math.min(snapshotRenderLimit, snapshots.length)} of {snapshots.length} snapshots
                   </span>
                   {hasMoreSnapshots && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() =>
-                        setSnapshotRenderLimit((current) => current + SNAPSHOT_RENDER_PAGE_SIZE)
-                      }
-                      disabled={loading}
+                    <label
+                      htmlFor="show-older-snapshots"
+                      className="mt-1 flex items-center gap-2 text-sm text-foreground"
                     >
-                      Show older snapshots
-                    </Button>
+                      <Checkbox
+                        id="show-older-snapshots"
+                        checked={showOlderSnapshots}
+                        onCheckedChange={(checked) => setShowOlderSnapshots(checked === true)}
+                        disabled={loading}
+                      />
+                      <span className="inline-flex items-center gap-2">
+                        <ArchiveIcon className="size-4 text-muted-foreground" size={16} />
+                        Show older snapshots
+                      </span>
+                    </label>
                   )}
                 </div>
               </div>

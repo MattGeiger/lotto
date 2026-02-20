@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.5.2] - 2026-02-19
+## [1.5.3] - 2026-02-20
 ### Added
 - Expanded automated test coverage from ~25-30% to ~60-65% with 226 new test cases across 13 new test files covering pure utilities (RTL, date, time, class merging), all 15 API route action handlers, the Postgres state manager (full CRUD + snapshots), admin page interactions and v1.5.1 memoized computations, and key UI components (public display page, confirmation dialog, operating hours editor, public board variant).
 - Updated `docs/V2.0_PLANNED_FEATURES.md` with cross-cutting test coverage expansion section.
@@ -22,7 +22,7 @@
 - Routed display URL writes through the unified `/admin` action dispatcher (`setDisplayUrl`) so optimistic and non-optimistic paths share consistent error handling and state reconciliation.
 - Split `/admin` pending state into `pendingDrawAction` and `pendingNonDrawAction` so draw-position taps no longer mute unrelated controls like mode/settings/history sections.
 - Isolated draw-position controls into memoized `DrawPositionControls`, reducing draw-path render fan-out on older devices.
-- Deferred draw-triggered snapshot refresh (`DRAW_SNAPSHOT_REFRESH_DELAY_MS`) and capped History snapshot option rendering (`SNAPSHOT_RENDER_PAGE_SIZE`) with progressive "Show older snapshots" expansion to reduce iPad layout/reflow pressure during draw taps.
+- Deferred draw-triggered snapshot refresh (`DRAW_SNAPSHOT_REFRESH_DELAY_MS`) and capped History snapshot option rendering (`SNAPSHOT_RENDER_PAGE_SIZE`) with a clearer "Show older snapshots" checkbox affordance (including animated archive icon) to reduce iPad layout/reflow pressure during draw taps.
 - Added regression coverage for History option capping/progressive expansion and non-draw control availability during pending draw actions (`tests/admin-page-actions.test.tsx`, `tests/admin-optimistic-ui.test.tsx`).
 
 ## [1.5.1] - 2026-02-19

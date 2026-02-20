@@ -401,7 +401,7 @@ After batch sorting started, staff could still type into Start/End inputs. The U
 - Latest on-device iPad mini 4 validation (2026-02-20) confirms typed-input lag is now mostly resolved, but button/tap latency remains measurable (several seconds in worst draw-position taps).
 - Feature-flagged optimistic action UX is now implemented for `/admin` (`NEXT_PUBLIC_ADMIN_OPTIMISTIC_UI`) to reduce perceived button delay while preserving server-authoritative reconciliation.
 - Latest pass (2026-02-20): split pending-state channels (`pendingDrawAction` vs `pendingNonDrawAction`) and isolated Draw Position controls into a memoized component so draw taps no longer mute unrelated controls.
-- Latest pass (2026-02-20): deferred draw-triggered snapshot refresh and capped History `<select>` rendering with progressive "Show older snapshots" loading to reduce iPad layout cost from large option lists.
+- Latest pass (2026-02-20): deferred draw-triggered snapshot refresh and capped History `<select>` rendering with a clearer "Show older snapshots" checkbox affordance to reduce iPad layout cost from large option lists.
 
 ### Observed
 - On slower devices (for example iPad mini 4), typing in admin inputs and tapping buttons can lag significantly (up to ~5 seconds in worst cases).
@@ -435,7 +435,7 @@ After batch sorting started, staff could still type into Start/End inputs. The U
 - **Phase 3**: Decoupled snapshot refresh from action completion and initial interactive load path (`sendAction`, `fetchState`, and undo/redo flow), so slow snapshot listing no longer blocks visible state updates.
 - **Phase 11 (new)**: Added a feature-flagged optimistic dispatcher for `/admin` actions with immediate local patching, single-flight request processing, and queue-one behavior for draw navigation (`advanceServing`/`updateServing`). Failure path now rolls back optimistic state and triggers safety resync.
 - **Phase 11.1 (new)**: Split pending-state management so draw actions no longer drive non-draw control muting, and extracted Draw Position controls into memoized `DrawPositionControls` to reduce render fan-out during tap interactions.
-- **Phase 11.2 (new)**: Deferred draw-path snapshot refresh timing and introduced capped History option rendering (`SNAPSHOT_RENDER_PAGE_SIZE` + "Show older snapshots"), reducing non-critical history rendering work during draw advancement.
+- **Phase 11.2 (new)**: Deferred draw-path snapshot refresh timing and introduced capped History option rendering (`SNAPSHOT_RENDER_PAGE_SIZE` + "Show older snapshots" checkbox), reducing non-critical history rendering work during draw advancement.
 
 ### Remaining Recommendations
 - P0: Validate optimistic mode on iPad mini 4 and tune rollout guardrails (enable flag in staging first, verify rollback behavior under network failures).
