@@ -451,14 +451,14 @@ const AdminPage = () => {
       if (response.ok) {
         const snaps = (await response.json()) as Snapshot[];
         setSnapshots(snaps);
-        if (snaps.length && !selectedSnapshot) {
-          setSelectedSnapshot(snaps[0].id);
-        }
+        setSelectedSnapshot((current) =>
+          snaps.length && !current ? snaps[0].id : current,
+        );
       }
     } catch {
       // ignore snapshot refresh errors in UI
     }
-  }, [selectedSnapshot]);
+  }, []);
 
   React.useEffect(() => {
     if (typeof window !== "undefined") {
@@ -471,24 +471,15 @@ const AdminPage = () => {
   const fetchState = React.useCallback(async () => {
     setLoading(true);
     try {
-      const [stateResp, snapshotsResp] = await Promise.all([
-        fetch("/api/state", { cache: "no-store" }),
-        fetch("/api/state", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "listSnapshots" }),
-        }),
-      ]);
+      const stateResp = await fetch("/api/state", { cache: "no-store" });
       if (!stateResp.ok) {
         throw new Error("Unable to load state.");
       }
       const data = (await stateResp.json()) as RaffleState;
       setState(data);
       setError(null);
-      if (snapshotsResp.ok) {
-        const snaps = (await snapshotsResp.json()) as Snapshot[];
-        setSnapshots(snaps);
-      }
+      // Keep first interactive state render independent of snapshot-list latency.
+      void refreshSnapshots();
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Unexpected error while loading state.";
@@ -497,7 +488,7 @@ const AdminPage = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [refreshSnapshots]);
 
   React.useEffect(() => {
     fetchState();
@@ -562,7 +553,8 @@ const AdminPage = () => {
         if (payload.action !== "undo" && payload.action !== "redo") {
           setCanRedo(false);
         }
-        await refreshSnapshots();
+        // Snapshot history refresh is non-critical and should not block action completion UI.
+        void refreshSnapshots();
         return data;
       } catch (err) {
         const message = err instanceof Error ? err.message : "Unexpected error while saving.";
@@ -1025,46 +1017,33 @@ const AdminPage = () => {
 
   const handleUndo = async () => {
     try {
-      const response = await fetch("/api/state", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "undo" }),
-      });
-
-      if (!response.ok) throw new Error("Undo failed");
-
-      const newState = (await response.json()) as RaffleState;
-      setState(newState);
+      await sendAction({ action: "undo" });
       setCanRedo(true);
-      await refreshSnapshots();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Undo failed");
+      if (!(error instanceof Error)) {
+        toast.error("Undo failed");
+      }
     }
   };
 
   const handleRedo = async () => {
     try {
-      const response = await fetch("/api/state", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "redo" }),
-      });
-
-      if (!response.ok) throw new Error("Redo failed");
-
-      const newState = (await response.json()) as RaffleState;
-      setState(newState);
+      await sendAction({ action: "redo" });
       setCanRedo(false);
-      await refreshSnapshots();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Redo failed");
+      if (!(error instanceof Error)) {
+        toast.error("Redo failed");
+      }
     }
   };
 
   const handleRestoreSnapshot = async () => {
     if (!selectedSnapshot) return;
-    await sendAction({ action: "restoreSnapshot", id: selectedSnapshot });
-    await refreshSnapshots();
+    try {
+      await sendAction({ action: "restoreSnapshot", id: selectedSnapshot });
+    } catch {
+      // sendAction already surfaced the error toast
+    }
   };
 
   React.useEffect(() => {

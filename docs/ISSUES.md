@@ -397,23 +397,22 @@ After batch sorting started, staff could still type into Start/End inputs. The U
 ### Status
 - **Partially resolved through v1.5.2 (2026-02-20).**
 - v1.5.1 delivered phases 1, 2, and 4a.
-- v1.5.2 expanded admin test coverage and implemented the first component-isolation pass (range/reset inputs) plus O(1) range-preview optimization.
+- v1.5.2 expanded admin test coverage, implemented the first component-isolation pass (range/reset inputs), added O(1) range-preview optimization, and decoupled snapshot refresh from action completion.
+- Latest on-device iPad mini 4 validation (2026-02-20) confirms lag is improved but still present (roughly 1-2 seconds in worst typing paths).
 
 ### Observed
 - On slower devices (for example iPad mini 4), typing in admin inputs and tapping buttons can lag significantly (up to ~5 seconds in worst cases).
 - Lag is most visible while editing range inputs and while triggering action buttons that refresh history/snapshots.
+- After input-isolation optimizations, typing lag is reduced but not eliminated; user testing still reports noticeable delay.
 
 ### Root Cause
 - `src/app/admin/page.tsx` performs several expensive derived computations on every render (including every keystroke):
   - `returnedTickets` and `unclaimedTickets` rebuild from `ticketStatus` using `filter` + `map` + `sort`.
   - `ticketsCalled` and `peopleWaiting` iterate the draw order.
-  - `undrawnCount` and `previewUndrawnCount` scan full ticket ranges and rebuild `Set(state.generatedOrder)`.
+  - some render-time loops still scale with active queue/range size on low-power hardware.
 - The configured ticket ceiling is 6 digits (`MAX_TICKET_NUMBER = 999_999`), so these render-time loops can become very large on active lotteries.
-- Snapshot history is also fetched repeatedly from `/admin`:
-  - Initial `fetchState()` requests both state and snapshots.
-  - `sendAction()` awaits `refreshSnapshots()` after each mutation.
-  - A separate `useEffect([state])` calls `listSnapshots` again to compute undo availability.
-- In DB mode, snapshot listing currently queries full snapshot payloads (`select id, created_at, payload ...`) even though the admin history selector only needs id/timestamp (`src/lib/state-manager-db.ts`), which increases server response time and can hit the 5000ms DB timeout path (`DATABASE_TIMEOUT_MS` default).
+- Snapshot history fetches are still present in `/admin` background workflows; decoupling removed them from action-critical completion, but they still add network/CPU load on constrained devices.
+- In DB mode, snapshot listing is now metadata-only (`id`, `created_at`), but round-trip latency can still be visible on constrained networks/devices.
 
 ### Device Context (iPad mini 4)
 - iPad mini 4 is legacy hardware (A8 generation) and is on the iPadOS 15 security branch.
@@ -427,10 +426,10 @@ After batch sorting started, staff could still type into Start/End inputs. The U
 - **Phase 4 (critical-path subset)**: Isolated Start/End range inputs into local-state `RangeGenerationControls` and isolated reset phrase input into local-state `ResetActionControls` so these keystrokes no longer re-render root `AdminPage`.
 - **Phase 6 (dominant path)**: Replaced O(range) range-preview loop with O(1) math for end-range extension previews (`serverUndrawnCount + (previewEnd - currentEnd)`).
 - **Async hardening**: Draw-navigation action handlers now catch `sendAction` rejections after toast reporting, removing the unhandled rejection seen in tests.
+- **Phase 3**: Decoupled snapshot refresh from action completion and initial interactive load path (`sendAction`, `fetchState`, and undo/redo flow), so slow snapshot listing no longer blocks visible state updates.
 
 ### Remaining Recommendations
-- P0: Decouple snapshot refresh from action completion so tap latency is not coupled to snapshot listing time.
-- P1: Continue isolating any remaining high-frequency admin inputs if profiling still shows keystroke long tasks.
+- P0: Continue profiling residual iPad mini 4 typing lag and isolate any remaining high-frequency input sections (for example returned/unclaimed fields) if long tasks persist.
 - P2: Cap ticket grid animations for large grids; simplify MorphingText for static labels.
 - P2: Verify generated CSS fallbacks on iPad mini 4 before adding manual `color-mix()` fallbacks.
 - See `docs/V1.5_OPTIMIZATIONS.md` for full plan.

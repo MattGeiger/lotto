@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -219,6 +219,45 @@ describe("Admin page actions", () => {
     });
     // Let pending rejections settle
     await new Promise((r) => setTimeout(r, 50));
+  });
+
+  it("does not block load or action completion when snapshot listing is slow", async () => {
+    const snapshotResolvers: Array<() => void> = [];
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
+        const method = init?.method ?? "GET";
+        if (method === "GET") {
+          return new Response(JSON.stringify(currentState), { status: 200 });
+        }
+
+        const body = init?.body ? JSON.parse(String(init.body)) : {};
+        postBodies.push(body);
+
+        if (body.action === "listSnapshots") {
+          await new Promise<void>((resolve) => snapshotResolvers.push(resolve));
+          return new Response(JSON.stringify(currentSnapshots), { status: 200 });
+        }
+
+        return new Response(JSON.stringify(currentState), { status: 200 });
+      }),
+    );
+
+    render(<AdminPage />);
+    await screen.findByText("Now Serving");
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: "Next draw" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Next draw" })).not.toBeDisabled();
+    });
+
+    await act(async () => {
+      snapshotResolvers.forEach((resolve) => resolve());
+      await new Promise((r) => setTimeout(r, 20));
+    });
   });
 
   it("renders ticket info in the draw position section", async () => {

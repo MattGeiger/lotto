@@ -10,7 +10,10 @@
 - Corrected `/admin` Live State `Tickets issued` so reset sentinel state (`startNumber=0`, `endNumber=0`) now renders `—` instead of `1`, and added a regression test in `tests/admin-page-actions.test.tsx`.
 - Prevented unhandled promise rejections in `/admin` draw-navigation handlers (`next`, `prev`, and direct serving updates) by catching `sendAction` failures after toast reporting.
 - Isolated `/admin` Start/End range inputs and reset phrase input into local-state memoized sections so keystrokes no longer trigger root-page re-renders, and optimized range preview undrawn math to an O(1) end-extension path.
+- Decoupled `/admin` snapshot refresh from action completion and initial interactive load (`sendAction`, `fetchState`, undo/redo) so slow snapshot listing no longer blocks visible state updates.
+- Added regression coverage for slow snapshot listing to verify load/action UI is not blocked (`tests/admin-page-actions.test.tsx`).
 - Updated `docs/V1.5_OPTIMIZATIONS.md` and `docs/ISSUES.md` to reflect the shipped keystroke-isolation and range-preview optimizations.
+- Updated docs to note on-device iPad mini 4 validation: responsiveness improved, but input lag remains a known issue.
 
 ## [1.5.1] - 2026-02-19
 ### Changed
