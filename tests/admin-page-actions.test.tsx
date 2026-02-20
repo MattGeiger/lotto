@@ -235,4 +235,23 @@ describe("Admin page actions", () => {
     expect(screen.getByLabelText("Start Number")).toBeInTheDocument();
     expect(screen.getByLabelText("End Number")).toBeInTheDocument();
   });
+
+  it("shows dash for Tickets issued when reset state has no active range", async () => {
+    currentState = {
+      ...baseState,
+      startNumber: 0,
+      endNumber: 0,
+      generatedOrder: [],
+      currentlyServing: null,
+      orderLocked: false,
+      ticketStatus: {},
+      calledAt: {},
+    };
+
+    render(<AdminPage />);
+    await screen.findByText("Live State");
+
+    const ticketsIssuedLabel = screen.getByText("Tickets issued");
+    expect(ticketsIssuedLabel.nextElementSibling).toHaveTextContent("—");
+  });
 });

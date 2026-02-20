@@ -463,3 +463,39 @@ After entering a Start Number and End Number in the admin page, only the "Genera
 - Added a form-input fallback to `previewUndrawnCount` for the pre-generation state, mirroring the pattern already used by `undrawnCount`.
 - When `state.startNumber === 0 && state.endNumber === 0`, the memo now reads from `rangeForm.startNumber` and `rangeForm.endNumber` instead of returning `serverUndrawnCount`.
 - Added `rangeForm.startNumber` to the `useMemo` dependency array.
+
+---
+
+## Issue 16: Admin "Tickets issued" shows `1` after reset (no active range)
+
+### Status
+- Fixed in development (2026-02-20).
+
+### Observed
+- Immediately after `Reset for New Day`, the Live State card can show:
+  - `Range`: `— – —`
+  - `Tickets issued`: `1`
+- Expected behavior in reset state is no issued count (`—`) or `0`.
+
+### Root Cause
+- Reset correctly restores `defaultState` where `startNumber = 0` and `endNumber = 0`:
+  - `src/lib/state-types.ts`
+  - `src/lib/state-manager.ts`
+  - `src/lib/state-manager-db.ts`
+- The admin card computes issued count unconditionally as:
+  - `state.endNumber - state.startNumber + 1`
+  - `src/app/admin/page.tsx`
+- In reset state this evaluates to `0 - 0 + 1 = 1`, which is mathematically valid for an inclusive range but semantically wrong for "no active range."
+
+### Implemented Fix
+- Added an explicit active-range guard in admin UI logic:
+  - `hasActiveRange = !!state && !(state.startNumber === 0 && state.endNumber === 0)`
+  - `ticketsIssued = hasActiveRange ? (end - start + 1) : null`
+- Updated the Live State card to render `ticketsIssued ?? "—"` instead of unconditional inclusive-range math.
+- Added a regression test for reset-state behavior:
+  - `tests/admin-page-actions.test.tsx` test: `shows dash for Tickets issued when reset state has no active range`.
+
+### Validation
+- Reset the system from a generated state; verify `Range` stays `— – —` and `Tickets issued` is `—` (or `0`, per final product decision).
+- Generate a valid range (for example `1-50`) and confirm `Tickets issued` shows `50`.
+- Verify no regression after append/batch flows and after reload.

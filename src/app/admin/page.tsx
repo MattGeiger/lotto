@@ -600,6 +600,9 @@ const AdminPage = () => {
   }, [state?.startNumber, state?.endNumber, drawnSet, hasDrawStarted, serverUndrawnCount, rangeForm.startNumber, rangeForm.endNumber]);
 
   const canAppend = !!state && !!appendEnd && !loading && undrawnCount === 0;
+  const hasActiveRange = !!state && !(state.startNumber === 0 && state.endNumber === 0);
+  const ticketsIssued =
+    hasActiveRange && state ? state.endNumber - state.startNumber + 1 : null;
   const parsedStartNumber = Number(rangeForm.startNumber);
   const parsedEndNumber = Number(rangeForm.endNumber);
   const hasGenerateRangeInputs =
@@ -656,22 +659,38 @@ const AdminPage = () => {
       return;
     }
     if (index === null) {
-      await sendAction({ action: "updateServing", currentlyServing: null });
+      try {
+        await sendAction({ action: "updateServing", currentlyServing: null });
+      } catch {
+        // sendAction already surfaced the error toast
+      }
       return;
     }
     const clamped = Math.max(0, Math.min(index, totalTickets - 1));
     const ticket = state.generatedOrder[clamped];
-    await sendAction({ action: "updateServing", currentlyServing: ticket });
+    try {
+      await sendAction({ action: "updateServing", currentlyServing: ticket });
+    } catch {
+      // sendAction already surfaced the error toast
+    }
   };
 
   const handlePrevServing = async () => {
     if (!state || totalTickets === 0) return;
-    await sendAction({ action: "advanceServing", direction: "prev" });
+    try {
+      await sendAction({ action: "advanceServing", direction: "prev" });
+    } catch {
+      // sendAction already surfaced the error toast
+    }
   };
 
   const handleNextServing = async () => {
     if (!state || totalTickets === 0) return;
-    await sendAction({ action: "advanceServing", direction: "next" });
+    try {
+      await sendAction({ action: "advanceServing", direction: "next" });
+    } catch {
+      // sendAction already surfaced the error toast
+    }
   };
 
   const handleMarkReturned = async () => {
@@ -1325,7 +1344,7 @@ const AdminPage = () => {
               <div className="space-y-1 rounded-lg border border-border bg-gradient-card-accent p-3 lg:col-span-2">
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">Tickets issued</p>
                 <p className="text-lg font-semibold text-status-success-text">
-                  {state ? state.endNumber - state.startNumber + 1 : "—"}
+                  {ticketsIssued ?? "—"}
                 </p>
               </div>
               <div className="space-y-1 rounded-lg border border-border bg-gradient-card-accent p-3 sm:col-span-2 lg:col-span-2">

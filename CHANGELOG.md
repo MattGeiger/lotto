@@ -5,6 +5,10 @@
 - Expanded automated test coverage from ~25-30% to ~60-65% with 226 new test cases across 13 new test files covering pure utilities (RTL, date, time, class merging), all 15 API route action handlers, the Postgres state manager (full CRUD + snapshots), admin page interactions and v1.5.1 memoized computations, and key UI components (public display page, confirmation dialog, operating hours editor, public board variant).
 - Updated `docs/V2.0_PLANNED_FEATURES.md` with cross-cutting test coverage expansion section.
 - Refreshed `docs/V1.5_OPTIMIZATIONS.md` with a source-backed compatibility baseline check for iPad mini 4 (best-effort support), updated unresolved `/admin` latency risks, and revised optimization priorities.
+- Documented `docs/ISSUES.md` Issue 16 covering the reset-state admin regression where "Tickets issued" displays `1` with no active range, including proposed guard-based fix and validation checklist.
+### Fixed
+- Corrected `/admin` Live State `Tickets issued` so reset sentinel state (`startNumber=0`, `endNumber=0`) now renders `—` instead of `1`, and added a regression test in `tests/admin-page-actions.test.tsx`.
+- Prevented unhandled promise rejections in `/admin` draw-navigation handlers (`next`, `prev`, and direct serving updates) by catching `sendAction` failures after toast reporting.
 
 ## [1.5.1] - 2026-02-19
 ### Changed
