@@ -10,6 +10,7 @@
 - Updated `docs/ISSUES.md` Issue 14 and `docs/V1.5_OPTIMIZATIONS.md` to log the post-input-optimization finding that button latency remains the primary iPad mini 4 pain point and to document optimistic-action rollout criteria.
 - Updated `docs/ISSUES.md` and `docs/V1.5_OPTIMIZATIONS.md` to track the new draw-path pending/render isolation pass (split draw vs non-draw pending channels and memoized Draw Position controls).
 - Updated `docs/ISSUES.md` and `docs/V1.5_OPTIMIZATIONS.md` to track the new history-cost optimization pass (deferred draw snapshot refresh and capped progressive snapshot option rendering).
+- Added motion-tier classification test coverage (`tests/motion-tier.test.ts`) for automatic morph animation fallback behavior.
 ### Fixed
 - Corrected `/admin` Live State `Tickets issued` so reset sentinel state (`startNumber=0`, `endNumber=0`) now renders `—` instead of `1`, and added a regression test in `tests/admin-page-actions.test.tsx`.
 - Prevented unhandled promise rejections in `/admin` draw-navigation handlers (`next`, `prev`, and direct serving updates) by catching `sendAction` failures after toast reporting.
@@ -24,6 +25,7 @@
 - Isolated draw-position controls into memoized `DrawPositionControls`, reducing draw-path render fan-out on older devices.
 - Deferred draw-triggered snapshot refresh (`DRAW_SNAPSHOT_REFRESH_DELAY_MS`) and capped History snapshot option rendering (`SNAPSHOT_RENDER_PAGE_SIZE`) with a clearer "Show older snapshots" checkbox affordance (including animated archive icon that now triggers on checkbox toggle) to reduce iPad layout/reflow pressure during draw taps.
 - Added regression coverage for History option capping/progressive expansion and non-draw control availability during pending draw actions (`tests/admin-page-actions.test.tsx`, `tests/admin-optimistic-ui.test.tsx`).
+- Added automatic morph-text motion tiering (`full/simple/off`) using reduced-motion preference + runtime frame probe + capability hints with local persistence, so older devices degrade animation without introducing manual controls.
 
 ## [1.5.1] - 2026-02-19
 ### Changed

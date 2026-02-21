@@ -402,6 +402,7 @@ After batch sorting started, staff could still type into Start/End inputs. The U
 - Feature-flagged optimistic action UX is now implemented for `/admin` (`NEXT_PUBLIC_ADMIN_OPTIMISTIC_UI`) to reduce perceived button delay while preserving server-authoritative reconciliation.
 - Latest pass (2026-02-20): split pending-state channels (`pendingDrawAction` vs `pendingNonDrawAction`) and isolated Draw Position controls into a memoized component so draw taps no longer mute unrelated controls.
 - Latest pass (2026-02-20): deferred draw-triggered snapshot refresh and capped History `<select>` rendering with a clearer "Show older snapshots" checkbox affordance to reduce iPad layout cost from large option lists.
+- Latest pass (2026-02-20): implemented automatic morph-text motion tiering (`full/simple/off`) with runtime detection + persistence, so older devices can degrade animation quality without introducing manual controls.
 
 ### Observed
 - On slower devices (for example iPad mini 4), typing in admin inputs and tapping buttons can lag significantly (up to ~5 seconds in worst cases).
@@ -419,6 +420,7 @@ After batch sorting started, staff could still type into Start/End inputs. The U
 - In DB mode, each mutation still includes server-side state read + transaction write (state + snapshot) and runs under a 5000ms timeout budget, which aligns with observed multi-second tap latency in adverse conditions.
 - Prior UI coupling also contributed: one global pending flag caused broad control disable/mute cycles on draw taps, creating additional perception of system-wide lag.
 - Large snapshot lists in the History `<select>` can create expensive layout/reflow work on iPad mini 4 when refreshed on each draw action.
+- Character-level morph text effects are expensive on older devices when many labels update in a single render pass, because each grapheme animates as its own motion element.
 
 ### Device Context (iPad mini 4)
 - iPad mini 4 is legacy hardware (A8 generation) and is on the iPadOS 15 security branch.
@@ -436,13 +438,14 @@ After batch sorting started, staff could still type into Start/End inputs. The U
 - **Phase 11 (new)**: Added a feature-flagged optimistic dispatcher for `/admin` actions with immediate local patching, single-flight request processing, and queue-one behavior for draw navigation (`advanceServing`/`updateServing`). Failure path now rolls back optimistic state and triggers safety resync.
 - **Phase 11.1 (new)**: Split pending-state management so draw actions no longer drive non-draw control muting, and extracted Draw Position controls into memoized `DrawPositionControls` to reduce render fan-out during tap interactions.
 - **Phase 11.2 (new)**: Deferred draw-path snapshot refresh timing and introduced capped History option rendering (`SNAPSHOT_RENDER_PAGE_SIZE` + "Show older snapshots" checkbox), reducing non-critical history rendering work during draw advancement.
+- **Phase 12 (new)**: Added automatic morph-text motion tiering (`full/simple/off`) via reduced-motion preference + frame probe + capability hints (`hardwareConcurrency`, `deviceMemory` when available), persisted in local storage, with no manual animation toggle UI.
 
 ### Remaining Recommendations
 - P0: Validate optimistic mode on iPad mini 4 and tune rollout guardrails (enable flag in staging first, verify rollback behavior under network failures).
 - P0: Continue breaking up heavy `/admin` sections so draw-path updates only repaint draw-critical UI (avoid page-wide render churn on each tap).
 - P0: Measure iPad mini 4 draw latency after snapshot defer/capping pass and tune refresh delay/page size as needed.
 - P1: Continue profiling residual iPad mini 4 typing lag and isolate any remaining high-frequency input sections (for example returned/unclaimed fields) if long tasks persist.
-- P2: Cap ticket grid animations for large grids; simplify MorphingText for static labels.
+- P2: Cap remaining non-morph ticket grid animations for large grids and validate low-tier display smoothness after automatic morph-tier rollout.
 - P2: Verify generated CSS fallbacks on iPad mini 4 before adding manual `color-mix()` fallbacks.
 - See `docs/V1.5_OPTIMIZATIONS.md` for full plan.
 

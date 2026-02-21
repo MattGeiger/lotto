@@ -4,10 +4,12 @@ import * as React from 'react';
 import { AnimatePresence, motion, type HTMLMotionProps } from 'motion/react';
 import type { Transition } from 'motion/react';
 
+import { useMotionTier } from '@/hooks/use-motion-tier';
 import {
   useIsInView,
   type UseIsInViewOptions,
 } from '@/hooks/use-is-in-view';
+import type { MotionTier } from '@/lib/motion-tier';
 
 function segmentGraphemes(text: string): string[] {
   if (typeof Intl.Segmenter === 'function') {
@@ -25,6 +27,7 @@ type MorphingTextProps = Omit<HTMLMotionProps<'span'>, 'children'> & {
   delay?: number;
   loop?: boolean;
   holdDelay?: number;
+  motionMode?: MotionTier | 'auto';
   wordWrap?: 'character' | 'word';
   text: string | string[];
 } & UseIsInViewOptions;
@@ -45,9 +48,15 @@ function MorphingText({
   inViewOnce = true,
   loop = false,
   holdDelay = 2500,
+  motionMode = 'auto',
   wordWrap = 'character',
   ...props
 }: MorphingTextProps) {
+  const detectedMotionTier = useMotionTier();
+  const effectiveMotionTier =
+    motionMode === 'auto' ? detectedMotionTier : motionMode;
+  const isFullMotion = effectiveMotionTier === 'full';
+
   const { ref: localRef, isInView } = useIsInView(
     ref as React.Ref<HTMLElement>,
     {
@@ -70,6 +79,7 @@ function MorphingText({
   }, [text, currentIndex]);
 
   const chars = React.useMemo(() => {
+    if (!isFullMotion) return [];
     const graphemes = segmentGraphemes(currentText);
     const counts = new Map<string, number>();
     return graphemes.map((raw, index) => {
@@ -83,10 +93,10 @@ function MorphingText({
         label: key === ' ' ? '\u00A0' : key,
       };
     });
-  }, [currentText, uniqueId]);
+  }, [currentText, isFullMotion, uniqueId]);
 
   const wordChunks = React.useMemo(() => {
-    if (wordWrap !== 'word') return null;
+    if (!isFullMotion || wordWrap !== 'word') return null;
 
     const chunks: Array<
       | { type: 'word'; chars: typeof chars }
@@ -112,7 +122,7 @@ function MorphingText({
 
     pushWord();
     return chunks;
-  }, [chars, wordWrap]);
+  }, [chars, isFullMotion, wordWrap]);
 
   React.useEffect(() => {
     if (isInView) {
@@ -143,6 +153,36 @@ function MorphingText({
 
     return () => clearInterval(interval);
   }, [started, loop, text, holdDelay]);
+
+  if (effectiveMotionTier === 'off') {
+    return (
+      <motion.span ref={localRef} aria-label={currentText} {...props}>
+        {currentText}
+      </motion.span>
+    );
+  }
+
+  if (!isFullMotion) {
+    return (
+      <motion.span ref={localRef} aria-label={currentText} {...props}>
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.span
+            key={`${uniqueId}-simple-${currentText}`}
+            className={characterClassName}
+            style={{ display: 'inline-block' }}
+            aria-hidden="true"
+            initial={initial}
+            animate={animate}
+            exit={exit}
+            variants={variants}
+            transition={transition}
+          >
+            {currentText}
+          </motion.span>
+        </AnimatePresence>
+      </motion.span>
+    );
+  }
 
   return (
     <motion.span ref={localRef} aria-label={currentText} {...props}>
