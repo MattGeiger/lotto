@@ -36,10 +36,10 @@ export default function Home() {
               </span>
             </h1>
             <p className="max-w-2xl text-base leading-relaxed text-muted-foreground">
-              A lightweight web app designed for chance-based or sequential queue management. Set
-              custom ticket ranges, keep clients informed, entertained, and engaged. Supports
-              large displays and mobile devices. Includes multilingual support, visual themes, and
-              even video games.
+              A fun, fair, and simple queue management system designed for chance-based or
+              sequential ticketing. Set custom ticket ranges, keep clients informed, entertained,
+              and engaged. Supports large displays and mobile devices. Includes multilingual
+              support, visual themes, and even video games.
             </p>
           </div>
           <StaffCtaButtons />

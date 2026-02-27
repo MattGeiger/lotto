@@ -42,8 +42,9 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "WTH Digital Raffle",
-  description: "Fair, durable raffle and queue management for the William Temple House pantry.",
+  title: "LOTTO: Line Order Transparency & Ticketing Organizer",
+  description:
+    "A fun, fair, and simple queue management system designed for chance-based or sequential ticketing. Set custom ticket ranges, keep clients informed, entertained, and engaged. Supports large displays and mobile devices. Includes multilingual support, visual themes, and even video games.",
 };
 
 export default function RootLayout({

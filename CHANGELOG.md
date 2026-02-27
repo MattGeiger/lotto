@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.5.4] - 2026-02-27
+### Changed
+- Updated root app metadata (`title` and `description`) to the new LOTTO branding/copy so homepage search snippets align with current staff-facing product messaging.
+- Updated `/staff` hero descriptive paragraph copy to exactly match the LOTTO branding description used in homepage metadata.
+
 ## [1.5.3] - 2026-02-20
 ### Added
 - Expanded automated test coverage from ~25-30% to ~60-65% with 226 new test cases across 13 new test files covering pure utilities (RTL, date, time, class merging), all 15 API route action handlers, the Postgres state manager (full CRUD + snapshots), admin page interactions and v1.5.1 memoized computations, and key UI components (public display page, confirmation dialog, operating hours editor, public board variant).
