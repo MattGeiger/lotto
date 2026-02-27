@@ -8,13 +8,25 @@ import { useLanguage } from "@/contexts/language-context";
 
 export default function ArcadeHomePage() {
   const { t } = useLanguage();
-  const playSnakeLabel = t("playSnake");
 
-  const launchGames = [
+  const launchGames: Array<{
+    id: string;
+    title: string;
+    href?: string;
+    ctaLabel?: string;
+    comingSoon?: boolean;
+  }> = [
     {
       id: "snake",
       title: t("snakeTitle"),
       href: "/arcade/snake",
+      ctaLabel: "PLAY",
+    },
+    {
+      id: "brick-mayhem",
+      title: "BRICK MAYHEM",
+      href: "/arcade/snake",
+      ctaLabel: "PLAY",
     },
     {
       id: "more",
@@ -54,7 +66,7 @@ export default function ArcadeHomePage() {
               return (
                 <article
                   key={game.id}
-                  className="relative flex h-full flex-col justify-between gap-4 border-2 border-[var(--arcade-wall)] bg-[var(--arcade-menu-card-bg)] p-4 shadow-[0_0_0_2px_rgba(255,215,92,0.4)]"
+                  className={`relative flex h-full w-full flex-col justify-between gap-4 border-2 border-[var(--arcade-wall)] bg-[var(--arcade-menu-card-bg)] p-4 shadow-[0_0_0_2px_rgba(255,215,92,0.4)] ${isComingSoon ? "md:col-span-2 md:mx-auto md:max-w-[calc((100%-1.25rem)/2)]" : ""}`}
                 >
                   {isComingSoon ? (
                     <div className="flex h-full items-center justify-center text-center">
@@ -78,10 +90,10 @@ export default function ArcadeHomePage() {
                           className="h-auto min-h-12 w-full justify-center whitespace-normal px-4 py-3 text-center"
                         >
                           <Link
-                            href="/arcade/snake"
+                            href={game.href ?? "/arcade"}
                             className="block w-full whitespace-normal text-center leading-tight"
                           >
-                            {playSnakeLabel}
+                            {game.ctaLabel ?? "PLAY"}
                           </Link>
                         </Button>
                       ) : null}

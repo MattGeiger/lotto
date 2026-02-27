@@ -9,6 +9,8 @@
 - Adjusted the `/staff` Arcade CTA so the 👾 icon renders after the button label instead of before it.
 - Fixed `/staff` Arcade CTA hydration mismatch by forcing its animated label to render in deterministic `simple` motion mode across SSR and client hydration.
 - Updated `/staff` CTA layout so `PLAY GAMES` is positioned directly underneath `View Public Board`.
+- Added a second playable-style game card on `/arcade` with title `BRICK MAYHEM` and button label `PLAY`, while keeping the existing `More Games Coming Soon` card unchanged.
+- Updated `/arcade` game-menu CTAs so the Snake card button now reads `PLAY`, and centered the `More Games Coming Soon` card in the two-column desktop layout.
 
 ## [1.5.3] - 2026-02-20
 ### Added
