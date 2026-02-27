@@ -25,7 +25,7 @@ export default function ArcadeHomePage() {
     {
       id: "brick-mayhem",
       title: "BRICK MAYHEM",
-      href: "/arcade/snake",
+      href: "/arcade/brick-mayhem",
       ctaLabel: "PLAY",
     },
     {

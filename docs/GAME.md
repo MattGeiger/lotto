@@ -64,6 +64,8 @@ src/
         page.tsx
         snake/
           page.tsx
+        brick-mayhem/
+          page.tsx
   arcade/
     components/
     ui/
@@ -71,6 +73,12 @@ src/
       engine.ts
       types.ts
       constants.ts
+      brick-mayhem/
+        types.ts
+        constants.ts
+        engine.ts
+        levels.ts
+        renderer.ts
     hooks/
     lib/
     styles/
@@ -137,6 +145,12 @@ public/
 - Completed: While ticket-called overlay messaging is active, the top Arcade banner continues to show `NOW SERVING: #<ticket>` for live queue context.
 - Completed: Ticket-called center overlay now auto-hides when the alert window ends and also dismisses immediately when the player resumes Arcade gameplay.
 - Not yet completed: Snake gameplay engine modules under `src/arcade/game/snake/*`.
+- Completed: Brick Mayhem game page scaffolding (`/arcade/brick-mayhem`) with page shell, CSS classes, translations (8 locales), and Arcade menu entry.
+- Completed: Brick Mayhem game engine — pure-function architecture under `src/arcade/game/brick-mayhem/` with types, constants, engine (tick/collision/reflection), levels (5 progressive layouts), and canvas renderer.
+- Completed: Brick Mayhem gameplay loop using `requestAnimationFrame` with fixed ~16ms timestep, AABB collision detection, paddle-position-influenced reflection (±60°), 3 starting lives, 10 points per brick, and ball speed progression across levels.
+- Completed: Brick Mayhem paddle slider control in stacked control dock (button above slider with generous spacing), keyboard arrow keys, space bar for start/pause/resume, and auto-start on input.
+- Completed: Brick Mayhem canvas rendering with row-colored brick palette, theme-aware paddle/ball/wall colors via CSS custom properties, and `image-rendering: pixelated` scaling.
+- Completed: Brick Mayhem `lives` and `level` translation keys added to all 8 locales; readout bar displays score, lives, and level in a 3-column grid.
 
 ## Accessibility Issue: Snake Reflex Controls (Implemented - 2026-02-16)
 - Problem statement: current Snake pace can be too demanding for players with slower reflexes, and pellet placement near walls can make early rounds punishing.
@@ -278,6 +292,6 @@ public/
 
 ---
 
-Document Version: 3.5  
-Last Updated: 2026-02-16  
-Revision: Consolidated Snake settings into one six-level slider, added Nightmare pellet expiry behavior, tuned slider contrast tokens for WCAG-compliant visibility, removed heavy shadows from small Snake labels/readouts, added per-word wrapped `PLAY SNAKE` CTA text for multilingual fit, and aligned Arcade mode-switcher icons with 8bitcn + app-consistent light/dark semantics.
+Document Version: 3.6
+Last Updated: 2026-02-27
+Revision: Added Brick Mayhem as the second Arcade game — full MVP implementation with pure-function engine, canvas rendering, paddle slider controls, 5 progressive levels, AABB collision detection, and paddle-position-influenced reflection angles.
