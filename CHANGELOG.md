@@ -4,6 +4,11 @@
 ### Changed
 - Updated root app metadata (`title` and `description`) to the new LOTTO branding/copy so homepage search snippets align with current staff-facing product messaging.
 - Updated `/staff` hero descriptive paragraph copy to exactly match the LOTTO branding description used in homepage metadata.
+- Removed the duplicate short `/staff` hero subtitle so only the LOTTO title and full descriptive paragraph are shown.
+- Added a `/staff` Arcade CTA button linking to `/arcade`, reusing the same pixel-style button appearance used on `/new`.
+- Adjusted the `/staff` Arcade CTA so the 👾 icon renders after the button label instead of before it.
+- Fixed `/staff` Arcade CTA hydration mismatch by forcing its animated label to render in deterministic `simple` motion mode across SSR and client hydration.
+- Updated `/staff` CTA layout so `PLAY GAMES` is positioned directly underneath `View Public Board`.
 
 ## [1.5.3] - 2026-02-20
 ### Added

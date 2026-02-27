@@ -31,9 +31,6 @@ export default function Home() {
           <div className="space-y-2">
             <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
               <span className="block">LOTTO: Line Order Transparency & Ticketing Organizer</span>
-              <span className="mt-2 block text-lg font-medium text-muted-foreground sm:text-xl">
-                A fun, fair, and simple queue management system
-              </span>
             </h1>
             <p className="max-w-2xl text-base leading-relaxed text-muted-foreground">
               A fun, fair, and simple queue management system designed for chance-based or
