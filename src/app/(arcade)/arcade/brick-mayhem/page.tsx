@@ -37,6 +37,7 @@ export default function BrickMayhemPage() {
   const [score, setScore] = React.useState(0);
   const [lives, setLives] = React.useState(3);
   const [level, setLevel] = React.useState(0);
+  const [sliderValue, setSliderValue] = React.useState(50);
 
   /* ── Refs for live game state (updated synchronously between frames) ── */
   const worldRef = React.useRef<World>(initialWorld());
@@ -84,6 +85,7 @@ export default function BrickMayhemPage() {
     accumulatorRef.current = 0;
     lastTimeRef.current = 0;
     syncReactState(w);
+    setSliderValue(50);
     setStatus("READY");
   }, [syncReactState]);
 
@@ -170,6 +172,7 @@ export default function BrickMayhemPage() {
 
       // Apply keyboard input to paddle target.
       const keys = keysDownRef.current;
+      const hasKeyInput = keys.has("ArrowLeft") || keys.has("Left") || keys.has("ArrowRight") || keys.has("Right");
       if (keys.has("ArrowLeft") || keys.has("Left")) {
         paddleTargetRef.current = Math.max(0, paddleTargetRef.current - KEYBOARD_PADDLE_SPEED);
       }
@@ -178,6 +181,10 @@ export default function BrickMayhemPage() {
           BOARD_W - PADDLE_W,
           paddleTargetRef.current + KEYBOARD_PADDLE_SPEED,
         );
+      }
+      // Sync slider visual position when keyboard moves the paddle.
+      if (hasKeyInput) {
+        setSliderValue(Math.round((paddleTargetRef.current / (BOARD_W - PADDLE_W)) * 100));
       }
 
       while (accumulatorRef.current >= FIXED_STEP_MS) {
@@ -307,6 +314,7 @@ export default function BrickMayhemPage() {
       const sliderVal = value[0] ?? 0;
       // Map 0..100 to 0..(BOARD_W - PADDLE_W).
       paddleTargetRef.current = (sliderVal / 100) * (BOARD_W - PADDLE_W);
+      setSliderValue(sliderVal);
 
       // Auto-start on slider drag from READY state.
       if (statusRef.current === "READY") {
@@ -316,9 +324,6 @@ export default function BrickMayhemPage() {
     },
     [notifyPlayResumed],
   );
-
-  // Derive slider position from paddle target so it stays in sync with keyboard input.
-  const sliderValue = Math.round((paddleTargetRef.current / (BOARD_W - PADDLE_W)) * 100);
 
   /* ── Control button handlers ── */
 
