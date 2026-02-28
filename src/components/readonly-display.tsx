@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import localFont from "next/font/local";
 import QRCode from "qrcode";
+import ReactCanvasConfetti from "react-canvas-confetti";
 import { MorphingText } from "@/components/animate-ui/primitives/texts/morphing";
 import { RollingText } from "@/components/animate-ui/primitives/texts/rolling";
 
@@ -164,8 +165,29 @@ function ArcadePixelFrame({ className }: { className?: string }) {
   );
 }
 
+/** Renders plain text with no animation — used as a placeholder before morph is ready. */
+function PlainText({ text, className }: { text: string; className?: string }) {
+  return <span className={className}>{text}</span>;
+}
+
 const POLL_ERROR_RETRY_MS = 30_000;
 const BURST_DURATION_MS = 2 * 60_000;
+const CALLED_ALERT_DURATION_MS = 10_000;
+const CALLED_CONFETTI_INTERVAL_MS = 2_000;
+
+type ConfettiAnimationOptions = {
+  spread?: number;
+  startVelocity?: number;
+  decay?: number;
+  scalar?: number;
+};
+
+type ConfettiInstance = (
+  options: ConfettiAnimationOptions & {
+    origin: { y: number };
+    particleCount: number;
+  },
+) => void;
 
 const DAYS: DayOfWeek[] = [
   "sunday",
@@ -233,6 +255,17 @@ export const ReadOnlyDisplay = ({
   showHeaderLogo = true,
 }: ReadOnlyDisplayProps) => {
   const { language, t } = useLanguage();
+
+  /**
+   * Before the first poll response, render plain spans so LanguageMorphText
+   * doesn't mount with placeholder text and then re-animate when real data
+   * arrives. Once state is loaded we switch to LanguageMorphText — since
+   * AnimatePresence has initial={false}, the first paint of real data
+   * appears instantly, and only subsequent text changes morph.
+   */
+  const [morphReady, setMorphReady] = React.useState(false);
+  const T = morphReady ? LanguageMorphText : PlainText;
+
   const [state, setState] = React.useState<RaffleState | null>(null);
   const [status, setStatus] = React.useState("");
   const [hasError, setHasError] = React.useState(false);
@@ -242,11 +275,16 @@ export const ReadOnlyDisplay = ({
   const qrCanvasRef = React.useRef<HTMLCanvasElement | null>(null);
   const pollTimeoutRef = React.useRef<number | null>(null);
   const pollStateRef = React.useRef<() => void>(() => {});
+  const confettiInstanceRef = React.useRef<ConfettiInstance | null>(null);
+  const confettiLoopIntervalRef = React.useRef<number | null>(null);
+  const confettiLoopTimeoutRef = React.useRef<number | null>(null);
+  const celebratedCallRef = React.useRef<string | null>(null);
   const lastSeenTimestampRef = React.useRef<number | null>(null);
   const lastChangeAtRef = React.useRef<number | null>(null);
   const burstUntilRef = React.useRef<number | null>(null);
   const lastSearchRequestRef = React.useRef(0);
   const [deviceNowMs, setDeviceNowMs] = React.useState(() => Date.now());
+  const [showCalledOverlay, setShowCalledOverlay] = React.useState(false);
 
   const formattedDate = formatDate(language, deviceNowMs);
 
@@ -266,6 +304,47 @@ export const ReadOnlyDisplay = ({
     },
     [clearPollTimeout],
   );
+
+  const clearConfettiLoop = React.useCallback(() => {
+    if (confettiLoopIntervalRef.current !== null) {
+      window.clearInterval(confettiLoopIntervalRef.current);
+      confettiLoopIntervalRef.current = null;
+    }
+    if (confettiLoopTimeoutRef.current !== null) {
+      window.clearTimeout(confettiLoopTimeoutRef.current);
+      confettiLoopTimeoutRef.current = null;
+    }
+  }, []);
+
+  const getConfettiInstance = React.useCallback(
+    ({ confetti }: { confetti: ConfettiInstance }) => {
+      confettiInstanceRef.current = confetti;
+    },
+    [],
+  );
+
+  const makeConfettiShot = React.useCallback(
+    (
+      particleRatio: number,
+      options: ConfettiAnimationOptions,
+    ) => {
+      if (!confettiInstanceRef.current) return;
+      confettiInstanceRef.current({
+        ...options,
+        origin: { y: 0.7 },
+        particleCount: Math.floor(200 * particleRatio),
+      });
+    },
+    [],
+  );
+
+  const fireConfetti = React.useCallback(() => {
+    makeConfettiShot(0.25, { spread: 26, startVelocity: 55 });
+    makeConfettiShot(0.2, { spread: 60 });
+    makeConfettiShot(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+    makeConfettiShot(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+    makeConfettiShot(0.1, { spread: 120, startVelocity: 45 });
+  }, [makeConfettiShot]);
 
   const pollState = React.useCallback(async () => {
     if (document.visibilityState === "hidden") {
@@ -346,6 +425,15 @@ export const ReadOnlyDisplay = ({
     };
   }, []);
 
+  // Arm morph animations after the first poll data has rendered.
+  // LanguageMorphText mounts fresh with AnimatePresence initial={false},
+  // so the first paint appears instantly; only subsequent changes morph.
+  React.useEffect(() => {
+    if (!morphReady && state !== null) {
+      setMorphReady(true);
+    }
+  }, [morphReady, state]);
+
   React.useEffect(() => {
     document.title = `${t("foodPantryServiceFor")} ${formattedDate}`;
   }, [formattedDate, t]);
@@ -382,6 +470,7 @@ export const ReadOnlyDisplay = ({
   const endNumber = state?.endNumber ?? 0;
   const generatedOrder = state?.generatedOrder ?? [];
   const currentlyServing = state?.currentlyServing ?? null;
+
   const currentIndex =
     generatedOrder && currentlyServing !== null ? generatedOrder.indexOf(currentlyServing) : -1;
   const hasTickets = generatedOrder.length > 0;
@@ -488,13 +577,66 @@ export const ReadOnlyDisplay = ({
     personalizedTicketStatus !== "unclaimed" &&
     !personalizedCalledAtTime;
 
+  React.useEffect(
+    () => () => {
+      clearConfettiLoop();
+    },
+    [clearConfettiLoop],
+  );
+
+  React.useEffect(() => {
+    if (!isPersonalized || personalizedTicketNumber === null || personalizedCalledAt === null) {
+      return;
+    }
+
+    const celebrationKey = `${personalizedTicketNumber}:${personalizedCalledAt}`;
+    if (celebratedCallRef.current === celebrationKey) {
+      return;
+    }
+    celebratedCallRef.current = celebrationKey;
+
+    setShowCalledOverlay(true);
+    clearConfettiLoop();
+
+    const scheduleConfetti =
+      typeof window.requestAnimationFrame === "function"
+        ? window.requestAnimationFrame.bind(window)
+        : (callback: FrameRequestCallback) => window.setTimeout(callback, 0);
+
+    const triggerConfetti = () => {
+      scheduleConfetti(() => {
+        fireConfetti();
+      });
+    };
+
+    triggerConfetti();
+    confettiLoopIntervalRef.current = window.setInterval(triggerConfetti, CALLED_CONFETTI_INTERVAL_MS);
+    confettiLoopTimeoutRef.current = window.setTimeout(() => {
+      setShowCalledOverlay(false);
+      clearConfettiLoop();
+    }, CALLED_ALERT_DURATION_MS);
+  }, [
+    clearConfettiLoop,
+    fireConfetti,
+    isPersonalized,
+    personalizedCalledAt,
+    personalizedTicketNumber,
+  ]);
+
+  React.useEffect(() => {
+    if (!isPersonalized || personalizedCalledAt !== null) return;
+    setShowCalledOverlay(false);
+    clearConfettiLoop();
+  }, [clearConfettiLoop, isPersonalized, personalizedCalledAt]);
+
   return (
+    <>
       <div
         dir={isRTL(language) ? "rtl" : "ltr"}
         lang={language}
         className="min-h-screen w-full bg-gradient-display px-6 pt-14 pb-8 text-foreground sm:px-8 lg:px-10"
       >
-      <div className="mx-auto flex w-full flex-col gap-4">
+        <div className="mx-auto flex w-full flex-col gap-4">
         {/* Logo + Now Serving Row */}
         <div
           className={cn(
@@ -532,7 +674,7 @@ export const ReadOnlyDisplay = ({
           <div className="flex justify-center">
             <div className="text-center">
               <p className="mb-1 text-lg uppercase tracking-[0.14em] text-muted-foreground">
-                <LanguageMorphText text={t("nowServing")} />
+                <T text={t("nowServing")} />
               </p>
               {currentlyServing === null ? (
                 <MorphingText
@@ -579,12 +721,12 @@ export const ReadOnlyDisplay = ({
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between gap-2">
                 <CardTitle className="text-lg uppercase tracking-[0.14em] text-muted-foreground">
-                  <LanguageMorphText text={t("foodPantryServiceFor")} />
+                  <T text={t("foodPantryServiceFor")} />
                 </CardTitle>
               </div>
             </CardHeader>
             <CardContent className="space-y-1">
-              <p data-testid="service-date" className="text-2xl font-semibold text-foreground">{formattedDate}</p>
+              <p data-testid="service-date" className="text-2xl font-semibold text-foreground"><T text={formattedDate} /></p>
               {hasTickets ? (
                 <p
                   data-testid="service-time"
@@ -599,7 +741,7 @@ export const ReadOnlyDisplay = ({
           <Card className="border-border/80 bg-card/80 text-center animate-slide-in-up" style={{ animationDelay: "200ms" }}>
             <CardHeader className="pb-2">
               <CardTitle className="text-lg uppercase tracking-[0.14em] text-muted-foreground">
-                <LanguageMorphText text={t("ticketsIssuedToday")} />
+                <T text={t("ticketsIssuedToday")} />
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -611,7 +753,7 @@ export const ReadOnlyDisplay = ({
           <Card className="border-border/80 bg-card/80 text-center animate-slide-in-up" style={{ animationDelay: "300ms" }}>
             <CardHeader className="pb-2">
               <CardTitle className="text-lg uppercase tracking-[0.14em] text-muted-foreground">
-                <LanguageMorphText text={t("totalTicketsIssued")} />
+                <T text={t("totalTicketsIssued")} />
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -626,13 +768,13 @@ export const ReadOnlyDisplay = ({
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between gap-2">
               <CardTitle className="text-lg uppercase tracking-[0.14em] text-muted-foreground">
-                <LanguageMorphText text={isPersonalized ? t("yourTicketCardTitle") : t("drawingOrder")} />
+                <T text={isPersonalized ? t("yourTicketCardTitle") : t("drawingOrder")} />
               </CardTitle>
               <Badge
                 variant="outline"
                 className="border-border/60 text-xs font-medium text-muted-foreground"
               >
-                <LanguageMorphText text={t("updated")} />: {updatedTime}
+                <T text={t("updated")} />: {updatedTime}
               </Badge>
             </div>
           </CardHeader>
@@ -644,11 +786,11 @@ export const ReadOnlyDisplay = ({
                     {pantryStatus === "before_opening" && (
                       <>
                         <span className="block w-full text-center text-3xl font-extrabold leading-snug text-foreground">
-                          <LanguageMorphText text={t("pantryNotOpenYet")} />
+                          <T text={t("pantryNotOpenYet")} />
                         </span>
                         {todayHours && (
                           <span className="block w-full text-center text-xl font-semibold text-foreground">
-                            <LanguageMorphText text={t("todaysHours")} />:{" "}
+                            <T text={t("todaysHours")} />:{" "}
                             <span dir="ltr">{formatTimeRange(todayHours.openTime, todayHours.closeTime)}</span>
                           </span>
                         )}
@@ -658,12 +800,12 @@ export const ReadOnlyDisplay = ({
                     {pantryStatus === "after_closing" && (
                       <>
                         <span className="block w-full text-center text-3xl font-extrabold leading-snug text-foreground">
-                          <LanguageMorphText text={t("pantryClosedForDay")} />
+                          <T text={t("pantryClosedForDay")} />
                         </span>
                         {nextOpenDay && (
                           <span className="block w-full text-center text-xl font-semibold text-foreground">
-                            <LanguageMorphText text={t("nextOpenDay")} />:{" "}
-                            <LanguageMorphText text={t(nextOpenDay)} />
+                            <T text={t("nextOpenDay")} />:{" "}
+                            <T text={t(nextOpenDay)} />
                           </span>
                         )}
                       </>
@@ -672,12 +814,12 @@ export const ReadOnlyDisplay = ({
                     {pantryStatus === "not_operating_today" && (
                       <>
                         <span className="block w-full text-center text-3xl font-extrabold leading-snug text-foreground">
-                          <LanguageMorphText text={t("pantryClosed")} />
+                          <T text={t("pantryClosed")} />
                         </span>
                         {nextOpenDay && (
                           <span className="block w-full text-center text-xl font-semibold text-foreground">
-                            <LanguageMorphText text={t("nextOpenDay")} />:{" "}
-                            <LanguageMorphText text={t(nextOpenDay)} />
+                            <T text={t("nextOpenDay")} />:{" "}
+                            <T text={t(nextOpenDay)} />
                           </span>
                         )}
                       </>
@@ -686,7 +828,7 @@ export const ReadOnlyDisplay = ({
                     {state?.operatingHours && (
                       <div className="mt-4 w-full max-w-md space-y-3">
                         <p className="text-center text-xl font-bold text-foreground">
-                          <LanguageMorphText text={t("pantryHours")} />
+                          <T text={t("pantryHours")} />
                         </p>
                         <div className="space-y-0.5 text-center">
                           {DAYS.map((day) => {
@@ -695,12 +837,12 @@ export const ReadOnlyDisplay = ({
                             return (
                               <div key={day} className="flex justify-between text-base">
                                 <span className="font-medium text-foreground">
-                                  <LanguageMorphText text={dayLabel} />
+                                  <T text={dayLabel} />
                                 </span>
                                 <span className="text-muted-foreground" dir={config.isOpen ? "ltr" : undefined}>
                                   {config.isOpen
                                     ? formatTimeRange(config.openTime, config.closeTime)
-                                    : <LanguageMorphText text={t("closed")} />}
+                                    : <T text={t("closed")} />}
                                 </span>
                               </div>
                             );
@@ -712,13 +854,13 @@ export const ReadOnlyDisplay = ({
                 ) : (
                   <>
                     <span className="block w-full text-center text-3xl font-extrabold leading-snug text-foreground">
-                      <LanguageMorphText text={t("welcome")} />
+                      <T text={t("welcome")} />
                     </span>
                     <span className="block w-full text-center text-3xl font-extrabold leading-snug text-foreground">
-                      <LanguageMorphText text={t("raffleNotStarted")} />
+                      <T text={t("raffleNotStarted")} />
                     </span>
                     <span className="block w-full text-center text-3xl font-extrabold leading-snug text-foreground">
-                      <LanguageMorphText text={t("checkBackSoon")} />
+                      <T text={t("checkBackSoon")} />
                     </span>
                   </>
                 )}
@@ -731,15 +873,15 @@ export const ReadOnlyDisplay = ({
                   <div className="rounded-lg border bg-card p-4">
                     <p className="text-base leading-relaxed text-muted-foreground">
                       {personalizedTicketStatus === "returned" ? (
-                        <LanguageMorphText text={t("returnedTicketMessage")} />
+                        <T text={t("returnedTicketMessage")} />
                       ) : personalizedTicketStatus === "unclaimed" ? (
-                        <LanguageMorphText text={t("unclaimedTicketMessage")} />
+                        <T text={t("unclaimedTicketMessage")} />
                       ) : personalizedCalledAtTime ? (
                         <>
-                          <LanguageMorphText text={t("calledAtMessage")} /> {personalizedCalledAtTime}
+                          <T text={t("calledAtMessage")} /> {personalizedCalledAtTime}
                         </>
                       ) : (
-                        <LanguageMorphText text={t("ticketNotInDrawingYetMessage")} />
+                        <T text={t("ticketNotInDrawingYetMessage")} />
                       )}
                     </p>
                   </div>
@@ -748,35 +890,35 @@ export const ReadOnlyDisplay = ({
                 <div className="space-y-4 rounded-lg border bg-card p-4">
                   <div className="space-y-1 border-b border-border/60 pb-3">
                     <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                      <LanguageMorphText text={t("yourTicketNumberLabel")} />
+                      <T text={t("yourTicketNumberLabel")} />
                     </p>
                     <p className="text-2xl font-bold text-foreground">{personalizedTicketDisplay}</p>
                   </div>
 
                   <div className="space-y-1 border-b border-border/60 pb-3">
                     <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                      <LanguageMorphText text={t("yourEstimatedWaitLabel")} />
+                      <T text={t("yourEstimatedWaitLabel")} />
                     </p>
                     <p className="text-2xl font-bold text-foreground">
-                      <LanguageMorphText text={personalizedEstimatedWaitDisplay} />
+                      <T text={personalizedEstimatedWaitDisplay} />
                     </p>
                   </div>
 
                   <div className="space-y-1 border-b border-border/60 pb-3">
                     <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                      <LanguageMorphText text={t("ticketsAheadOfYouLabel")} />
+                      <T text={t("ticketsAheadOfYouLabel")} />
                     </p>
                     <p className="text-2xl font-bold text-foreground">
-                      <LanguageMorphText text={personalizedTicketsAheadDisplay} />
+                      <T text={personalizedTicketsAheadDisplay} />
                     </p>
                   </div>
 
                   <div className="space-y-1">
                     <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                      <LanguageMorphText text={t("yourTicketPositionLabel")} />
+                      <T text={t("yourTicketPositionLabel")} />
                     </p>
                     <p className="text-2xl font-bold text-foreground">
-                      <LanguageMorphText text={personalizedTicketPositionDisplay} />
+                      <T text={personalizedTicketPositionDisplay} />
                     </p>
                   </div>
                 </div>
@@ -784,7 +926,7 @@ export const ReadOnlyDisplay = ({
                 {onRequestTicketChange ? (
                   <div className="flex flex-col items-center gap-3">
                     <Button type="button" onClick={onRequestTicketChange}>
-                      <LanguageMorphText text={t("changeTicket")} />
+                      <T text={t("changeTicket")} />
                     </Button>
                     <Button
                       asChild
@@ -795,7 +937,7 @@ export const ReadOnlyDisplay = ({
                         <span aria-hidden="true" className="text-base leading-none">
                           👾
                         </span>
-                        <LanguageMorphText
+                        <T
                           text={t("visitArcade")}
                           className={cn(arcadeDisplayFont.className, "tracking-[0.12em]")}
                         />
@@ -848,23 +990,23 @@ export const ReadOnlyDisplay = ({
                 <div className="mt-5 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                   <div className="flex items-center gap-2">
                     <span className="size-3 rounded-full border ticket-upcoming" />
-                    <LanguageMorphText text={t("notCalled")} />
+                    <T text={t("notCalled")} />
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="size-3 rounded-full border ticket-serving" />
-                    <LanguageMorphText text={t("nowServing")} />
+                    <T text={t("nowServing")} />
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="size-3 rounded-full border ticket-served" />
-                    <LanguageMorphText text={t("called")} />
+                    <T text={t("called")} />
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="size-3 rounded-full border ticket-unclaimed" />
-                    <LanguageMorphText text={t("unclaimed")} />
+                    <T text={t("unclaimed")} />
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="size-3 rounded-full border ticket-returned" />
-                    <LanguageMorphText text={t("returned")} />
+                    <T text={t("returned")} />
                   </div>
                 </div>
               </>
@@ -895,21 +1037,52 @@ export const ReadOnlyDisplay = ({
             <DialogContent className="max-w-sm">
               <DialogHeader>
                 <DialogTitle>
-                  <LanguageMorphText text={t("ticketNotFoundTitle")} />
+                  <T text={t("ticketNotFoundTitle")} />
                 </DialogTitle>
                 <DialogDescription>
-                  <LanguageMorphText text={t("ticketNotFoundMessage")} />
+                  <T text={t("ticketNotFoundMessage")} />
                 </DialogDescription>
               </DialogHeader>
               <div className="mt-6 flex justify-end">
                 <Button variant="outline" onClick={() => setNotFoundDialogOpen(false)}>
-                  <LanguageMorphText text={t("close")} />
+                  <T text={t("close")} />
                 </Button>
               </div>
             </DialogContent>
           </Dialog>
         )}
+        </div>
       </div>
-    </div>
+      {isPersonalized && showCalledOverlay ? (
+        <>
+          <div className="pointer-events-none fixed inset-0 z-[65] bg-black/40 backdrop-blur-sm" />
+          <div
+            className="pointer-events-none fixed inset-0 z-[70] flex items-center justify-center px-6"
+            aria-live="polite"
+          >
+            <div className="w-full max-w-xl rounded-2xl border border-border/70 bg-card/95 px-8 py-6 text-center shadow-2xl">
+              <p className="text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl">
+                Ticket Called!
+              </p>
+              <p className="mt-2 text-2xl font-semibold text-foreground/90 sm:text-3xl">
+                Please Check-in
+              </p>
+            </div>
+          </div>
+          <ReactCanvasConfetti
+            onInit={getConfettiInstance}
+            style={{
+              position: "fixed",
+              pointerEvents: "none",
+              width: "100%",
+              height: "100%",
+              top: 0,
+              left: 0,
+              zIndex: 75,
+            }}
+          />
+        </>
+      ) : null}
+    </>
   );
 };

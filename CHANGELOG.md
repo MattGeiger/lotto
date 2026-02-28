@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.9] - 2026-02-28
+### Added
+- Added personalized-ticket called celebration to `/new` (via `ReadOnlyDisplay` personalized mode): when the tracked ticket is called, the page now shows a centered overlay (`Ticket Called!` / `Please Check-in`) and runs a timed confetti effect.
+- Added regression coverage in `tests/readonly-display-personalized.test.tsx` to verify called-ticket overlay rendering and confetti trigger behavior.
+### Changed
+- Updated the `/new` called-ticket overlay backdrop to match shared modal treatment (`bg-black/40` + `backdrop-blur-sm`) for stronger text readability during the alert.
+
 ## [1.5.8] - 2026-02-28
 ### Fixed
 - Stabilized hydration for top-bar dropdown controls by assigning deterministic trigger IDs to `LanguageSwitcher` and `ThemeSwitcher`, eliminating Radix auto-generated trigger-id drift between SSR and client hydration.

@@ -7,6 +7,8 @@ import { ReadOnlyDisplay } from "@/components/readonly-display";
 import { LanguageProvider } from "@/contexts/language-context";
 import type { RaffleState } from "@/lib/state-types";
 
+const confettiFireMock = vi.fn();
+
 vi.mock("next/font/local", () => ({
   default: () => ({ className: "font-arcade-display", variable: "" }),
 }));
@@ -27,6 +29,17 @@ vi.mock("@/components/animate-ui/primitives/texts/morphing", () => ({
 
 vi.mock("@/components/animate-ui/primitives/texts/rolling", () => ({
   RollingText: ({ text }: { text: string }) => <span>{text}</span>,
+}));
+
+vi.mock("react-canvas-confetti", () => ({
+  default: ({
+    onInit,
+  }: {
+    onInit?: ({ confetti }: { confetti: (...args: unknown[]) => void }) => void;
+  }) => {
+    onInit?.({ confetti: confettiFireMock });
+    return <div data-testid="confetti-canvas" />;
+  },
 }));
 
 const baseState: RaffleState = {
@@ -63,6 +76,7 @@ describe("ReadOnlyDisplay personalized variant", () => {
 
   beforeEach(() => {
     window.localStorage.clear();
+    confettiFireMock.mockReset();
     currentState = structuredClone(baseState);
     vi.stubGlobal(
       "fetch",
@@ -151,5 +165,23 @@ describe("ReadOnlyDisplay personalized variant", () => {
 
     expect(screen.queryByTestId("service-time")).not.toBeInTheDocument();
     expect(screen.queryByText("YOUR TICKET NUMBER")).not.toBeInTheDocument();
+  });
+
+  it("shows called-ticket overlay and triggers confetti for personalized ticket calls", async () => {
+    currentState = {
+      ...currentState,
+      calledAt: {
+        24: 1_739_898_060_000,
+      },
+    };
+
+    renderPersonalizedDisplay();
+
+    expect(await screen.findByText("Ticket Called!")).toBeInTheDocument();
+    expect(screen.getByText("Please Check-in")).toBeInTheDocument();
+    expect(screen.getByTestId("confetti-canvas")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(confettiFireMock).toHaveBeenCalled();
+    });
   });
 });
