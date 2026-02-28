@@ -41,6 +41,8 @@ function normalizeResolvedTheme(
   return "light";
 }
 
+export const THEME_SWITCHER_TRIGGER_ID = "theme-switcher-trigger";
+
 export function ThemeSwitcher() {
   const { theme, resolvedTheme, setTheme } = useTheme();
   const { contrastMode, setContrastMode } = useContrastMode();
@@ -78,6 +80,7 @@ export function ThemeSwitcher() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
+                id={THEME_SWITCHER_TRIGGER_ID}
                 variant="outline"
                 size="icon"
                 className="!h-[3.375rem] !w-[3.375rem] [&_svg]:!size-[1.8rem]"

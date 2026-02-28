@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.5.8] - 2026-02-28
+### Fixed
+- Stabilized hydration for top-bar dropdown controls by assigning deterministic trigger IDs to `LanguageSwitcher` and `ThemeSwitcher`, eliminating Radix auto-generated trigger-id drift between SSR and client hydration.
+### Added
+- Added regression coverage in `tests/language-switcher.test.tsx` and expanded `tests/theme-switcher.test.tsx` to enforce deterministic dropdown trigger IDs.
+
+## [1.5.7] - 2026-02-28
+### Fixed
+- Fixed `/new` hydration mismatch tied to animated text tiering by making `useMotionTier` deterministic on first render (`simple`) across SSR and client hydration, then applying stored/runtime motion preferences after mount.
+### Added
+- Added hydration-regression coverage in `tests/morphing-hydration.test.tsx` to guard against server/client DOM-shape divergence when a stored motion tier (for example `full`) is present before hydration.
+
 ## [1.5.6] - 2026-02-28
 ### Changed
 - Restored Brick Mayhem gameplay readout to the minimal 3-metric banner (`SCORE`, `LIVES`, `LEVEL`) by removing the additional active-effects HUD row.

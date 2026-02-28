@@ -3,7 +3,10 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, beforeEach, vi } from "vitest";
 
 import { ThemeProvider } from "@/components/theme-provider";
-import { ThemeSwitcher } from "@/components/theme-switcher";
+import {
+  ThemeSwitcher,
+  THEME_SWITCHER_TRIGGER_ID,
+} from "@/components/theme-switcher";
 
 type ViewTransitionResult = {
   ready: Promise<void>;
@@ -76,6 +79,14 @@ describe("ThemeSwitcher", () => {
     expect(screen.getByText("Dark")).toBeInTheDocument();
     expect(screen.getByText("System")).toBeInTheDocument();
     expect(screen.getByText("Hi-viz")).toBeInTheDocument();
+  });
+
+  it("uses a deterministic trigger id for hydration stability", () => {
+    renderSwitcher();
+
+    expect(
+      screen.getByRole("button", { name: /theme options/i }),
+    ).toHaveAttribute("id", THEME_SWITCHER_TRIGGER_ID);
   });
 
   it("applies hi-viz mode and persists system color scheme", async () => {

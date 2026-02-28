@@ -24,6 +24,8 @@ const languageNames: Record<Language, string> = {
   ar: "العربية",
 };
 
+export const LANGUAGE_SWITCHER_TRIGGER_ID = "language-switcher-trigger";
+
 export function LanguageSwitcher() {
   const { language, setLanguage } = useLanguage();
 
@@ -31,6 +33,7 @@ export function LanguageSwitcher() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
+          id={LANGUAGE_SWITCHER_TRIGGER_ID}
           variant="outline"
           size="icon"
           className="!h-[3.375rem] !w-[3.375rem] [&_svg]:!size-[1.8rem]"
