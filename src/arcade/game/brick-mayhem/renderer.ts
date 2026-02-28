@@ -12,20 +12,10 @@ import {
   PADDLE_Y,
   PADDLE_W,
 } from "./constants";
+import { clonePaddleY, effectivePaddleWidth } from "./engine";
+import { ROW_COLORS } from "./effects";
 import type { Fragment } from "./particles";
 import type { DifficultyParams, World } from "./types";
-
-/** Row hue palette — each row of bricks gets a distinct colour. */
-const ROW_COLORS = [
-  "#ff4d6a", // red-pink
-  "#ff6b3d", // orange
-  "#ffc63b", // yellow-gold
-  "#74f84a", // green
-  "#3bdfff", // cyan
-  "#a87bff", // purple
-  "#ff6de8", // pink
-  "#ffd75c", // gold
-];
 
 /**
  * Draw the entire board in a single pass.
@@ -40,13 +30,13 @@ export function drawBoard(
   dp?: DifficultyParams,
   fragments?: Fragment[],
 ): void {
-  const pw = dp?.paddleW ?? PADDLE_W;
+  const pw = dp ? effectivePaddleWidth(world, dp) : PADDLE_W;
   const styles = getComputedStyle(canvas);
 
   // Resolve theme colours.
   const wallColor = styles.getPropertyValue("--arcade-wall").trim() || "#3b7cff";
   const paddleColor = styles.getPropertyValue("--arcade-dot").trim() || "#ffd75c";
-  const ballColor = styles.getPropertyValue("--arcade-ghost").trim() || "#86f0ff";
+  const ballColor = styles.getPropertyValue("--arcade-brick-ball").trim() || "#ffffff";
 
   // Clear.
   ctx.clearRect(0, 0, BOARD_W, BOARD_H);
@@ -84,9 +74,17 @@ export function drawBoard(
   ctx.fillStyle = paddleColor;
   ctx.fillRect(Math.round(world.paddle.x), PADDLE_Y, pw, PADDLE_H);
 
-  // ── Ball ──
+  if (world.activeEffects.clonePaddle) {
+    ctx.globalAlpha = 0.72;
+    ctx.fillRect(Math.round(world.paddle.x), clonePaddleY(), pw, PADDLE_H);
+    ctx.globalAlpha = 1;
+  }
+
+  // ── Balls ──
   ctx.fillStyle = ballColor;
-  ctx.fillRect(Math.round(world.ball.x), Math.round(world.ball.y), BALL_SIZE, BALL_SIZE);
+  for (const ball of world.balls) {
+    ctx.fillRect(Math.round(ball.x), Math.round(ball.y), BALL_SIZE, BALL_SIZE);
+  }
 
   // ── Side walls — subtle vertical lines ──
   ctx.strokeStyle = wallColor;

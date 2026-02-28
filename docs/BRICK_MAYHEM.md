@@ -10,6 +10,7 @@
 - Brick shatter fragment effect (4 quarter-pieces with gravity and fade-out).
 - Pixel-grid rendering (ball/paddle/fragments snapped to integer pixels at draw time).
 - Desktop viewport scaling (board grows to fill available space on 768px+ screens).
+- Brick color-hit effect system (speed modifiers, multiball, clone paddle, timed paddle/points buffs) is implemented.
 
 ## Concept
 
@@ -27,7 +28,7 @@ The game is designed as the second Arcade offering alongside Snake, sharing the 
 
 ### Lives
 - The player starts each game with **3 lives**.
-- A life is lost when the ball falls past the paddle (drops below the play area floor).
+- A life is lost only when the **last remaining active ball** falls past the paddle.
 - A life is **gained** each time the ball reaches the top of the play area (level clear).
 - The game ends when the player has **0 lives** remaining after dropping the ball.
 
@@ -38,7 +39,25 @@ The game is designed as the second Arcade offering alongside Snake, sharing the 
 
 ### Scoring
 - Each brick destroyed awards **10 points**.
+- While the gold timed effect is active, each brick awards **30 points** (`x3`).
 - Level multipliers and combo bonuses are deferred to post-MVP.
+
+### Row Hit Effects (Implemented)
+- Effects are keyed by row color and cycle by `row % 8`.
+- Repeated speed-color hits do **not** compound; speed effects are always recalculated from baseline level speed, then clamped for collision reliability.
+- Timed effects (pink/gold) extend on repeat hits and are capped.
+- All row-hit effects reset on level clear.
+
+| Row Color | Effect |
+|-----------|--------|
+| Red-pink (`#ff4d6a`) | Ball speed `x1.5` (baseline-based, non-compounding) |
+| Orange (`#ff6b3d`) | Spawn another ball (up to max active-ball cap) |
+| Yellow-gold (`#ffc63b`) | No change |
+| Green (`#74f84a`) | Spawn one clone paddle `64px` above main paddle (one clone max) |
+| Cyan (`#3bdfff`) | Ball speed `x0.5` (baseline-based, non-compounding) |
+| Purple (`#a87bff`) | Ball speed `x2` (baseline-based, non-compounding) |
+| Pink (`#ff6de8`) | Paddle width `x2` for 30s; repeat hits extend duration (capped) |
+| Gold (`#ffd75c`) | Points `x3` for 30s; repeat hits extend duration (capped) |
 
 ---
 
@@ -100,6 +119,7 @@ The Snake-style D-pad is not used. Brick Mayhem replaces directional controls wi
   - **Brick side face:** negate `vx`, destroy brick.
   - **Paddle:** negate `vy`, and adjust `vx` based on where the ball struck the paddle surface. Contact offset from paddle center is normalized to a -1..+1 range across the paddle width. Dead center = straight up, edges = steep angles. This gives the player directional control over the ball.
 - Collision detection uses axis-aligned bounding box (AABB) overlap checks. At ~1px/step with a 2px ball, tunneling through bricks is not a concern at early speeds. If ball speed ever exceeds ball size per step, a simple swept check along the movement vector will be added.
+- Active ball speed is clamped to `0.6..4.0 px/tick` to reduce tunneling risk at high multipliers.
 
 ### Brick Layout
 - Bricks are arranged in horizontal rows spanning the 192px width of the play area.
@@ -169,7 +189,7 @@ Brick Mayhem follows the same Arcade integration patterns established by Snake:
 - **Play-resumed event:** Dispatches `ARCADE_PLAY_RESUMED_EVENT` on start/resume to dismiss the ticket-called overlay.
 - **Styling:** Uses Arcade-scoped CSS classes (`arcade-brick-*`) and shared Arcade CSS custom properties. No global theme changes.
 - **Data boundary:** All game state is local client state. No raffle API dependency.
-- **Translations:** Instruction keys are defined for all 8 supported locales under `brickMayhem*` prefixes.
+- **Translations:** Instruction and readout keys are defined for all 8 supported locales under `brickMayhem*` prefixes.
 
 ---
 
@@ -199,6 +219,7 @@ Brick Mayhem follows the same Arcade integration patterns established by Snake:
 - [x] Space bar for start/pause/resume
 - [x] Auto-start on slider drag or arrow key from READY state
 - [x] Theme-aware rendering (light/dark mode via CSS custom properties)
+- [x] Theme-aware neutral ball color (`#ffffff` dark mode, `#000000` light mode)
 - [x] Control dock stacked layout with generous spacing to prevent accidental pauses
 - [x] 6-tier difficulty system (Very Easy → Nightmare) with paddle size multipliers (0.75×–2×) and ball speed multipliers (0.5×–2×)
 - [x] Difficulty selector UI: Card with slider, mirroring Snake's pattern, with `brickMayhemDifficultySettingTitle` and `brickMayhemSettingLabel` keys across all 8 locales
@@ -207,6 +228,13 @@ Brick Mayhem follows the same Arcade integration patterns established by Snake:
 - [x] Desktop viewport scaling: `@media (min-width: 768px)` raises board size cap from 420px to 780px, using `calc((100dvh - 13.5rem) * 1.2)` to fill available height
 - [x] GAME OVER overlay text centering fix: `text-indent` compensates for trailing `letter-spacing` on `.arcade-retro` and `.arcade-ui` (applied to both Snake and Brick Mayhem overlays)
 - [x] Instruction text updated across all 8 locales (paddle → slider, strike → hit, clear bricks to make a path → clear a path to the top)
+- [x] Live score/readout sync fix (score now updates immediately on brick hits)
+- [x] Row-color/effect metadata centralized in `src/arcade/game/brick-mayhem/effects.ts` and consumed by renderer/particles/engine
+- [x] Multiball architecture: world now tracks `balls[]` and only consumes life on last-ball drop
+- [x] Brick row effects implemented: red/cyan/purple speed states, orange spawn-ball split, green clone paddle, pink `x2` paddle timed buff, gold `x3` points timed buff
+- [x] Timed buff extension + cap rules implemented (`30s` add, capped at `120s`) with level-clear reset
+- [x] Readout remains minimal with score/lives/level only
+- [x] Engine tests added for effect rules and lifecycle behavior (`tests/arcade-brick-mayhem-engine.test.ts`)
 
 ### Not Yet Implemented
 - [ ] Sound effects (deferred)
@@ -271,12 +299,18 @@ Build incrementally in this order, each step producing a testable result:
 | Level data format | 2D arrays — each cell is `0` (empty) or `1` (brick) |
 | Rendering | Single `<canvas>`, one `drawBoard()` pass per frame at 192×160 native resolution |
 | Starting ball speed | 1.2 px/step, +0.15/level, capped at 2.5 |
+| Runtime ball speed clamp | 0.6..4.0 px/tick |
 | Scoring | 10 points per brick |
+| Gold scoring buff | x3 points for 30s (repeat hits extend, cap 120s) |
 | Starting lives | 3 |
+| Life-loss rule | Lose a life only when the last active ball drops |
+| Max active balls | 4 |
 | MVP levels | 5 (progressive density) |
 | Max bounce angle | ±60° from vertical |
 | Difficulty tiers | 6: Very Easy (paddle 2×, speed 0.5×), Easy (2×, 1×), Normal (1.5×, 1×), Hard (1×, 1×), Very Hard (0.75×, 1×), Nightmare (0.75×, 2×) |
 | Default difficulty | Normal (index 2) |
+| Clone paddle | One clone max, 64px above main paddle, resets on level clear |
+| Timed effect cap | 120 seconds per timed effect |
 | Pixel-grid rendering | Ball, paddle, fragments snapped to integer pixels via `Math.round()` at draw time |
 | Fragment shatter | 4 quarter-pieces per brick, gravity 0.18 px/tick², fade over 90 ticks (~1.5s) |
 | Desktop board scaling | 768px+ viewports: board cap raised to 780px via `calc((100dvh - 13.5rem) * 1.2)` |
@@ -290,5 +324,5 @@ Build incrementally in this order, each step producing a testable result:
 
 ---
 
-Document Version: 3.0
-Last Updated: 2026-02-27
+Document Version: 3.1
+Last Updated: 2026-02-28

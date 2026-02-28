@@ -4,11 +4,16 @@
 export type Vec2 = { x: number; y: number };
 
 /** Ball state: position + velocity. */
+export type BallSpeedEffect = "normal" | "red" | "cyan" | "purple";
+
+/** Ball state: id + position + velocity + active speed effect. */
 export type Ball = {
+  id: number;
   x: number;
   y: number;
   vx: number;
   vy: number;
+  speedEffect: BallSpeedEffect;
 };
 
 /** Paddle state: horizontal position (left edge X). */
@@ -30,8 +35,20 @@ export type Brick = {
 export type LevelConfig = ReadonlyArray<ReadonlyArray<0 | 1>>;
 
 /** Complete world state for one frame of the game. */
+export type TimedEffects = {
+  widePaddleMs: number;
+  triplePointsMs: number;
+};
+
+export type ActiveEffects = {
+  /** Green brick effect: spawns one persistent clone paddle for this level. */
+  clonePaddle: boolean;
+  timed: TimedEffects;
+};
+
 export type World = {
-  ball: Ball;
+  balls: Ball[];
+  nextBallId: number;
   paddle: Paddle;
   bricks: Brick[];
   level: number;
@@ -39,6 +56,7 @@ export type World = {
   score: number;
   /** True when ball has been launched, false when sitting on paddle. */
   launched: boolean;
+  activeEffects: ActiveEffects;
 };
 
 /** Difficulty-dependent parameters threaded through engine & renderer. */

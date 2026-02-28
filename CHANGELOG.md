@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.5.6] - 2026-02-28
+### Changed
+- Restored Brick Mayhem gameplay readout to the minimal 3-metric banner (`SCORE`, `LIVES`, `LEVEL`) by removing the additional active-effects HUD row.
+- Removed Brick Mayhem effect-HUD specific styling from Arcade CSS while keeping all gameplay effects (speed, multiball, clone paddle, timed buffs) active in the engine.
+- Updated `docs/GAME.md`, `docs/BRICK_MAYHEM.md`, and `docs/V2.0_PLANNED_FEATURES.md` to reflect the readout rollback.
+- Updated Brick Mayhem ball color to a neutral theme-aware mapping: dark mode `#ffffff`, light mode `#000000`.
+
+## [1.5.5] - 2026-02-28
+### Added
+- Added Brick Mayhem row-hit effect architecture in `src/arcade/game/brick-mayhem/`: shared row metadata (`effects.ts`), multiball-capable world state (`balls[]`), timed effect state (`pink` paddle width and `gold` points multiplier), and clone paddle state (`green`).
+- Added Brick Mayhem engine safety/behavior rules: baseline-based non-compounding speed effects (`red`/`cyan`/`purple`), runtime ball-speed clamps (`0.6..4.0 px/tick`), orange split-ball spawn handling, timed effect extension with hard cap (`30s` add, `120s` max), and level-clear effect reset semantics.
+- Added Brick Mayhem effect HUD in the game page (active balls count + active effect tags with timers) and localized the new Brick Mayhem HUD/effect labels across all 8 languages.
+- Added `tests/arcade-brick-mayhem-engine.test.ts` covering non-compounding speed effects, multiball life-loss behavior, timed effect cap behavior, clone paddle behavior, and effect reset on next-level world creation.
+### Fixed
+- Fixed Brick Mayhem live score/readout synchronization so score updates immediately when bricks are destroyed during active play (not only on life loss/level transitions).
+- Removed duplicated Brick Mayhem row palette definitions by centralizing row color/effect data and reusing it from renderer + particle systems.
+### Changed
+- Updated `docs/BRICK_MAYHEM.md`, `docs/GAME.md`, and `docs/V2.0_PLANNED_FEATURES.md` to reflect the shipped Brick Mayhem effect system, lifecycle rules, HUD changes, and new engine test coverage.
+
 ## [1.5.4] - 2026-02-27
 ### Changed
 - Updated root app metadata (`title` and `description`) to the new LOTTO branding/copy so homepage search snippets align with current staff-facing product messaging.

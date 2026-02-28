@@ -158,6 +158,9 @@ public/
 - Completed: Brick Mayhem 6-tier difficulty system (Very Easy → Nightmare) with paddle size multipliers (0.75×–2×) and ball speed multipliers (0.5×–2×), mirroring Snake's preset pattern.
 - Completed: Brick Mayhem brick shatter fragment effect — destroyed bricks split into 4 quarter-sized pieces with gravity, outward velocity, and linear fade over 90 ticks (~1.5s). Particle system in `particles.ts`, engine reports destroyed bricks via `TickResult.destroyedBricks`.
 - Completed: Arcade overlay text centering fix — `text-indent` compensates for trailing CSS `letter-spacing` on centered `.arcade-retro` and `.arcade-ui` text (applied to both Snake and Brick Mayhem).
+- Completed: Brick Mayhem row-hit effects and lifecycle rules — shared 8-row palette metadata in `effects.ts`, baseline-based non-compounding speed effects (red/cyan/purple) with runtime speed clamps, orange multiball spawn, green clone paddle (64px offset, one max), pink paddle-width timed buff, gold points-multiplier timed buff, and level-clear effect resets.
+- Completed: Brick Mayhem readout accuracy — score now updates immediately on brick hits, while the game readout remains the minimal 3-metric bar (`SCORE`, `LIVES`, `LEVEL`).
+- Completed: Brick Mayhem engine coverage added in `tests/arcade-brick-mayhem-engine.test.ts` for speed-effect non-compounding, multiball life-loss behavior, timed effect cap rules, clone behavior, and level-reset semantics.
 
 ## Accessibility Issue: Snake Reflex Controls (Implemented - 2026-02-16)
 - Problem statement: current Snake pace can be too demanding for players with slower reflexes, and pellet placement near walls can make early rounds punishing.
@@ -299,6 +302,6 @@ public/
 
 ---
 
-Document Version: 3.7
-Last Updated: 2026-02-27
-Revision: Added Brick Mayhem difficulty system, brick shatter fragments, pixel-grid rendering, desktop viewport scaling, overlay text centering fix, and instruction text updates.
+Document Version: 3.8
+Last Updated: 2026-02-28
+Revision: Added Brick Mayhem row-hit effect system (speed/multiball/clone/timed buffs), centralized row metadata, live score sync fix, and engine tests; then restored the minimal 3-metric readout (`SCORE`, `LIVES`, `LEVEL`).

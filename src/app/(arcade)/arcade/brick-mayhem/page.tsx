@@ -5,16 +5,15 @@ import Link from "next/link";
 
 import { ARCADE_PLAY_RESUMED_EVENT, ARCADE_TICKET_CALLED_EVENT } from "@/arcade/lib/events";
 import {
-  BALL_SIZE,
   BOARD_H,
   BOARD_W,
   FIXED_STEP_MS,
   KEYBOARD_PADDLE_SPEED,
   PADDLE_W,
-  PADDLE_Y,
 } from "@/arcade/game/brick-mayhem/constants";
 import {
   createWorld,
+  effectivePaddleWidth,
   initialWorld,
   launchBall,
   tick,
@@ -96,6 +95,9 @@ export default function BrickMayhemPage() {
 
   const boardCanvasRef = React.useRef<HTMLCanvasElement>(null);
   const playAreaRef = React.useRef<HTMLElement>(null);
+  const scoreRef = React.useRef(0);
+  const livesRef = React.useRef(3);
+  const levelRef = React.useRef(0);
 
   /* ── Keep statusRef in sync ── */
   React.useEffect(() => {
@@ -103,10 +105,19 @@ export default function BrickMayhemPage() {
   }, [status]);
 
   /* ── Sync React state from world ── */
-  const syncReactState = React.useCallback((w: World) => {
-    setScore(w.score);
-    setLives(w.lives);
-    setLevel(w.level);
+  const syncReactState = React.useCallback((w: World, force = false) => {
+    if (force || w.score !== scoreRef.current) {
+      scoreRef.current = w.score;
+      setScore(w.score);
+    }
+    if (force || w.lives !== livesRef.current) {
+      livesRef.current = w.lives;
+      setLives(w.lives);
+    }
+    if (force || w.level !== levelRef.current) {
+      levelRef.current = w.level;
+      setLevel(w.level);
+    }
   }, []);
 
   /* ── Event helpers ── */
@@ -131,7 +142,7 @@ export default function BrickMayhemPage() {
     accumulatorRef.current = 0;
     lastTimeRef.current = 0;
     fragmentsRef.current = [];
-    syncReactState(w);
+    syncReactState(w, true);
     setSliderValue(50);
     setStatus("READY");
   }, [syncReactState]);
@@ -163,7 +174,7 @@ export default function BrickMayhemPage() {
     accumulatorRef.current = 0;
     lastTimeRef.current = 0;
     fragmentsRef.current = [];
-    syncReactState(w);
+    syncReactState(w, true);
     setSliderValue(50);
     setStatus("READY");
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -237,12 +248,12 @@ export default function BrickMayhemPage() {
         return;
       }
 
-      const delta = timestamp - lastTimeRef.current;
+      const delta = Math.min(timestamp - lastTimeRef.current, 250);
       lastTimeRef.current = timestamp;
       accumulatorRef.current += delta;
 
       const curDp = dpRef.current;
-      const pw = curDp.paddleW;
+      const currentPaddleW = effectivePaddleWidth(worldRef.current, curDp);
 
       // Apply keyboard input to paddle target.
       const keys = keysDownRef.current;
@@ -252,19 +263,30 @@ export default function BrickMayhemPage() {
       }
       if (keys.has("ArrowRight") || keys.has("Right")) {
         paddleTargetRef.current = Math.min(
-          BOARD_W - pw,
+          BOARD_W - currentPaddleW,
           paddleTargetRef.current + KEYBOARD_PADDLE_SPEED,
         );
       }
       // Sync slider visual position when keyboard moves the paddle.
       if (hasKeyInput) {
-        setSliderValue(Math.round((paddleTargetRef.current / (BOARD_W - pw)) * 100));
+        const range = Math.max(1, BOARD_W - currentPaddleW);
+        setSliderValue(Math.round((paddleTargetRef.current / range) * 100));
       }
 
       while (accumulatorRef.current >= FIXED_STEP_MS) {
-        const result = tick(worldRef.current, paddleTargetRef.current, curDp);
+        const prevWorld = worldRef.current;
+        const prevPaddleW = effectivePaddleWidth(prevWorld, curDp);
+        const result = tick(prevWorld, paddleTargetRef.current, curDp);
         worldRef.current = result.world;
         accumulatorRef.current -= FIXED_STEP_MS;
+        syncReactState(result.world);
+
+        const nextPaddleW = effectivePaddleWidth(result.world, curDp);
+        if (nextPaddleW !== prevPaddleW) {
+          const nextRange = Math.max(1, BOARD_W - nextPaddleW);
+          setSliderValue(Math.round((result.world.paddle.x / nextRange) * 100));
+          paddleTargetRef.current = result.world.paddle.x;
+        }
 
         // Spawn fragment particles for any bricks destroyed this tick.
         for (const brick of result.destroyedBricks) {
@@ -282,7 +304,7 @@ export default function BrickMayhemPage() {
           paddleTargetRef.current = w.paddle.x;
           accumulatorRef.current = 0;
           fragmentsRef.current = [];
-          syncReactState(w);
+          syncReactState(w, true);
           setStatus("READY");
           draw();
           return;
@@ -292,27 +314,22 @@ export default function BrickMayhemPage() {
           const w = worldRef.current;
           const remainingLives = w.lives - 1;
           if (remainingLives <= 0) {
-            worldRef.current = { ...w, lives: 0 };
-            syncReactState({ ...w, lives: 0 });
+            const gameOverWorld = { ...w, lives: 0 };
+            worldRef.current = gameOverWorld;
+            syncReactState(gameOverWorld, true);
             setStatus("GAME_OVER");
             draw();
             return;
           }
-          // Reset ball onto paddle, keep bricks and score.
-          const resetW: World = {
+          // The engine already reset to one parked ball; apply life decrement and stay READY.
+          const readyWorld: World = {
             ...w,
             lives: remainingLives,
-            launched: false,
-            ball: {
-              x: w.paddle.x + pw / 2 - BALL_SIZE / 2,
-              y: PADDLE_Y - BALL_SIZE,
-              vx: 0,
-              vy: 0,
-            },
           };
-          worldRef.current = resetW;
+          worldRef.current = readyWorld;
+          paddleTargetRef.current = readyWorld.paddle.x;
           accumulatorRef.current = 0;
-          syncReactState(resetW);
+          syncReactState(readyWorld, true);
           setStatus("READY");
           draw();
           return;
@@ -394,8 +411,10 @@ export default function BrickMayhemPage() {
   const handleSliderChange = React.useCallback(
     (value: number[]) => {
       const sliderVal = value[0] ?? 0;
-      // Map 0..100 to 0..(BOARD_W - paddleW).
-      paddleTargetRef.current = (sliderVal / 100) * (BOARD_W - dpRef.current.paddleW);
+      // Map 0..100 to 0..(BOARD_W - effective paddle width).
+      const pw = effectivePaddleWidth(worldRef.current, dpRef.current);
+      const range = Math.max(1, BOARD_W - pw);
+      paddleTargetRef.current = (sliderVal / 100) * range;
       setSliderValue(sliderVal);
 
       // Auto-start on slider drag from READY state.

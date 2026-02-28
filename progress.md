@@ -27,3 +27,13 @@ Original prompt: Let's address a separate issue. I've got Codex working to final
 - 2026-02-16: Removed hard text-shadow styling from small Snake UI text (mode label + score/length readout) to improve readability.
 - 2026-02-16: Updated `/arcade` `PLAY SNAKE` button text rendering to wrap by words for multilingual labels.
 - 2026-02-16: Replaced Arcade mode-switcher icons with full 8bitcn retro geometry and flipped visibility to sun in light mode / moon in dark mode for app-wide consistency.
+- 2026-02-28: New request: implement Brick Mayhem row-hit effects (speed changes by color, orange multi-ball, green clone paddle, pink/gold timed buffs), centralize color/effect metadata, and fix live score HUD updates.
+- 2026-02-28: Added shared `src/arcade/game/brick-mayhem/effects.ts` for row palette + effect mapping; renderer and particles now consume one shared palette source.
+- 2026-02-28: Refactored Brick Mayhem engine for multiball + effect state (speed clamps, baseline speed modifiers, timed buff extension with cap, clone paddle, level-clear reset semantics).
+- 2026-02-28: Updated Brick Mayhem page and Arcade CSS for live score synchronization and an active-effects HUD (balls count + clone/pink/gold indicators).
+- 2026-02-28: Added localization keys for Brick Mayhem HUD/effect labels across all 8 supported locales.
+- 2026-02-28: Added engine coverage in `tests/arcade-brick-mayhem-engine.test.ts` for non-compounding speed effects, orange multiball lifecycle/life-loss rule, timed gold cap, clone behavior, and effect reset on new level world.
+- 2026-02-28: Validation complete: `npm test -- tests/arcade-brick-mayhem-engine.test.ts tests/arcade-snake-ticket-pause.test.tsx tests/arcade-now-serving-banner.test.tsx` and `npm run build` passed.
+- 2026-02-28: Skill-required Playwright client run attempted but blocked (`playwright` package missing in environment), so gameplay verification used unit tests + build validation instead.
+- 2026-02-28: Follow-up change: removed Brick Mayhem active-effects HUD row and restored minimal gameplay readout to score/lives/level only; updated docs/changelog accordingly.
+- 2026-02-28: Follow-up UI tweak: Brick Mayhem ball now uses neutral theme colors (`#ffffff` in dark mode, `#000000` in light mode) via dedicated `--arcade-brick-ball` token.

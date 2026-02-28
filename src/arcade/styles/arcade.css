@@ -8,6 +8,7 @@
   --arcade-dot: #ffd75c;
   --arcade-snake-body: #ffd75c;
   --arcade-ghost: #86f0ff;
+  --arcade-brick-ball: #ffffff;
   --arcade-pellet: #74f84a;
   --arcade-snake-grid-line: rgba(59, 124, 255, 0.22);
   --arcade-panel: rgba(10, 16, 30, 0.94);
@@ -51,6 +52,7 @@ html.light .arcade-scope {
   --arcade-dot: #7a4a00;
   --arcade-snake-body: #ffb703;
   --arcade-ghost: #0f4f9a;
+  --arcade-brick-ball: #000000;
   --arcade-pellet: #3ecf52;
   --arcade-snake-grid-line: rgba(49, 93, 187, 0.2);
   --arcade-panel: rgba(248, 252, 255, 0.96);

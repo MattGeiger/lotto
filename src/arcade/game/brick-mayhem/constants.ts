@@ -57,6 +57,28 @@ export const KEYBOARD_PADDLE_SPEED = 3;
  */
 export const MAX_BOUNCE_ANGLE = (Math.PI / 180) * 60;
 
+/** Vertical offset for the clone paddle spawned by green bricks. */
+export const CLONE_PADDLE_OFFSET_Y = 64;
+
+/** Pink brick effect: paddle width multiplier. */
+export const WIDE_PADDLE_MUL = 2;
+
+/** Gold brick effect: points multiplier while active. */
+export const TRIPLE_POINTS_MUL = 3;
+
+/** Duration for timed brick effects (pink / gold). */
+export const TIMED_EFFECT_DURATION_MS = 30_000;
+
+/** Hard cap for extending timed effects via repeat hits. */
+export const TIMED_EFFECT_MAX_MS = 120_000;
+
+/** Keep ball speed within this band to reduce collision tunneling risk. */
+export const BALL_SPEED_MIN = 0.6;
+export const BALL_SPEED_MAX_EFFECTIVE = 4;
+
+/** Limit multiball fan-out so gameplay remains readable and stable. */
+export const MAX_BALLS = 4;
+
 /* ── Fragment (brick shatter) constants ── */
 
 /** Maximum lifetime of a brick fragment in ticks (~90 ticks ≈ 1.5s). */

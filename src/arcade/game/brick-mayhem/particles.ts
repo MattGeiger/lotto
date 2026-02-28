@@ -9,19 +9,8 @@ import {
   FRAGMENT_MAX_AGE,
   FRAGMENT_SPREAD_X,
 } from "./constants";
+import { ROW_COLORS } from "./effects";
 import type { Brick } from "./types";
-
-/** Row hue palette (mirrored from renderer so fragments match brick colours). */
-const ROW_COLORS = [
-  "#ff4d6a", // red-pink
-  "#ff6b3d", // orange
-  "#ffc63b", // yellow-gold
-  "#74f84a", // green
-  "#3bdfff", // cyan
-  "#a87bff", // purple
-  "#ff6de8", // pink
-  "#ffd75c", // gold
-];
 
 /** A single visual fragment — purely cosmetic, no gameplay collision. */
 export type Fragment = {
