@@ -67,14 +67,11 @@ const computeFrameStats = (timestamps: number[]): FrameStats => {
   return { avgFrameMs, p95FrameMs };
 };
 
-const getInitialTier = (): MotionTier => {
-  if (typeof window === "undefined") return "simple";
-  const mediaQuery = getReducedMotionQuery();
-  if (mediaQuery?.matches) {
-    return "off";
-  }
-  return readStoredTier() ?? "simple";
-};
+/**
+ * Keep first paint deterministic across SSR and client hydration.
+ * Runtime preferences/storage are applied in an effect after mount.
+ */
+const getInitialTier = (): MotionTier => "simple";
 
 export function useMotionTier() {
   const [tier, setTier] = React.useState<MotionTier>(() => getInitialTier());
