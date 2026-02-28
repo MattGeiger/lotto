@@ -6,6 +6,10 @@
 - Game engine (physics, collision, rendering, levels) is complete.
 - Paddle slider control, keyboard input, and game loop are wired up.
 - 5 progressive levels ship in the MVP.
+- 6-tier difficulty system (Very Easy → Nightmare) with paddle size and ball speed multipliers.
+- Brick shatter fragment effect (4 quarter-pieces with gravity and fade-out).
+- Pixel-grid rendering (ball/paddle/fragments snapped to integer pixels at draw time).
+- Desktop viewport scaling (board grows to fill available space on 768px+ screens).
 
 ## Concept
 
@@ -145,7 +149,7 @@ render(world)
 This keeps physics deterministic regardless of frame rate.
 
 ### Rendering
-One canvas, one `drawBoard(world)` function per frame. Each frame: clear canvas → draw bricks → draw paddle → draw ball. At 192×160 native resolution scaled up via CSS, this is trivially fast.
+One canvas, one `drawBoard(world, dp, fragments)` function per frame. Each frame: clear canvas → draw bricks → draw fragment particles → draw paddle → draw ball. Ball, paddle, and fragment positions are snapped to integer pixels at render time for crisp 8-bit aesthetics (no sub-pixel anti-aliasing). At 192×160 native resolution scaled up via CSS, this is trivially fast.
 
 ### Ball Drop and Life Loss
 When the ball's Y position exceeds 160 (falls past the bottom edge):
@@ -196,6 +200,13 @@ Brick Mayhem follows the same Arcade integration patterns established by Snake:
 - [x] Auto-start on slider drag or arrow key from READY state
 - [x] Theme-aware rendering (light/dark mode via CSS custom properties)
 - [x] Control dock stacked layout with generous spacing to prevent accidental pauses
+- [x] 6-tier difficulty system (Very Easy → Nightmare) with paddle size multipliers (0.75×–2×) and ball speed multipliers (0.5×–2×)
+- [x] Difficulty selector UI: Card with slider, mirroring Snake's pattern, with `brickMayhemDifficultySettingTitle` and `brickMayhemSettingLabel` keys across all 8 locales
+- [x] Brick shatter fragment effect: destroyed bricks split into 4 quarter-sized pieces with outward velocity, gravity (0.18 px/tick²), and linear opacity fade over 90 ticks (~1.5s)
+- [x] Pixel-grid rendering: ball, paddle, and fragment positions snapped to integer pixels via `Math.round()` at draw time
+- [x] Desktop viewport scaling: `@media (min-width: 768px)` raises board size cap from 420px to 780px, using `calc((100dvh - 13.5rem) * 1.2)` to fill available height
+- [x] GAME OVER overlay text centering fix: `text-indent` compensates for trailing `letter-spacing` on `.arcade-retro` and `.arcade-ui` (applied to both Snake and Brick Mayhem overlays)
+- [x] Instruction text updated across all 8 locales (paddle → slider, strike → hit, clear bricks to make a path → clear a path to the top)
 
 ### Not Yet Implemented
 - [ ] Sound effects (deferred)
@@ -217,11 +228,12 @@ src/
   arcade/
     game/
       brick-mayhem/
-        types.ts                # World, Ball, Paddle, Brick, LevelConfig, Vec2
-        constants.ts            # board dimensions, paddle size, ball speed, brick sizing
+        types.ts                # World, Ball, Paddle, Brick, LevelConfig, Vec2, DifficultyParams
+        constants.ts            # board dimensions, paddle size, ball speed, brick sizing, fragment physics
         engine.ts               # pure game-logic functions (tick, collision, reflection)
         levels.ts               # 5 level layouts as 2D data arrays (0 = empty, 1 = brick)
-        renderer.ts             # drawBoard(ctx, world) — single canvas pass per frame
+        particles.ts            # Fragment type, spawnBrickFragments(), tickFragments()
+        renderer.ts             # drawBoard(ctx, world, canvas, dp, fragments) — single canvas pass per frame
     styles/
       arcade.css                # arcade-brick-* classes
 ```
@@ -263,10 +275,14 @@ Build incrementally in this order, each step producing a testable result:
 | Starting lives | 3 |
 | MVP levels | 5 (progressive density) |
 | Max bounce angle | ±60° from vertical |
+| Difficulty tiers | 6: Very Easy (paddle 2×, speed 0.5×), Easy (2×, 1×), Normal (1.5×, 1×), Hard (1×, 1×), Very Hard (0.75×, 1×), Nightmare (0.75×, 2×) |
+| Default difficulty | Normal (index 2) |
+| Pixel-grid rendering | Ball, paddle, fragments snapped to integer pixels via `Math.round()` at draw time |
+| Fragment shatter | 4 quarter-pieces per brick, gravity 0.18 px/tick², fade over 90 ticks (~1.5s) |
+| Desktop board scaling | 768px+ viewports: board cap raised to 780px via `calc((100dvh - 13.5rem) * 1.2)` |
 
 ## Open Questions
 
-- Paddle width — fixed at 16px or variable (shrinks at higher levels)?
 - Level-clear transition — add a brief animation or keep instant?
 - Power-ups — deferred, but which types when added?
 - Sound effects — deferred, revisit post-MVP.
@@ -274,5 +290,5 @@ Build incrementally in this order, each step producing a testable result:
 
 ---
 
-Document Version: 2.0
+Document Version: 3.0
 Last Updated: 2026-02-27

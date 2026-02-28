@@ -78,6 +78,7 @@ src/
         constants.ts
         engine.ts
         levels.ts
+        particles.ts
         renderer.ts
     hooks/
     lib/
@@ -151,6 +152,12 @@ public/
 - Completed: Brick Mayhem paddle slider control in stacked control dock (button above slider with generous spacing), keyboard arrow keys, space bar for start/pause/resume, and auto-start on input.
 - Completed: Brick Mayhem canvas rendering with row-colored brick palette, theme-aware paddle/ball/wall colors via CSS custom properties, and `image-rendering: pixelated` scaling.
 - Completed: Brick Mayhem `lives` and `level` translation keys added to all 8 locales; readout bar displays score, lives, and level in a 3-column grid.
+- Completed: Brick Mayhem pixel-grid rendering — ball, paddle, and fragment positions snapped to integer pixels at draw time for crisp 8-bit aesthetics.
+- Completed: Brick Mayhem desktop viewport scaling — `@media (min-width: 768px)` raises board size cap from 420px to 780px; Snake board cap raised to 640px.
+- Completed: Brick Mayhem instruction text updated across all 8 locales (paddle → slider, strike → hit, clear path wording revised).
+- Completed: Brick Mayhem 6-tier difficulty system (Very Easy → Nightmare) with paddle size multipliers (0.75×–2×) and ball speed multipliers (0.5×–2×), mirroring Snake's preset pattern.
+- Completed: Brick Mayhem brick shatter fragment effect — destroyed bricks split into 4 quarter-sized pieces with gravity, outward velocity, and linear fade over 90 ticks (~1.5s). Particle system in `particles.ts`, engine reports destroyed bricks via `TickResult.destroyedBricks`.
+- Completed: Arcade overlay text centering fix — `text-indent` compensates for trailing CSS `letter-spacing` on centered `.arcade-retro` and `.arcade-ui` text (applied to both Snake and Brick Mayhem).
 
 ## Accessibility Issue: Snake Reflex Controls (Implemented - 2026-02-16)
 - Problem statement: current Snake pace can be too demanding for players with slower reflexes, and pellet placement near walls can make early rounds punishing.
@@ -292,6 +299,6 @@ public/
 
 ---
 
-Document Version: 3.6
+Document Version: 3.7
 Last Updated: 2026-02-27
-Revision: Added Brick Mayhem as the second Arcade game — full MVP implementation with pure-function engine, canvas rendering, paddle slider controls, 5 progressive levels, AABB collision detection, and paddle-position-influenced reflection angles.
+Revision: Added Brick Mayhem difficulty system, brick shatter fragments, pixel-grid rendering, desktop viewport scaling, overlay text centering fix, and instruction text updates.
