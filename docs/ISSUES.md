@@ -518,3 +518,29 @@ After entering a Start Number and End Number in the admin page, only the "Genera
 - Reset the system from a generated state; verify `Range` stays `— – —` and `Tickets issued` is `—` (or `0`, per final product decision).
 - Generate a valid range (for example `1-50`) and confirm `Tickets issued` shows `50`.
 - Verify no regression after append/batch flows and after reload.
+
+---
+
+## Issue 17: `/new` still animates text on initial page load
+
+### Status
+- Open (persists after rollback; deferred for now).
+
+### Observed
+- Desired behavior: text on `/new` should render statically on first load, and only animate when language changes.
+- Actual behavior: morph/entry-style animation still appears on page load.
+- Language-switch animation behavior works, but first-load static requirement is not met.
+
+### Current State
+- Multiple implementation attempts were tested and then reverted.
+- The issue remains reproducible after server restart and browser reload testing.
+- Team decision: pause further work on this issue for now and track as unresolved.
+
+### Repro
+1. Start app and open `/new`.
+2. Observe initial page render.
+3. First-load text still animates when it should be static.
+4. Change language and confirm language-switch animation still runs.
+
+### Notes
+- Keep this issue linked to future `/new` animation/hydration work so first-load behavior can be addressed without regressing language-switch animation.
