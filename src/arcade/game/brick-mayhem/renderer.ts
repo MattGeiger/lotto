@@ -7,11 +7,13 @@ import {
   BRICK_H,
   BRICK_TOP_OFFSET,
   BRICK_W,
+  FRAGMENT_MAX_AGE,
   PADDLE_H,
   PADDLE_Y,
   PADDLE_W,
 } from "./constants";
-import type { World } from "./types";
+import type { Fragment } from "./particles";
+import type { DifficultyParams, World } from "./types";
 
 /** Row hue palette — each row of bricks gets a distinct colour. */
 const ROW_COLORS = [
@@ -31,7 +33,14 @@ const ROW_COLORS = [
  * Reads CSS custom properties from the canvas element so colours follow
  * the current arcade theme (light/dark mode).
  */
-export function drawBoard(ctx: CanvasRenderingContext2D, world: World, canvas: HTMLCanvasElement): void {
+export function drawBoard(
+  ctx: CanvasRenderingContext2D,
+  world: World,
+  canvas: HTMLCanvasElement,
+  dp?: DifficultyParams,
+  fragments?: Fragment[],
+): void {
+  const pw = dp?.paddleW ?? PADDLE_W;
   const styles = getComputedStyle(canvas);
 
   // Resolve theme colours.
@@ -59,13 +68,25 @@ export function drawBoard(ctx: CanvasRenderingContext2D, world: World, canvas: H
     ctx.strokeRect(bx + 0.5, by + 0.5, BRICK_W - 1, BRICK_H - 1);
   }
 
+  // ── Fragments (brick shatter particles) ──
+  if (fragments && fragments.length > 0) {
+    for (const f of fragments) {
+      // Fade out linearly over the fragment's lifetime.
+      ctx.globalAlpha = Math.max(0, 1 - f.age / FRAGMENT_MAX_AGE);
+      ctx.fillStyle = f.color;
+      ctx.fillRect(Math.round(f.x), Math.round(f.y), f.w, f.h);
+    }
+    ctx.globalAlpha = 1;
+  }
+
   // ── Paddle ──
+  // Round to integer pixels so the CSS-scaled canvas stays crisp (no sub-pixel anti-aliasing).
   ctx.fillStyle = paddleColor;
-  ctx.fillRect(world.paddle.x, PADDLE_Y, PADDLE_W, PADDLE_H);
+  ctx.fillRect(Math.round(world.paddle.x), PADDLE_Y, pw, PADDLE_H);
 
   // ── Ball ──
   ctx.fillStyle = ballColor;
-  ctx.fillRect(world.ball.x, world.ball.y, BALL_SIZE, BALL_SIZE);
+  ctx.fillRect(Math.round(world.ball.x), Math.round(world.ball.y), BALL_SIZE, BALL_SIZE);
 
   // ── Side walls — subtle vertical lines ──
   ctx.strokeStyle = wallColor;

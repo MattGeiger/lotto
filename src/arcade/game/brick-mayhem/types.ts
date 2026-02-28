@@ -40,3 +40,11 @@ export type World = {
   /** True when ball has been launched, false when sitting on paddle. */
   launched: boolean;
 };
+
+/** Difficulty-dependent parameters threaded through engine & renderer. */
+export type DifficultyParams = {
+  /** Effective paddle width in pixels. */
+  paddleW: number;
+  /** Speed multiplier applied to ball speed (1 = normal). */
+  speedMul: number;
+};

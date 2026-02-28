@@ -56,3 +56,17 @@ export const KEYBOARD_PADDLE_SPEED = 3;
  * ~60 degrees — steep but not horizontal.
  */
 export const MAX_BOUNCE_ANGLE = (Math.PI / 180) * 60;
+
+/* ── Fragment (brick shatter) constants ── */
+
+/** Maximum lifetime of a brick fragment in ticks (~90 ticks ≈ 1.5s). */
+export const FRAGMENT_MAX_AGE = 90;
+
+/** Gravity applied to fragments each tick (pixels/tick²). */
+export const FRAGMENT_GRAVITY = 0.18;
+
+/** Horizontal spread speed range for fragments (pixels/tick). */
+export const FRAGMENT_SPREAD_X = 0.8;
+
+/** Initial upward velocity for fragments (pixels/tick). */
+export const FRAGMENT_INITIAL_VY = -1.2;

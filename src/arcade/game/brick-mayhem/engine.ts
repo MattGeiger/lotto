@@ -18,13 +18,16 @@ import {
   POINTS_PER_BRICK,
 } from "./constants";
 import { LEVELS } from "./levels";
-import type { Brick, LevelConfig, World } from "./types";
+import type { Brick, DifficultyParams, LevelConfig, World } from "./types";
+
+/** Default difficulty: normal paddle width, normal speed. */
+export const DEFAULT_DIFFICULTY: DifficultyParams = { paddleW: PADDLE_W, speedMul: 1 };
 
 /* ── Helpers ── */
 
-/** Ball speed for the given level index (0-based). */
-export function ballSpeedForLevel(level: number): number {
-  return Math.min(BALL_SPEED_INITIAL + level * BALL_SPEED_PER_LEVEL, BALL_SPEED_MAX);
+/** Ball speed for the given level index (0-based), scaled by difficulty. */
+export function ballSpeedForLevel(level: number, speedMul: number = 1): number {
+  return Math.min((BALL_SPEED_INITIAL + level * BALL_SPEED_PER_LEVEL) * speedMul, BALL_SPEED_MAX * speedMul);
 }
 
 /** Build the brick array from a level config. */
@@ -54,13 +57,13 @@ function brickRect(b: Brick) {
 /* ── World creation ── */
 
 /** Create a fresh world for the given level index. */
-export function createWorld(level: number, lives: number, score: number): World {
+export function createWorld(level: number, lives: number, score: number, dp: DifficultyParams = DEFAULT_DIFFICULTY): World {
   const config = LEVELS[level % LEVELS.length]!;
-  const paddleX = (BOARD_W - PADDLE_W) / 2;
+  const paddleX = (BOARD_W - dp.paddleW) / 2;
 
   return {
     ball: {
-      x: paddleX + PADDLE_W / 2 - BALL_SIZE / 2,
+      x: paddleX + dp.paddleW / 2 - BALL_SIZE / 2,
       y: PADDLE_Y - BALL_SIZE,
       vx: 0,
       vy: 0,
@@ -75,14 +78,14 @@ export function createWorld(level: number, lives: number, score: number): World 
 }
 
 /** Create the initial world (level 0). */
-export function initialWorld(): World {
-  return createWorld(0, INITIAL_LIVES, 0);
+export function initialWorld(dp: DifficultyParams = DEFAULT_DIFFICULTY): World {
+  return createWorld(0, INITIAL_LIVES, 0, dp);
 }
 
 /** Launch the ball from the paddle. */
-export function launchBall(world: World): World {
+export function launchBall(world: World, dp: DifficultyParams = DEFAULT_DIFFICULTY): World {
   if (world.launched) return world;
-  const speed = ballSpeedForLevel(world.level);
+  const speed = ballSpeedForLevel(world.level, dp.speedMul);
   // Launch at a slight random angle so the game isn't purely vertical.
   const angle = ((Math.random() - 0.5) * Math.PI) / 6; // +-15 degrees from vertical
   return {
@@ -104,31 +107,36 @@ export type TickResult = {
   ballLost: boolean;
   /** True when the ball reached the top this tick (level clear). */
   levelCleared: boolean;
+  /** Bricks destroyed this tick (for visual fragment effects). */
+  destroyedBricks: Brick[];
 };
 
-export function tick(world: World, paddleX: number): TickResult {
+export function tick(world: World, paddleX: number, dp: DifficultyParams = DEFAULT_DIFFICULTY): TickResult {
+  const pw = dp.paddleW;
+
   if (!world.launched) {
     // Ball sitting on paddle — just track paddle position.
-    const clampedPx = clampPaddleX(paddleX);
+    const clampedPx = clampPaddleX(paddleX, pw);
     return {
       world: {
         ...world,
         paddle: { x: clampedPx },
         ball: {
           ...world.ball,
-          x: clampedPx + PADDLE_W / 2 - BALL_SIZE / 2,
+          x: clampedPx + pw / 2 - BALL_SIZE / 2,
           y: PADDLE_Y - BALL_SIZE,
         },
       },
       ballLost: false,
       levelCleared: false,
+      destroyedBricks: [],
     };
   }
 
   let { x, y, vx, vy } = world.ball;
   let { score } = world;
   const bricks = world.bricks.map((b) => ({ ...b }));
-  const px = clampPaddleX(paddleX);
+  const px = clampPaddleX(paddleX, pw);
 
   // Move ball.
   x += vx;
@@ -158,6 +166,7 @@ export function tick(world: World, paddleX: number): TickResult {
       },
       ballLost: false,
       levelCleared: true,
+      destroyedBricks: [],
     };
   }
 
@@ -168,10 +177,10 @@ export function tick(world: World, paddleX: number): TickResult {
     y + BALL_SIZE >= PADDLE_Y &&
     y + BALL_SIZE <= PADDLE_Y + PADDLE_H &&
     x + BALL_SIZE > px &&
-    x < px + PADDLE_W
+    x < px + pw
   ) {
     // Reflect with position-influenced angle.
-    const hitOffset = (x + BALL_SIZE / 2 - (px + PADDLE_W / 2)) / (PADDLE_W / 2);
+    const hitOffset = (x + BALL_SIZE / 2 - (px + pw / 2)) / (pw / 2);
     const clampedOffset = Math.max(-1, Math.min(1, hitOffset));
     const angle = clampedOffset * MAX_BOUNCE_ANGLE;
     const speed = Math.sqrt(vx * vx + vy * vy);
@@ -181,6 +190,8 @@ export function tick(world: World, paddleX: number): TickResult {
   }
 
   // ── Brick collisions ──
+
+  const destroyed: Brick[] = [];
 
   for (const brick of bricks) {
     if (!brick.alive) continue;
@@ -194,6 +205,7 @@ export function tick(world: World, paddleX: number): TickResult {
 
     brick.alive = false;
     score += POINTS_PER_BRICK;
+    destroyed.push(brick);
 
     // Determine collision face for reflection.
     const overlapLeft = x + BALL_SIZE - br.x;
@@ -228,6 +240,7 @@ export function tick(world: World, paddleX: number): TickResult {
       },
       ballLost: true,
       levelCleared: false,
+      destroyedBricks: destroyed,
     };
   }
 
@@ -241,13 +254,14 @@ export function tick(world: World, paddleX: number): TickResult {
     },
     ballLost: false,
     levelCleared: false,
+    destroyedBricks: destroyed,
   };
 }
 
 /* ── Utilities ── */
 
-function clampPaddleX(x: number): number {
-  return Math.max(0, Math.min(BOARD_W - PADDLE_W, x));
+function clampPaddleX(x: number, paddleW: number = PADDLE_W): number {
+  return Math.max(0, Math.min(BOARD_W - paddleW, x));
 }
 
 /** Count alive bricks in the world. */

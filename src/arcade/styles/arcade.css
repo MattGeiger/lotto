@@ -126,6 +126,12 @@ html.light .arcade-scope .arcade-pixel-grid {
   min-height: calc(100dvh - 4.5rem);
 }
 
+@media (min-width: 768px) {
+  .arcade-snake-shell {
+    --arcade-board-size: clamp(360px, min(88vw, calc(100dvh - 13.5rem)), 640px);
+  }
+}
+
 .arcade-snake-stage {
   display: flex;
   flex-direction: column;
@@ -614,6 +620,17 @@ html.light .arcade-scope .arcade-serving-called-overlay-active {
   min-height: calc(100dvh - 4.5rem);
 }
 
+/* On wider viewports, let the board grow to fill available space.
+   Height budget: 100dvh minus readout (~2.5rem), control dock (~7rem),
+   and top chrome/gap (~4rem when scrolled into play area).
+   Board width = available height × 1.2 (from 192/160 aspect ratio).
+   Still capped by 88vw so it never overflows horizontally. */
+@media (min-width: 768px) {
+  .arcade-brick-shell {
+    --arcade-board-size: clamp(360px, min(88vw, calc((100dvh - 13.5rem) * 1.2)), 780px);
+  }
+}
+
 .arcade-brick-stage {
   display: flex;
   flex-direction: column;
@@ -650,6 +667,35 @@ html.light .arcade-scope .arcade-brick-readout {
   white-space: nowrap;
   line-height: 1.2;
   text-align: center;
+}
+
+.arcade-brick-settings {
+  width: min(100%, 540px);
+  margin: 0 auto;
+  display: grid;
+  gap: 0.72rem;
+  padding: 0.4rem 0;
+}
+
+.arcade-brick-slider-group {
+  display: grid;
+  gap: 0.46rem;
+}
+
+.arcade-brick-slider-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  line-height: 1.2;
+  text-shadow: none;
+}
+
+.arcade-brick-difficulty-slider {
+  width: 100%;
+}
+
+.arcade-brick-difficulty-slider [data-orientation="horizontal"] {
+  min-height: 20px;
 }
 
 .arcade-brick-board {

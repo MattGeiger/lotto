@@ -19,18 +19,63 @@ import {
   launchBall,
   tick,
 } from "@/arcade/game/brick-mayhem/engine";
+import type { Fragment } from "@/arcade/game/brick-mayhem/particles";
+import { spawnBrickFragments, tickFragments } from "@/arcade/game/brick-mayhem/particles";
 import { drawBoard } from "@/arcade/game/brick-mayhem/renderer";
-import type { World } from "@/arcade/game/brick-mayhem/types";
+import type { DifficultyParams, World } from "@/arcade/game/brick-mayhem/types";
 import { ChevronArrowLeftIcon } from "@/arcade/components/icons/chevron-arrow-left-icon";
 import { Button, Card, CardContent, CardHeader, CardTitle, Slider } from "@/arcade/ui/8bit";
 import { useLanguage } from "@/contexts/language-context";
 import { cn } from "@/lib/utils";
+
+/* ── Difficulty presets ── */
+
+type BrickModePreset = {
+  key: "veryEasy" | "easy" | "normal" | "hard" | "veryHard" | "nightmare";
+  labelKey:
+    | "snakeModeVeryEasy"
+    | "snakeModeEasy"
+    | "snakeModeNormal"
+    | "snakeModeHard"
+    | "snakeModeVeryHard"
+    | "snakeModeNightmare";
+  /** Paddle width multiplier relative to the base PADDLE_W constant. */
+  paddleMul: number;
+  /** Ball speed multiplier (1 = normal). */
+  speedMul: number;
+};
+
+const BRICK_MODE_PRESETS: readonly BrickModePreset[] = [
+  { key: "veryEasy",  labelKey: "snakeModeVeryEasy",  paddleMul: 2,    speedMul: 0.5 },
+  { key: "easy",      labelKey: "snakeModeEasy",      paddleMul: 2,    speedMul: 1   },
+  { key: "normal",    labelKey: "snakeModeNormal",    paddleMul: 1.5,  speedMul: 1   },
+  { key: "hard",      labelKey: "snakeModeHard",      paddleMul: 1,    speedMul: 1   },
+  { key: "veryHard",  labelKey: "snakeModeVeryHard",  paddleMul: 0.75, speedMul: 1   },
+  { key: "nightmare", labelKey: "snakeModeNightmare", paddleMul: 0.75, speedMul: 2   },
+];
+
+const DEFAULT_MODE_INDEX = 2; // Normal
+
+/** Derive engine-ready difficulty params from a preset. */
+function difficultyFromPreset(preset: BrickModePreset): DifficultyParams {
+  return {
+    paddleW: Math.round(PADDLE_W * preset.paddleMul),
+    speedMul: preset.speedMul,
+  };
+}
 
 type GameStatus = "READY" | "RUNNING" | "PAUSED" | "GAME_OVER";
 
 export default function BrickMayhemPage() {
   const { t, language } = useLanguage();
   const isLargeTextLocale = language === "ar" || language === "fa" || language === "zh";
+
+  /* ── Difficulty state ── */
+  const [modeIndex, setModeIndex] = React.useState(DEFAULT_MODE_INDEX);
+  const modePreset = BRICK_MODE_PRESETS[modeIndex]!;
+  const dp = React.useMemo(() => difficultyFromPreset(modePreset), [modePreset]);
+  const dpRef = React.useRef(dp);
+  React.useEffect(() => { dpRef.current = dp; }, [dp]);
 
   /* ── React-rendered state ── */
   const [status, setStatus] = React.useState<GameStatus>("READY");
@@ -40,13 +85,14 @@ export default function BrickMayhemPage() {
   const [sliderValue, setSliderValue] = React.useState(50);
 
   /* ── Refs for live game state (updated synchronously between frames) ── */
-  const worldRef = React.useRef<World>(initialWorld());
+  const worldRef = React.useRef<World>(initialWorld(dp));
   const statusRef = React.useRef<GameStatus>("READY");
-  const paddleTargetRef = React.useRef<number>((BOARD_W - PADDLE_W) / 2);
+  const paddleTargetRef = React.useRef<number>((BOARD_W - dp.paddleW) / 2);
   const keysDownRef = React.useRef<Set<string>>(new Set());
   const rafIdRef = React.useRef<number>(0);
   const accumulatorRef = React.useRef(0);
   const lastTimeRef = React.useRef(0);
+  const fragmentsRef = React.useRef<Fragment[]>([]);
 
   const boardCanvasRef = React.useRef<HTMLCanvasElement>(null);
   const playAreaRef = React.useRef<HTMLElement>(null);
@@ -79,11 +125,12 @@ export default function BrickMayhemPage() {
   /* ── Reset / restart helpers ── */
 
   const resetGame = React.useCallback(() => {
-    const w = initialWorld();
+    const w = initialWorld(dpRef.current);
     worldRef.current = w;
     paddleTargetRef.current = w.paddle.x;
     accumulatorRef.current = 0;
     lastTimeRef.current = 0;
+    fragmentsRef.current = [];
     syncReactState(w);
     setSliderValue(50);
     setStatus("READY");
@@ -97,6 +144,30 @@ export default function BrickMayhemPage() {
       notifyPlayResumed();
     }, 0);
   }, [resetGame, notifyPlayResumed]);
+
+  /* ── Difficulty change handler ── */
+
+  const handleModeChange = React.useCallback(
+    (value: number[]) => {
+      const idx = value[0] ?? DEFAULT_MODE_INDEX;
+      setModeIndex(idx);
+    },
+    [],
+  );
+
+  // When difficulty changes, reset the game so the new paddle/speed take effect.
+  React.useEffect(() => {
+    const w = initialWorld(dp);
+    worldRef.current = w;
+    paddleTargetRef.current = w.paddle.x;
+    accumulatorRef.current = 0;
+    lastTimeRef.current = 0;
+    fragmentsRef.current = [];
+    syncReactState(w);
+    setSliderValue(50);
+    setStatus("READY");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dp]);
 
   /* ── Drawing ── */
 
@@ -115,7 +186,7 @@ export default function BrickMayhemPage() {
       canvas.height = BOARD_H;
     }
 
-    drawBoard(ctx, worldRef.current, canvas);
+    drawBoard(ctx, worldRef.current, canvas, dpRef.current, fragmentsRef.current);
   }, []);
 
   /* ── Initial draw + redraw on theme/resize ── */
@@ -154,7 +225,7 @@ export default function BrickMayhemPage() {
 
     // Launch ball if not yet launched when entering RUNNING.
     if (!worldRef.current.launched) {
-      worldRef.current = launchBall(worldRef.current);
+      worldRef.current = launchBall(worldRef.current, dpRef.current);
     }
 
     const loop = (timestamp: number) => {
@@ -170,6 +241,9 @@ export default function BrickMayhemPage() {
       lastTimeRef.current = timestamp;
       accumulatorRef.current += delta;
 
+      const curDp = dpRef.current;
+      const pw = curDp.paddleW;
+
       // Apply keyboard input to paddle target.
       const keys = keysDownRef.current;
       const hasKeyInput = keys.has("ArrowLeft") || keys.has("Left") || keys.has("ArrowRight") || keys.has("Right");
@@ -178,28 +252,36 @@ export default function BrickMayhemPage() {
       }
       if (keys.has("ArrowRight") || keys.has("Right")) {
         paddleTargetRef.current = Math.min(
-          BOARD_W - PADDLE_W,
+          BOARD_W - pw,
           paddleTargetRef.current + KEYBOARD_PADDLE_SPEED,
         );
       }
       // Sync slider visual position when keyboard moves the paddle.
       if (hasKeyInput) {
-        setSliderValue(Math.round((paddleTargetRef.current / (BOARD_W - PADDLE_W)) * 100));
+        setSliderValue(Math.round((paddleTargetRef.current / (BOARD_W - pw)) * 100));
       }
 
       while (accumulatorRef.current >= FIXED_STEP_MS) {
-        const result = tick(worldRef.current, paddleTargetRef.current);
+        const result = tick(worldRef.current, paddleTargetRef.current, curDp);
         worldRef.current = result.world;
         accumulatorRef.current -= FIXED_STEP_MS;
+
+        // Spawn fragment particles for any bricks destroyed this tick.
+        for (const brick of result.destroyedBricks) {
+          fragmentsRef.current.push(...spawnBrickFragments(brick));
+        }
+        // Advance existing fragments (gravity + fade).
+        fragmentsRef.current = tickFragments(fragmentsRef.current);
 
         if (result.levelCleared) {
           // Award bonus life, advance level.
           const nextLevel = worldRef.current.level + 1;
           const nextLives = worldRef.current.lives + 1;
-          const w = createWorld(nextLevel, nextLives, worldRef.current.score);
+          const w = createWorld(nextLevel, nextLives, worldRef.current.score, curDp);
           worldRef.current = w;
           paddleTargetRef.current = w.paddle.x;
           accumulatorRef.current = 0;
+          fragmentsRef.current = [];
           syncReactState(w);
           setStatus("READY");
           draw();
@@ -222,7 +304,7 @@ export default function BrickMayhemPage() {
             lives: remainingLives,
             launched: false,
             ball: {
-              x: w.paddle.x + PADDLE_W / 2 - BALL_SIZE / 2,
+              x: w.paddle.x + pw / 2 - BALL_SIZE / 2,
               y: PADDLE_Y - BALL_SIZE,
               vx: 0,
               vy: 0,
@@ -312,8 +394,8 @@ export default function BrickMayhemPage() {
   const handleSliderChange = React.useCallback(
     (value: number[]) => {
       const sliderVal = value[0] ?? 0;
-      // Map 0..100 to 0..(BOARD_W - PADDLE_W).
-      paddleTargetRef.current = (sliderVal / 100) * (BOARD_W - PADDLE_W);
+      // Map 0..100 to 0..(BOARD_W - paddleW).
+      paddleTargetRef.current = (sliderVal / 100) * (BOARD_W - dpRef.current.paddleW);
       setSliderValue(sliderVal);
 
       // Auto-start on slider drag from READY state.
@@ -389,6 +471,37 @@ export default function BrickMayhemPage() {
             <li>* {t("brickMayhemInstructionClear")}</li>
             <li>* {t("brickMayhemInstructionTop")}</li>
           </ul>
+        </CardContent>
+      </Card>
+
+      <Card className="mx-auto mt-4 w-full max-w-3xl">
+        <CardHeader className="space-y-1 pb-2">
+          <CardTitle className="text-2xl text-[var(--arcade-dot)] sm:text-3xl">
+            {t("brickMayhemDifficultySettingTitle")}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-2">
+          <div className="arcade-brick-settings arcade-ui">
+            <div className="arcade-brick-slider-group">
+              <p
+                className={cn(
+                  "arcade-brick-slider-title text-[var(--arcade-dot)]",
+                  isLargeTextLocale ? "text-[22px] leading-tight sm:text-[24px]" : "text-[11px]",
+                )}
+              >
+                {t("brickMayhemSettingLabel")}: {t(modePreset.labelKey)}
+              </p>
+              <Slider
+                className="arcade-brick-difficulty-slider"
+                min={0}
+                max={BRICK_MODE_PRESETS.length - 1}
+                step={1}
+                value={[modeIndex]}
+                onValueChange={handleModeChange}
+                aria-label={t("brickMayhemSettingLabel")}
+              />
+            </div>
+          </div>
         </CardContent>
       </Card>
 
