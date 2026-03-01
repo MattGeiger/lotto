@@ -524,23 +524,26 @@ After entering a Start Number and End Number in the admin page, only the "Genera
 ## Issue 17: `/new` still animates text on initial page load
 
 ### Status
-- Open (persists after rollback; deferred for now).
+- Partially mitigated; root cause under investigation.
 
 ### Observed
 - Desired behavior: text on `/new` should render statically on first load, and only animate when language changes.
-- Actual behavior: morph/entry-style animation still appears on page load.
-- Language-switch animation behavior works, but first-load static requirement is not met.
+- Actual behavior: morph/entry-style animation still appears on page load for the cycling language title in the onboarding modal.
+- Language-switch animation behavior works correctly.
 
-### Current State
-- Multiple implementation attempts were tested and then reverted.
+### Partial Fix Applied
+- Removed `LanguageMorphText` from the ticket-entry modal step (step 2), replacing with plain `<span>` elements. This step only appears after language selection, so the text never changes while visible and morph animation was unnecessary.
+- The cycling language title in step 1 still animates on mount. This is the remaining issue.
+
+### Previous Attempts
+- Multiple implementation approaches were tested and reverted, including a `suppressInitialAnimation` fast-phase workaround that did not produce the expected visual result.
 - The issue remains reproducible after server restart and browser reload testing.
-- Team decision: pause further work on this issue for now and track as unresolved.
 
 ### Repro
 1. Start app and open `/new`.
 2. Observe initial page render.
-3. First-load text still animates when it should be static.
-4. Change language and confirm language-switch animation still runs.
+3. The cycling language title in the onboarding modal still animates when it should be static.
+4. Change language and confirm language-switch animation still runs correctly.
 
 ### Notes
-- Keep this issue linked to future `/new` animation/hydration work so first-load behavior can be addressed without regressing language-switch animation.
+- Root cause investigation ongoing. Keep this issue linked to future `/new` animation/hydration work so first-load behavior can be addressed without regressing language-switch animation.
