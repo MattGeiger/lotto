@@ -150,6 +150,7 @@ export default function NewPersonalizedHomePage() {
                     initial={{ opacity: 0, y: 14 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
+                    motionMode="simple"
                   />
                 </DialogTitle>
               </DialogHeader>

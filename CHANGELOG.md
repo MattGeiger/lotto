@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.6.1] - 2026-03-01
+### Fixed
+- Resolved `/new` page-load animation issue (Issue 17) where morph text animated on initial render instead of appearing statically. Root cause: hydration-safe motion tiering starts as `"simple"`, then upgrades to `"full"` post-mount, causing a render-branch switch that Motion treats as new entering elements. Fixed by pinning the cycling language title to `motionMode="simple"`, which prevents the branch switch entirely. The title still animates smoothly between language cycles using whole-text transitions.
+- Removed unnecessary `LanguageMorphText` from the `/new` ticket-entry modal step (step 2), replacing with plain `<span>` elements. This step only appears after language selection, so the text never changes while visible.
+### Changed
+- Updated `docs/ISSUES.md` Issue 17 with full root cause analysis covering the motion-tier branch-switch mechanism, why `AnimatePresence initial={false}` and `layoutId` interact to prevent suppression, and why previous approaches (fast-phase workaround, delay-mount pattern) failed.
+- Updated `docs/V1.5_OPTIMIZATIONS.md` with a known limitation note on the motion-tier system's interaction with `AnimatePresence` on immediate-mount components.
+- Updated `docs/V2.0_PLANNED_FEATURES.md` to reflect the `/new` cycling title compromise.
+
 ## [1.5.9] - 2026-02-28
 ### Added
 - Added personalized-ticket called celebration to `/new` (via `ReadOnlyDisplay` personalized mode): when the tracked ticket is called, the page now shows a centered overlay (`Ticket Called!` / `Please Check-in`) and runs a timed confetti effect.

@@ -524,26 +524,36 @@ After entering a Start Number and End Number in the admin page, only the "Genera
 ## Issue 17: `/new` still animates text on initial page load
 
 ### Status
-- Partially mitigated; root cause under investigation.
+- Resolved (v1.6.1). Per-character morph effect downgraded to simple whole-text transition on the cycling language title as a deliberate trade-off.
 
 ### Observed
 - Desired behavior: text on `/new` should render statically on first load, and only animate when language changes.
-- Actual behavior: morph/entry-style animation still appears on page load for the cycling language title in the onboarding modal.
-- Language-switch animation behavior works correctly.
+- Actual behavior: morph/entry-style animation appeared on page load for the cycling language title in the onboarding modal.
 
-### Partial Fix Applied
-- Removed `LanguageMorphText` from the ticket-entry modal step (step 2), replacing with plain `<span>` elements. This step only appears after language selection, so the text never changes while visible and morph animation was unnecessary.
-- The cycling language title in step 1 still animates on mount. This is the remaining issue.
+### Root Cause
+The motion-tier detection system (`useMotionTier`) initializes to `"simple"` for hydration safety (SSR and client must produce identical output). After mount, an effect reads the cached tier from localStorage or runs a frame-time probe, then upgrades to `"full"` on capable devices. This tier change triggers a render-branch switch inside `MorphingText`:
 
-### Previous Attempts
-- Multiple implementation approaches were tested and reverted, including a `suppressInitialAnimation` fast-phase workaround that did not produce the expected visual result.
-- The issue remains reproducible after server restart and browser reload testing.
+- **`simple` branch**: one `<motion.span>` containing the full text string.
+- **`full` branch**: one `<motion.span>` per character, each with a unique `layoutId`.
 
-### Repro
-1. Start app and open `/new`.
-2. Observe initial page render.
-3. The cycling language title in the onboarding modal still animates when it should be static.
-4. Change language and confirm language-switch animation still runs correctly.
+When `isFullMotion` flips from `false` to `true`, the entire child structure is replaced. `AnimatePresence` treats the new character spans as entering elements and plays their `initial → animate` transition. Additionally, the `layoutId` prop triggers Motion's separate FLIP-based layout animation system on first appearance — a mechanism that cannot be suppressed via `initial={false}` or any other documented prop.
 
-### Notes
-- Root cause investigation ongoing. Keep this issue linked to future `/new` animation/hydration work so first-load behavior can be addressed without regressing language-switch animation.
+The `AnimatePresence initial={false}` flag (already present on all render paths) correctly suppresses animation on the first mount. But the branch switch produces a *second* mount with entirely new keys, which AnimatePresence treats as new children — not initial children.
+
+### Why Previous Approaches Failed
+- **`suppressInitialAnimation` (fast-phase workaround)**: Overrode transition/stagger/initial props to make animation imperceptibly fast. Did not work because the `layoutId` FLIP animation system operates independently from the `initial`/`transition` props and still produced a visible animation frame.
+- **Delay-mount pattern (mirror `readonly-display.tsx`)**: Deferred `LanguageMorphText` mount until after a post-mount effect. Did not work because on returning visits with a cached tier, `useMotionTier`'s effect resolves synchronously in the same effect batch as the `morphReady` flip — the branch switch still happened one render after mount. The pattern works in `readonly-display.tsx` because `morphReady` is gated on the first *data poll* response (hundreds of milliseconds), not a same-frame effect.
+- **Modifying the `MorphingText` primitive**: Considered adding branch-switch detection via ref tracking and temporarily dropping `layoutId` on the switch render. Rejected because: (a) it modifies a shared primitive, (b) re-adding `layoutId` on the next render may itself trigger a layout animation, and (c) the behavior depends on undocumented Motion internals that may vary across versions.
+
+### Fix Applied
+- **Cycling language title** (step 1): Pinned to `motionMode="simple"` to prevent the `simple → full` branch switch entirely. The text still animates smoothly between language cycles using whole-text fade/slide transitions but does not use per-character morphing. This is a deliberate visual trade-off: the per-character morph effect is incompatible with hydration-safe motion tiering on initial mount.
+- **Ticket-entry labels** (step 2): Replaced `LanguageMorphText` with plain `<span>` elements. This step only appears after language selection, so the text never changes while visible and morph animation was unnecessary.
+
+### Files Changed
+- `src/app/new/page.tsx` — added `motionMode="simple"` to cycling title; replaced step 2 `LanguageMorphText` with `<span>`.
+
+### Validation
+1. Open `/new` — cycling title appears statically on load with no visible animation.
+2. Wait ~5 seconds — cycling animation starts with smooth whole-text transitions.
+3. Change language — animation works correctly.
+4. Open `/` and `/display` — no regressions to morph text on public board pages.
