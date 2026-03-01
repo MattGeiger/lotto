@@ -181,7 +181,7 @@ export default function NewPersonalizedHomePage() {
                   <ArrowLeft className="size-4" />
                 </Button>
                 <DialogTitle className="px-10 text-center text-2xl">
-                  <LanguageMorphText text={t("searchTicketLabel")} />
+                  <span>{t("searchTicketLabel")}</span>
                 </DialogTitle>
               </DialogHeader>
               <div className="space-y-3">
@@ -205,7 +205,7 @@ export default function NewPersonalizedHomePage() {
                 />
                 {ticketInputError ? <p className="text-sm text-destructive">{ticketInputError}</p> : null}
                 <Button type="button" className="h-11 w-full text-base" onClick={handleTicketSubmit}>
-                  <LanguageMorphText text={t("searchButtonLabel")} />
+                  <span>{t("searchButtonLabel")}</span>
                 </Button>
               </div>
             </>
