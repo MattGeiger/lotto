@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useWebHaptics } from "web-haptics/react";
 
 import { ARCADE_PLAY_RESUMED_EVENT, ARCADE_TICKET_CALLED_EVENT } from "@/arcade/lib/events";
 import {
@@ -68,6 +69,11 @@ type GameStatus = "READY" | "RUNNING" | "PAUSED" | "GAME_OVER";
 export default function BrickMayhemPage() {
   const { t, language } = useLanguage();
   const isLargeTextLocale = language === "ar" || language === "fa" || language === "zh";
+  const { trigger: triggerHaptic } = useWebHaptics();
+  const hapticTriggerRef = React.useRef(triggerHaptic);
+  hapticTriggerRef.current = triggerHaptic;
+  const lastBrickHapticTimeRef = React.useRef(0);
+  const lastPaddleHapticTimeRef = React.useRef(0);
 
   /* ── Difficulty state ── */
   const [modeIndex, setModeIndex] = React.useState(DEFAULT_MODE_INDEX);
@@ -295,6 +301,17 @@ export default function BrickMayhemPage() {
         // Advance existing fragments (gravity + fade).
         fragmentsRef.current = tickFragments(fragmentsRef.current);
 
+        // Haptics: brick destruction (throttled to avoid buzz fatigue on multiball).
+        if (result.destroyedBricks.length > 0 && timestamp - lastBrickHapticTimeRef.current >= 50) {
+          lastBrickHapticTimeRef.current = timestamp;
+          hapticTriggerRef.current("error");
+        }
+        // Haptics: paddle bounce (throttled).
+        if (result.paddleBounced && timestamp - lastPaddleHapticTimeRef.current >= 50) {
+          lastPaddleHapticTimeRef.current = timestamp;
+          hapticTriggerRef.current("light");
+        }
+
         if (result.levelCleared) {
           // Award bonus life, advance level.
           const nextLevel = worldRef.current.level + 1;
@@ -311,6 +328,7 @@ export default function BrickMayhemPage() {
         }
 
         if (result.ballLost) {
+          hapticTriggerRef.current("error");
           const w = worldRef.current;
           const remainingLives = w.lives - 1;
           if (remainingLives <= 0) {

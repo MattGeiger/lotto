@@ -1,4 +1,6 @@
+import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
+import { useWebHaptics } from "web-haptics/react";
 
 import { cn } from "@/lib/utils";
 import { Button as ShadcnButton } from "@/components/ui/button";
@@ -152,10 +154,21 @@ function Button({
   size,
   font,
   className,
+  onClick,
+  disabled,
   ...props
 }: ArcadeButtonProps) {
+  const { trigger: triggerHaptic } = useWebHaptics();
   const hasFrame = variant !== "ghost" && variant !== "link" && size !== "icon";
   const showShadows = variant !== "outline";
+
+  const handleClick = React.useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      if (!disabled) triggerHaptic("heavy");
+      onClick?.(e);
+    },
+    [disabled, onClick, triggerHaptic],
+  );
 
   return (
     <ShadcnButton
@@ -163,6 +176,8 @@ function Button({
       variant={variant}
       size={size}
       asChild={asChild}
+      disabled={disabled}
+      onClick={handleClick}
       className={cn(
         "relative m-1 rounded-none border-none transition-transform active:translate-y-0.5",
         arcadeButtonVariants({ variant, size, font }),

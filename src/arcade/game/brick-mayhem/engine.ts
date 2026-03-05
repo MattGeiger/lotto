@@ -198,6 +198,8 @@ export type TickResult = {
   levelCleared: boolean;
   /** Bricks destroyed this tick (for visual fragment effects). */
   destroyedBricks: Brick[];
+  /** True when any ball bounced off the paddle this tick. */
+  paddleBounced: boolean;
 };
 
 export function tick(world: World, paddleX: number, dp: DifficultyParams = DEFAULT_DIFFICULTY): TickResult {
@@ -234,6 +236,7 @@ export function tick(world: World, paddleX: number, dp: DifficultyParams = DEFAU
       ballLost: false,
       levelCleared: false,
       destroyedBricks: [],
+      paddleBounced: false,
     };
   }
 
@@ -243,6 +246,7 @@ export function tick(world: World, paddleX: number, dp: DifficultyParams = DEFAU
   const nextBalls: Ball[] = [];
   const spawnedBalls: Ball[] = [];
   const destroyed: Brick[] = [];
+  let paddleBounced = false;
   const cloneY = clonePaddleY();
 
   for (const originalBall of world.balls) {
@@ -277,6 +281,7 @@ export function tick(world: World, paddleX: number, dp: DifficultyParams = DEFAU
         ballLost: false,
         levelCleared: true,
         destroyedBricks: destroyed,
+        paddleBounced,
       };
     }
 
@@ -295,6 +300,7 @@ export function tick(world: World, paddleX: number, dp: DifficultyParams = DEFAU
       vx = speed * Math.sin(angle);
       vy = -speed * Math.cos(angle);
       y = py - BALL_SIZE;
+      paddleBounced = true;
       break;
     }
 
@@ -445,6 +451,7 @@ export function tick(world: World, paddleX: number, dp: DifficultyParams = DEFAU
       ballLost: true,
       levelCleared: false,
       destroyedBricks: destroyed,
+      paddleBounced,
     };
   }
 
@@ -461,6 +468,7 @@ export function tick(world: World, paddleX: number, dp: DifficultyParams = DEFAU
     ballLost: false,
     levelCleared: false,
     destroyedBricks: destroyed,
+    paddleBounced,
   };
 }
 

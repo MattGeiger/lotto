@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useWebHaptics } from "web-haptics/react";
 
 import { ARCADE_PLAY_RESUMED_EVENT, ARCADE_TICKET_CALLED_EVENT } from "@/arcade/lib/events";
 import {
@@ -185,6 +186,9 @@ const createFoodPellet = (
 export default function SnakePage() {
   const { t, language } = useLanguage();
   const isLargeSnakeTextLocale = language === "ar" || language === "fa" || language === "zh";
+  const { trigger: triggerHaptic } = useWebHaptics();
+  const hapticTriggerRef = React.useRef(triggerHaptic);
+  hapticTriggerRef.current = triggerHaptic;
   const [snake, setSnake] = React.useState<GridPoint[]>(() => createInitialSnake());
   const snakeRef = React.useRef<GridPoint[]>(snake);
   const [food, setFood] = React.useState<GridPoint>(() =>
@@ -481,6 +485,7 @@ export default function SnakePage() {
       );
 
       if (hitWall || hitBody) {
+        hapticTriggerRef.current("error");
         setStatus("GAME_OVER");
         return;
       }
@@ -492,6 +497,7 @@ export default function SnakePage() {
       setSnake(nextSnake);
 
       if (ateFood) {
+        hapticTriggerRef.current("success");
         const nextFood = createFoodPellet(nextSnake, modePreset.minWallDistance);
         foodRef.current = nextFood;
         setFood(nextFood);
