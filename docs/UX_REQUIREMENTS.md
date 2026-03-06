@@ -235,10 +235,13 @@ break trust. This operation has been removed for client safety.
 ### Haptic Scope Safety
 
 - Operational public-board surfaces (`/` and `/display`) must remain haptic-free. These views are shared monitoring surfaces, not personal-device experiences.
-- Optional client-device haptics are permitted only on personalized `/new` and Arcade, and they must remain user-toggleable on those surfaces.
+- Optional client-device haptics are permitted only on personalized `/new` and Arcade.
 - Haptics are advisory only. No raffle/admin state or safety-critical instruction may rely on vibration for comprehension.
-- On the web path, haptics are limited to direct user interactions such as button presses, accepted gameplay turns, and confirmed discrete setting changes.
+- Browser testing showed that button-tied haptics can still improve feedback and accessibility on mobile, but event-driven vibration is not dependable enough to shape product behavior.
+- On the web path, haptics are limited to direct button-style interactions such as button presses, discrete menu selections, and accepted Snake D-pad inputs.
+- No dedicated haptics toggle should consume top-bar space while browser haptics remain this narrowly scoped.
 - Async, polled, and game-loop-driven events (for example ticket-called alerts, confetti bursts, Snake pellet/collision feedback, and Brick collision feedback) must remain visual/audio-only on the web path.
+- Continuous or slider-driven controls (for example difficulty sliders and the Brick paddle slider) remain haptic-free on the web path.
 - Admin, staff, and login routes remain haptic-free.
 
 ---

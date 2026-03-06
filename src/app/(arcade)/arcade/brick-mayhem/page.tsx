@@ -189,7 +189,6 @@ export default function BrickMayhemPage() {
       }
 
       setModeIndex(idx);
-      hapticTriggerRef.current("uiSelect");
     },
     [modeIndex],
   );

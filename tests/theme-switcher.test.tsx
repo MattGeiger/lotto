@@ -162,7 +162,7 @@ describe("ThemeSwitcher", () => {
     });
   });
 
-  it("triggers soft haptics when selecting a theme with haptics enabled", async () => {
+  it("triggers soft haptics when theme-selection haptics are enabled", async () => {
     renderSwitcher(true);
     const user = userEvent.setup();
 

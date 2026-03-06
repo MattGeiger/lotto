@@ -6,7 +6,6 @@ import { ArrowLeft } from "lucide-react";
 import { ReadOnlyDisplay } from "@/components/readonly-display";
 import { LanguageMorphText } from "@/components/language-morph-text";
 import { LanguageSwitcher } from "@/components/language-switcher";
-import { HapticsToggle } from "@/components/haptics-toggle";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { useAppHaptics } from "@/components/haptics-provider";
 import { useLanguage, type Language } from "@/contexts/language-context";
@@ -128,7 +127,6 @@ export default function NewPersonalizedHomePage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <HapticsToggle />
           <ThemeSwitcher enableHaptics />
         </div>
       </div>

@@ -38,6 +38,10 @@ describe("Arcade direct-input haptics", () => {
     vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockImplementation(
       () => null as unknown as CanvasRenderingContext2D,
     );
+    Object.defineProperty(HTMLElement.prototype, "scrollIntoView", {
+      configurable: true,
+      value: vi.fn(),
+    });
   });
 
   afterEach(() => {
@@ -45,25 +49,30 @@ describe("Arcade direct-input haptics", () => {
     vi.restoreAllMocks();
   });
 
-  it("triggers selection haptics only when Snake difficulty is committed", () => {
+  it("keeps the Snake difficulty slider silent and vibrates on D-pad button presses", () => {
     renderWithProviders(<SnakePage />);
 
     const slider = screen.getAllByRole("slider")[0];
     fireEvent.focus(slider);
     fireEvent.keyDown(slider, { key: "End" });
 
-    expect(rawTriggerMock).toHaveBeenCalledTimes(1);
+    expect(rawTriggerMock).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Move up" }));
+
     expect(rawTriggerMock).toHaveBeenCalledWith(APP_HAPTIC_INPUT_BY_INTENT.uiSelect);
   });
 
-  it("triggers selection haptics only when Brick Mayhem difficulty is committed", () => {
+  it("keeps the Brick Mayhem difficulty slider silent and vibrates on button controls", () => {
     renderWithProviders(<BrickMayhemPage />);
 
     const slider = screen.getAllByRole("slider")[0];
     fireEvent.focus(slider);
     fireEvent.keyDown(slider, { key: "End" });
 
-    expect(rawTriggerMock).toHaveBeenCalledTimes(1);
-    expect(rawTriggerMock).toHaveBeenCalledWith(APP_HAPTIC_INPUT_BY_INTENT.uiSelect);
+    expect(rawTriggerMock).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: "PLAY NOW" }));
+    expect(rawTriggerMock).toHaveBeenCalledWith(APP_HAPTIC_INPUT_BY_INTENT.uiConfirm);
   });
 });

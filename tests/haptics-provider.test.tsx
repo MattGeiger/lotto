@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { HapticsProvider, useAppHaptics } from "@/components/haptics-provider";
-import { APP_HAPTIC_INPUT_BY_INTENT, HAPTICS_ENABLED_STORAGE_KEY } from "@/lib/haptics";
+import { APP_HAPTIC_INPUT_BY_INTENT } from "@/lib/haptics";
 
 const rawTriggerMock = vi.fn();
 
@@ -16,22 +16,18 @@ vi.mock("web-haptics/react", () => ({
 }));
 
 function Probe() {
-  const { enabled, setEnabled, trigger } = useAppHaptics();
+  const { trigger } = useAppHaptics();
 
   return (
     <>
-      <div data-testid="enabled">{String(enabled)}</div>
-      <button type="button" onClick={() => setEnabled(false)}>
-        Disable
-      </button>
-      <button type="button" onClick={() => setEnabled(true)}>
-        Enable
-      </button>
-      <button type="button" onClick={() => trigger("queueAlert")}>
-        Alert
+      <button type="button" onClick={() => trigger("uiConfirm")}>
+        Confirm
       </button>
       <button type="button" onClick={() => trigger("uiDestructive")}>
         Destructive
+      </button>
+      <button type="button" onClick={() => trigger("none")}>
+        None
       </button>
     </>
   );
@@ -51,35 +47,19 @@ describe("HapticsProvider", () => {
     rawTriggerMock.mockReset();
   });
 
-  it("defaults to enabled and persists the preference", async () => {
-    renderProbe();
-
-    expect(screen.getByTestId("enabled")).toHaveTextContent("true");
-    await waitFor(() => {
-      expect(window.localStorage.getItem(HAPTICS_ENABLED_STORAGE_KEY)).toBe("true");
-    });
-  });
-
-  it("restores a persisted disabled preference", async () => {
-    window.localStorage.setItem(HAPTICS_ENABLED_STORAGE_KEY, "false");
-
+  it("does not persist a dedicated haptics preference", async () => {
     renderProbe();
 
     await waitFor(() => {
-      expect(screen.getByTestId("enabled")).toHaveTextContent("false");
+      expect(window.localStorage.getItem("haptics-enabled")).toBeNull();
     });
   });
 
-  it("short-circuits haptic triggers when disabled", async () => {
+  it("short-circuits the explicit none intent", async () => {
     const user = userEvent.setup();
     renderProbe();
 
-    await user.click(screen.getByRole("button", { name: "Disable" }));
-    await waitFor(() => {
-      expect(screen.getByTestId("enabled")).toHaveTextContent("false");
-    });
-
-    await user.click(screen.getByRole("button", { name: "Alert" }));
+    await user.click(screen.getByRole("button", { name: "None" }));
     expect(rawTriggerMock).not.toHaveBeenCalled();
   });
 
@@ -87,10 +67,10 @@ describe("HapticsProvider", () => {
     const user = userEvent.setup();
     renderProbe();
 
-    await user.click(screen.getByRole("button", { name: "Alert" }));
+    await user.click(screen.getByRole("button", { name: "Confirm" }));
     await user.click(screen.getByRole("button", { name: "Destructive" }));
 
-    expect(rawTriggerMock).toHaveBeenNthCalledWith(1, APP_HAPTIC_INPUT_BY_INTENT.queueAlert);
+    expect(rawTriggerMock).toHaveBeenNthCalledWith(1, APP_HAPTIC_INPUT_BY_INTENT.uiConfirm);
     expect(rawTriggerMock).toHaveBeenNthCalledWith(2, APP_HAPTIC_INPUT_BY_INTENT.uiDestructive);
   });
 });

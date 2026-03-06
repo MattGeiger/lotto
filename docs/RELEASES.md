@@ -6,13 +6,14 @@
 
 Refined the initial v1.6.2 haptics rollout with a shared semantic layer and a web-safe interaction-only policy.
 
-- Added `HapticsProvider` + `AppHapticIntent` mapping with a persisted `haptics-enabled` preference and dedicated top-bar toggles on `/new` and Arcade.
+- Added `HapticsProvider` + `AppHapticIntent` mapping for browser-safe button-style haptics on `/new` and Arcade.
 - Extended optional client-device haptics to `/new` only for direct controls: onboarding language selection (`selection`), valid ticket submit (`medium`), invalid ticket entry (`error`), and back/change-ticket actions (`soft`).
-- Rebalanced Arcade haptics around direct inputs only: language and accepted Snake turns use `selection`, theme/back toggles use `soft`, primary play/start/pause actions use `medium`, reset uses `heavy`, and confirmed difficulty changes use `selection`.
-- Moved Snake and Brick Mayhem difficulty sliders to commit-on-release semantics so haptics fire once per confirmed setting change instead of during drag updates.
+- Rebalanced Arcade haptics around direct button inputs only: language and accepted Snake turns use `selection`, theme/back toggles use `soft`, primary play/start/pause actions use `medium`, and reset uses `heavy`.
+- Removed dedicated haptics toggles and the persisted `haptics-enabled` preference because browser haptics proved useful for button feedback but too constrained to justify dedicated UI chrome.
+- Kept Snake and Brick Mayhem sliders haptic-free so non-button controls do not imply broader browser support than the platform actually provides.
 - Kept ticket-called celebrations, Snake pellet/collision feedback, and Brick Mayhem collision/level/life events visual-only on the web path because those async/game-loop triggers were not reliable on mobile browsers.
 - Kept `/`, `/display`, admin, staff, and login haptic-free so public-board and operational surfaces remain visual-only.
-- Added regression coverage for the shared provider, `/new` web-safe behavior, Arcade ticket-called visual-only behavior, direct-input slider commits, and theme/language integration.
+- Added regression coverage for the shared provider, `/new` button haptics, Arcade button haptics, Arcade ticket-called visual-only behavior, and theme/language integration.
 
 ---
 

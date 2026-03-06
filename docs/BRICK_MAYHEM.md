@@ -187,7 +187,7 @@ Brick Mayhem follows the same Arcade integration patterns established by Snake:
 - **Layout:** Inherits `ArcadeShell` + `NowServingBanner` + language/mode switchers from the shared Arcade layout.
 - **Ticket-called event:** Listens for `ARCADE_TICKET_CALLED_EVENT` and auto-pauses to `PAUSED` if currently `RUNNING`.
 - **Play-resumed event:** Dispatches `ARCADE_PLAY_RESUMED_EVENT` on start/resume to dismiss the ticket-called overlay.
-- **Haptics:** Uses the shared semantic haptics layer and Arcade route toggle for direct controls only. Primary play/pause/reset buttons use explicit UI intents, confirmed difficulty changes use `selection`, and the continuous paddle slider remains intentionally haptic-free. Brick destruction, paddle bounce, level clear, and ball-loss feedback remain visual-only on the web path.
+- **Haptics:** Uses the shared semantic haptics layer for direct button-style controls only. Primary play/pause/reset buttons use explicit UI intents, while the difficulty slider and continuous paddle slider remain intentionally haptic-free. Brick destruction, paddle bounce, level clear, and ball-loss feedback remain visual-only on the web path.
 - **Styling:** Uses Arcade-scoped CSS classes (`arcade-brick-*`) and shared Arcade CSS custom properties. No global theme changes.
 - **Data boundary:** All game state is local client state. No raffle API dependency.
 - **Translations:** Instruction and readout keys are defined for all 8 supported locales under `brickMayhem*` prefixes.
@@ -236,7 +236,7 @@ Brick Mayhem follows the same Arcade integration patterns established by Snake:
 - [x] Timed buff extension + cap rules implemented (`30s` add, capped at `120s`) with level-clear reset
 - [x] Readout remains minimal with score/lives/level only
 - [x] Engine tests added for effect rules and lifecycle behavior (`tests/arcade-brick-mayhem-engine.test.ts`)
-- [x] Web-safe direct-input haptics via the shared app haptics layer: control buttons use explicit UI intents (`soft`/`medium`/`heavy`), confirmed difficulty changes use `selection`, and the continuous paddle slider remains silent. Gameplay collisions, level clear, and life-loss states remain visual-only on the web path. Engine still exposes `paddleBounced: boolean` in `TickResult` for visual/event coordination.
+- [x] Web-safe button-input haptics via the shared app haptics layer: control buttons use explicit UI intents (`soft`/`medium`/`heavy`), while the difficulty slider and continuous paddle slider remain silent. Gameplay collisions, level clear, and life-loss states remain visual-only on the web path. Engine still exposes `paddleBounced: boolean` in `TickResult` for visual/event coordination.
 
 ### Not Yet Implemented
 - [ ] Sound effects (deferred)

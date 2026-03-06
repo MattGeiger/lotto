@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -38,10 +38,6 @@ vi.mock("@/components/language-switcher", () => ({
 
 vi.mock("@/components/theme-switcher", () => ({
   ThemeSwitcher: () => <div data-testid="theme-switcher" />,
-}));
-
-vi.mock("@/components/haptics-toggle", () => ({
-  HapticsToggle: () => <div data-testid="haptics-toggle" />,
 }));
 
 vi.mock("@/components/animate-ui/primitives/texts/morphing", () => ({
@@ -134,7 +130,21 @@ describe("New page haptics", () => {
     await user.type(ticketInput, "B07");
     await user.click(screen.getByRole("button", { name: "Submit" }));
 
-    expect(rawTriggerMock).toHaveBeenCalledWith("medium");
+    expect(rawTriggerMock).toHaveBeenCalledWith(APP_HAPTIC_INPUT_BY_INTENT.uiConfirm);
+  });
+
+  it("triggers soft haptics for the onboarding back button", async () => {
+    const user = userEvent.setup();
+    renderHomePage();
+
+    await user.click(await screen.findByRole("button", { name: "English" }));
+    rawTriggerMock.mockReset();
+
+    const dialog = await screen.findByRole("dialog");
+    const [backButton] = within(dialog).getAllByRole("button");
+    await user.click(backButton);
+
+    expect(rawTriggerMock).toHaveBeenCalledWith(APP_HAPTIC_INPUT_BY_INTENT.uiToggle);
   });
 
   it("keeps the called-ticket celebration visual-only on the web path", async () => {
@@ -162,7 +172,6 @@ describe("New page haptics", () => {
       expect(screen.getByText("Ticket Called!")).toBeInTheDocument();
     });
     expect(rawTriggerMock).toHaveBeenCalledTimes(1);
-    expect(rawTriggerMock).toHaveBeenNthCalledWith(1, "medium");
-    expect(rawTriggerMock).not.toHaveBeenCalledWith(APP_HAPTIC_INPUT_BY_INTENT.queueAlert);
+    expect(rawTriggerMock).toHaveBeenNthCalledWith(1, APP_HAPTIC_INPUT_BY_INTENT.uiConfirm);
   });
 });

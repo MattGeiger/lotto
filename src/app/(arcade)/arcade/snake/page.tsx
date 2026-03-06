@@ -401,7 +401,6 @@ export default function SnakePage() {
     }
 
     setModeIndex(nextIndex);
-    hapticTriggerRef.current("uiSelect");
   }, [modeIndex]);
 
   const focusPlayArea = React.useCallback(() => {

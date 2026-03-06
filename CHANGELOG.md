@@ -2,18 +2,19 @@
 
 ## [Unreleased] - 2026-03-06
 ### Added
-- Added a shared semantic haptics layer (`src/lib/haptics.ts`, `HapticsProvider`, `useAppHaptics()`) with app-owned intent names, persisted `haptics-enabled` preference, and dedicated top-bar toggles on `/new` and Arcade.
-- Added regression coverage for the shared provider, `/new` web-safe haptic behavior, Arcade ticket-called visual-only behavior, direct-input slider commits, and the updated Arcade/theme integration (`tests/haptics-provider.test.tsx`, `tests/new-page-haptics.test.tsx`, `tests/arcade-direct-input-haptics.test.tsx`, plus updated Arcade banner and theme tests).
+- Added a shared semantic haptics layer (`src/lib/haptics.ts`, `HapticsProvider`, `useAppHaptics()`) with app-owned intent names for browser-safe button-style interactions on `/new` and Arcade.
+- Added regression coverage for the simplified provider, `/new` button haptics, Arcade direct button haptics, Arcade ticket-called visual-only behavior, and theme/language integration (`tests/haptics-provider.test.tsx`, `tests/new-page-haptics.test.tsx`, `tests/arcade-direct-input-haptics.test.tsx`, plus updated Arcade banner and theme tests).
 - Added a raw-library `/haptics` diagnostic page that renders one shadcn button per `web-haptics` built-in preset and triggers each preset directly, so device/browser support can be validated without the app's semantic mapping layer.
 
 ### Changed
 - Extended optional client-device haptics from Arcade-only to `/new` and kept `/`, `/display`, admin, staff, and login haptic-free.
-- Replaced blanket raw preset usage with semantic route wiring for direct user interactions only: language choices and accepted Snake turns use `selection`, theme/back toggles use `soft`, primary play/start/pause actions use `medium`, reset uses `heavy`, and continuous controls remain haptic-free.
-- Moved Snake and Brick Mayhem difficulty sliders to commit-on-release semantics so haptics fire once per confirmed difficulty change instead of during `onValueChange` drag updates.
+- Narrowed browser haptics to direct button-style interactions only: `/new` and Arcade buttons, menu selections, theme/language choices, explicit submit/back/change-ticket actions, and Snake D-pad button presses.
+- Removed the dedicated haptics toggles and persisted `haptics-enabled` preference because browser haptics are intentionally scoped to narrow tactile feedback and the toggle consumed higher-value top-bar space.
+- Removed Snake and Brick Mayhem difficulty slider haptics so non-button controls remain silent in line with the narrowed browser scope.
 - Removed unreliable web haptics from async and game-loop-driven events: tracked ticket-called celebrations, Snake pellet/collision feedback, and Brick impact/contact/level-clear/life-loss feedback are now visual-only on the web path.
 
 ### Fixed
-- Aligned the haptics implementation with web activation constraints by keeping vibration on direct user interactions and removing the non-working async/loop-driven trigger sites.
+- Aligned the haptics implementation with browser activation constraints by concluding the feature as tactile input feedback rather than broad event-driven vibration.
 
 ## [1.6.2] - 2026-03-05
 ### Added
