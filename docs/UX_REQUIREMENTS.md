@@ -239,6 +239,8 @@ break trust. This operation has been removed for client safety.
 - Haptics are advisory only. No raffle/admin state or safety-critical instruction may rely on vibration for comprehension.
 - On the web path, haptics are limited to direct user interactions such as button presses, accepted gameplay turns, and confirmed discrete setting changes.
 - Async, polled, and game-loop-driven events (for example ticket-called alerts, confetti bursts, Snake pellet/collision feedback, and Brick collision feedback) must remain visual/audio-only on the web path.
+- If native mobile haptics are required for async or game-loop-driven events, they must run through the Capacitor native shell and `@capacitor/haptics`, not through browser-only vibration APIs.
+- Native-shell haptics may restore personalized ticket-called alerts and Arcade gameplay-event haptics, but they must stay route-scoped to `/new` and Arcade and must never extend to public-board or staff/admin surfaces.
 - Admin, staff, and login routes remain haptic-free.
 
 ---

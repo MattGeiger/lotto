@@ -5,15 +5,22 @@
 - Added a shared semantic haptics layer (`src/lib/haptics.ts`, `HapticsProvider`, `useAppHaptics()`) with app-owned intent names, persisted `haptics-enabled` preference, and dedicated top-bar toggles on `/new` and Arcade.
 - Added regression coverage for the shared provider, `/new` web-safe haptic behavior, Arcade ticket-called visual-only behavior, direct-input slider commits, and the updated Arcade/theme integration (`tests/haptics-provider.test.tsx`, `tests/new-page-haptics.test.tsx`, `tests/arcade-direct-input-haptics.test.tsx`, plus updated Arcade banner and theme tests).
 - Added a raw-library `/haptics` diagnostic page that renders one shadcn button per `web-haptics` built-in preset and triggers each preset directly, so device/browser support can be validated without the app's semantic mapping layer.
+- Added a Capacitor native-shell haptics path with committed `ios/` and `android/` projects, `capacitor.config.ts`, a fallback `capacitor-www` bundle, and `npm run capacitor:*` scripts for sync/open workflows.
+- Added a native haptics bridge (`src/lib/native-haptics.ts`) plus native-shell routing inside `HapticsProvider`, allowing the app to switch from `web-haptics` to `@capacitor/haptics` when running inside Capacitor.
+- Added native-only regression coverage for async and game-loop haptics on `/new`, Arcade ticket-called alerts, Snake pellet/collision events, and Brick Mayhem contact/impact/failure events (`tests/new-page-native-haptics.test.tsx`, `tests/arcade-now-serving-banner-native.test.tsx`, `tests/arcade-native-game-haptics.test.tsx`).
+- Added `docs/NATIVE_HAPTICS.md` as the runbook for native shell setup, live-server sync, and mobile validation.
 
 ### Changed
 - Extended optional client-device haptics from Arcade-only to `/new` and kept `/`, `/display`, admin, staff, and login haptic-free.
 - Replaced blanket raw preset usage with semantic route wiring for direct user interactions only: language choices and accepted Snake turns use `selection`, theme/back toggles use `soft`, primary play/start/pause actions use `medium`, reset uses `heavy`, and continuous controls remain haptic-free.
 - Moved Snake and Brick Mayhem difficulty sliders to commit-on-release semantics so haptics fire once per confirmed difficulty change instead of during `onValueChange` drag updates.
 - Removed unreliable web haptics from async and game-loop-driven events: tracked ticket-called celebrations, Snake pellet/collision feedback, and Brick impact/contact/level-clear/life-loss feedback are now visual-only on the web path.
+- Restored ticket-called alerts and gameplay-event haptics inside the Capacitor native shell only: `/new` and Arcade tracked-ticket alerts use native vibration, Snake restores pellet/collision haptics, and Brick Mayhem restores brick, paddle, level-clear, and ball-loss haptics through `@capacitor/haptics`.
+- Expanded `/haptics` so native-shell sessions can test both raw `web-haptics` presets and direct Capacitor Haptics plugin calls from one diagnostic page.
 
 ### Fixed
 - Aligned the haptics implementation with web activation constraints by keeping vibration on direct user interactions and removing the non-working async/loop-driven trigger sites.
+- Solved the original mobile-haptics gap for async/game-loop events by moving those triggers onto the native Capacitor Haptics plugin instead of relying on browser vibration activation behavior.
 
 ## [1.6.2] - 2026-03-05
 ### Added

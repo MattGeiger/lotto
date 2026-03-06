@@ -69,11 +69,17 @@ type GameStatus = "READY" | "RUNNING" | "PAUSED" | "GAME_OVER";
 export default function BrickMayhemPage() {
   const { t, language } = useLanguage();
   const isLargeTextLocale = language === "ar" || language === "fa" || language === "zh";
-  const { trigger: triggerHaptic } = useAppHaptics();
+  const { isNative, trigger: triggerHaptic } = useAppHaptics();
   const hapticTriggerRef = React.useRef(triggerHaptic);
+  const nativeHapticsRef = React.useRef(isNative);
+  const lastImpactAtRef = React.useRef(0);
+  const lastContactAtRef = React.useRef(0);
   React.useEffect(() => {
     hapticTriggerRef.current = triggerHaptic;
   }, [triggerHaptic]);
+  React.useEffect(() => {
+    nativeHapticsRef.current = isNative;
+  }, [isNative]);
 
   /* ── Difficulty state ── */
   const [modeIndex, setModeIndex] = React.useState(DEFAULT_MODE_INDEX);
@@ -320,10 +326,27 @@ export default function BrickMayhemPage() {
         for (const brick of result.destroyedBricks) {
           fragmentsRef.current.push(...spawnBrickFragments(brick));
         }
+        if (nativeHapticsRef.current && result.destroyedBricks.length > 0) {
+          const nowMs = Date.now();
+          if (nowMs - lastImpactAtRef.current >= 60) {
+            lastImpactAtRef.current = nowMs;
+            hapticTriggerRef.current("gameImpact");
+          }
+        }
+        if (nativeHapticsRef.current && result.paddleBounced) {
+          const nowMs = Date.now();
+          if (nowMs - lastContactAtRef.current >= 50) {
+            lastContactAtRef.current = nowMs;
+            hapticTriggerRef.current("gameContact");
+          }
+        }
         // Advance existing fragments (gravity + fade).
         fragmentsRef.current = tickFragments(fragmentsRef.current);
 
         if (result.levelCleared) {
+          if (nativeHapticsRef.current) {
+            hapticTriggerRef.current("gameReward");
+          }
           // Award bonus life, advance level.
           const nextLevel = worldRef.current.level + 1;
           const nextLives = worldRef.current.lives + 1;
@@ -339,6 +362,9 @@ export default function BrickMayhemPage() {
         }
 
         if (result.ballLost) {
+          if (nativeHapticsRef.current) {
+            hapticTriggerRef.current("gameFailure");
+          }
           const w = worldRef.current;
           const remainingLives = w.lives - 1;
           if (remainingLives <= 0) {

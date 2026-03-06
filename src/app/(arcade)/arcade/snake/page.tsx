@@ -186,11 +186,15 @@ const createFoodPellet = (
 export default function SnakePage() {
   const { t, language } = useLanguage();
   const isLargeSnakeTextLocale = language === "ar" || language === "fa" || language === "zh";
-  const { trigger: triggerHaptic } = useAppHaptics();
+  const { isNative, trigger: triggerHaptic } = useAppHaptics();
   const hapticTriggerRef = React.useRef(triggerHaptic);
+  const nativeHapticsRef = React.useRef(isNative);
   React.useEffect(() => {
     hapticTriggerRef.current = triggerHaptic;
   }, [triggerHaptic]);
+  React.useEffect(() => {
+    nativeHapticsRef.current = isNative;
+  }, [isNative]);
   const [snake, setSnake] = React.useState<GridPoint[]>(() => createInitialSnake());
   const snakeRef = React.useRef<GridPoint[]>(snake);
   const [food, setFood] = React.useState<GridPoint>(() =>
@@ -514,6 +518,9 @@ export default function SnakePage() {
       );
 
       if (hitWall || hitBody) {
+        if (nativeHapticsRef.current) {
+          hapticTriggerRef.current("gameFailure");
+        }
         setStatus("GAME_OVER");
         return;
       }
@@ -529,6 +536,9 @@ export default function SnakePage() {
         foodRef.current = nextFood;
         setFood(nextFood);
         setScore((previousScore) => previousScore + SCORE_PER_PELLET);
+        if (nativeHapticsRef.current) {
+          hapticTriggerRef.current("gameReward");
+        }
       }
     }, modePreset.tickIntervalMs);
 

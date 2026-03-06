@@ -146,6 +146,7 @@ public/
 - Completed: While ticket-called overlay messaging is active, the top Arcade banner continues to show `NOW SERVING: #<ticket>` for live queue context.
 - Completed: Ticket-called center overlay now auto-hides when the alert window ends and also dismisses immediately when the player resumes Arcade gameplay.
 - Completed: Arcade top bar now includes a dedicated haptics toggle backed by a shared semantic haptics layer and persisted `haptics-enabled` preference. The same layer is reused by personalized `/new`, while `/` and `/display` remain haptic-free.
+- Completed: A Capacitor native shell now backs mobile-native haptics for `/new` and Arcade. The same semantic haptics layer routes to `web-haptics` in browser sessions and `@capacitor/haptics` in native sessions.
 - Not yet completed: Snake gameplay engine modules under `src/arcade/game/snake/*`.
 - Completed: Brick Mayhem game page scaffolding (`/arcade/brick-mayhem`) with page shell, CSS classes, translations (8 locales), and Arcade menu entry.
 - Completed: Brick Mayhem game engine — pure-function architecture under `src/arcade/game/brick-mayhem/` with types, constants, engine (tick/collision/reflection), levels (5 progressive layouts), and canvas renderer.
@@ -162,7 +163,7 @@ public/
 - Completed: Brick Mayhem row-hit effects and lifecycle rules — shared 8-row palette metadata in `effects.ts`, baseline-based non-compounding speed effects (red/cyan/purple) with runtime speed clamps, orange multiball spawn, green clone paddle (64px offset, one max), pink paddle-width timed buff, gold points-multiplier timed buff, and level-clear effect resets.
 - Completed: Brick Mayhem readout accuracy — score now updates immediately on brick hits, while the game readout remains the minimal 3-metric bar (`SCORE`, `LIVES`, `LEVEL`).
 - Completed: Brick Mayhem engine coverage added in `tests/arcade-brick-mayhem-engine.test.ts` for speed-effect non-compounding, multiball life-loss behavior, timed effect cap rules, clone behavior, and level-reset semantics.
-- Completed: Snake haptics now follow the web-safe direct-input policy — `selection` for accepted turns and confirmed difficulty changes only, with Arcade controls using `soft` for back/theme toggles, `medium` for primary play/start/pause, and `heavy` for reset only. Pellet/collision feedback and tracked-ticket celebrations remain visual-only on the web path.
+- Completed: Snake haptics now follow a split browser/native policy — browser sessions keep the web-safe direct-input rules (`selection` for accepted turns and confirmed difficulty changes only, plus `soft`/`medium`/`heavy` for explicit Arcade controls), while the Capacitor native shell restores pellet reward and collision/game-over failure haptics through `@capacitor/haptics`.
 
 ## Accessibility Issue: Snake Reflex Controls (Implemented - 2026-02-16)
 - Problem statement: current Snake pace can be too demanding for players with slower reflexes, and pellet placement near walls can make early rounds punishing.
@@ -306,4 +307,4 @@ public/
 
 Document Version: 4.0
 Last Updated: 2026-03-06
-Revision: Refined Arcade haptics to a web-safe semantic mapping, added the Arcade haptics toggle, and documented the direct-input-only boundary shared with `/new`.
+Revision: Refined Arcade haptics to a shared semantic mapping, added the Arcade haptics toggle, documented the browser direct-input-only boundary, and added the Capacitor native-shell path that restores async and game-loop haptics on mobile.
