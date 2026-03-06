@@ -47,7 +47,7 @@ const normalizeTicketNumber = (rawInput: string): number | null => {
 
 export default function NewPersonalizedHomePage() {
   const { setLanguage, t } = useLanguage();
-  const { isNative, trigger } = useAppHaptics();
+  const { trigger } = useAppHaptics();
   const [onboardingStep, setOnboardingStep] = React.useState<"language" | "ticket">("language");
   const [isOnboardingModalOpen, setIsOnboardingModalOpen] = React.useState(true);
   const [ticketInput, setTicketInput] = React.useState("");
@@ -105,16 +105,6 @@ export default function NewPersonalizedHomePage() {
     setIsOnboardingModalOpen(true);
   }, [selectedTicketNumber]);
 
-  const handlePersonalizedTicketCalled = React.useCallback(
-    () => {
-      if (!isNative) {
-        return;
-      }
-      trigger("queueAlert");
-    },
-    [isNative, trigger],
-  );
-
   return (
     <div className="relative">
       <div className="absolute left-6 right-6 top-4 z-50 flex items-center justify-between gap-5 py-2 sm:left-8 sm:right-8 lg:left-10 lg:right-10">
@@ -146,7 +136,6 @@ export default function NewPersonalizedHomePage() {
         displayVariant="personalized"
         personalizedTicketNumber={selectedTicketNumber}
         onRequestTicketChange={handleRequestTicketChange}
-        onPersonalizedTicketCalled={handlePersonalizedTicketCalled}
         showQrCode={false}
         showHeaderLogo={false}
       />

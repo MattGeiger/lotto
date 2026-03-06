@@ -42,24 +42,6 @@ export type AppHapticIntent =
   | "queueAlert"
   | "none";
 
-export type NativeImpactStyle = "LIGHT" | "MEDIUM" | "HEAVY";
-export type NativeNotificationType = "SUCCESS" | "WARNING" | "ERROR";
-
-export type NativeHapticInput =
-  | { type: "selection" }
-  | {
-      type: "impact";
-      style: NativeImpactStyle;
-    }
-  | {
-      type: "notification";
-      notificationType: NativeNotificationType;
-    }
-  | {
-      type: "vibrate";
-      duration: number;
-    };
-
 const makeSinglePulse = (duration: number, description: string) => ({
   description,
   pattern: [{ duration, intensity: 1 }],
@@ -94,24 +76,6 @@ export const APP_HAPTIC_INPUT_BY_INTENT: Record<
   gameReward: makeSinglePulse(28, "Reward tap"),
   gameFailure: "error",
   queueAlert: makeDoublePulse(80, 50, 120, "Ticket called alert"),
-};
-
-// Capacitor exposes a smaller native haptics vocabulary than web-haptics, so
-// intents map to the closest native equivalent rather than a 1:1 preset name.
-export const APP_NATIVE_HAPTIC_INPUT_BY_INTENT: Record<
-  Exclude<AppHapticIntent, "none">,
-  NativeHapticInput
-> = {
-  uiSelect: { type: "selection" },
-  uiToggle: { type: "impact", style: "LIGHT" },
-  uiConfirm: { type: "impact", style: "MEDIUM" },
-  uiDestructive: { type: "impact", style: "HEAVY" },
-  uiError: { type: "notification", notificationType: "ERROR" },
-  gameContact: { type: "impact", style: "LIGHT" },
-  gameImpact: { type: "impact", style: "MEDIUM" },
-  gameReward: { type: "notification", notificationType: "SUCCESS" },
-  gameFailure: { type: "notification", notificationType: "ERROR" },
-  queueAlert: { type: "vibrate", duration: 500 },
 };
 
 // Reserved for future semantic intents; intentionally not wired this pass.

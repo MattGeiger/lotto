@@ -14,18 +14,6 @@ Refined the initial v1.6.2 haptics rollout with a shared semantic layer and a we
 - Kept `/`, `/display`, admin, staff, and login haptic-free so public-board and operational surfaces remain visual-only.
 - Added regression coverage for the shared provider, `/new` web-safe behavior, Arcade ticket-called visual-only behavior, direct-input slider commits, and theme/language integration.
 
-## Native Mobile Haptics
-
-Added a Capacitor shell so the project can deliver reliable async and gameplay-event haptics on mobile hardware.
-
-- Added `@capacitor/core`, `@capacitor/ios`, `@capacitor/android`, `@capacitor/cli`, and `@capacitor/haptics`, plus committed native project scaffolds under `ios/` and `android/`.
-- Added `capacitor.config.ts`, a fallback `capacitor-www/index.html`, and `npm run capacitor:sync`, `npm run capacitor:sync:live`, `npm run capacitor:open:ios`, and `npm run capacitor:open:android`.
-- Updated the shared `HapticsProvider` to route semantic intents through `web-haptics` on the browser path and `@capacitor/haptics` in the native shell.
-- Restored native-only tracked-ticket buzz alerts on `/new` and Arcade.
-- Restored native-only Snake pellet/collision haptics and Brick Mayhem brick/paddle/level/life haptics while leaving the browser path under the web-safe direct-input policy.
-- Expanded `/haptics` so mobile testing can compare raw browser presets against direct Capacitor plugin calls from the same page.
-- Added dedicated native regression coverage for `/new`, the Arcade banner, and game-loop event haptics.
-
 ---
 
 # William Temple House Digital Raffle System v1.6.2

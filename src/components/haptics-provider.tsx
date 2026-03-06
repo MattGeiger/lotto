@@ -5,15 +5,12 @@ import { useWebHaptics } from "web-haptics/react";
 
 import {
   APP_HAPTIC_INPUT_BY_INTENT,
-  APP_NATIVE_HAPTIC_INPUT_BY_INTENT,
   HAPTICS_ENABLED_STORAGE_KEY,
   type AppHapticIntent,
 } from "@/lib/haptics";
-import { isNativeHapticsPlatform, triggerNativeHaptic } from "@/lib/native-haptics";
 
 type HapticsContextValue = {
   enabled: boolean;
-  isNative: boolean;
   setEnabled: (next: boolean) => void;
   trigger: (intent: AppHapticIntent) => void;
 };
@@ -22,7 +19,6 @@ const noop = () => undefined;
 
 const DEFAULT_CONTEXT_VALUE: HapticsContextValue = {
   enabled: true,
-  isNative: false,
   setEnabled: noop,
   trigger: noop,
 };
@@ -32,7 +28,6 @@ const HapticsContext = React.createContext<HapticsContextValue>(DEFAULT_CONTEXT_
 export function HapticsProvider({ children }: { children: React.ReactNode }) {
   const { trigger: triggerRawHaptic } = useWebHaptics();
   const [enabled, setEnabled] = React.useState(true);
-  const isNative = React.useMemo(() => isNativeHapticsPlatform(), []);
 
   React.useEffect(() => {
     if (typeof window === "undefined") return;
@@ -62,32 +57,23 @@ export function HapticsProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      if (isNative) {
-        const input = APP_NATIVE_HAPTIC_INPUT_BY_INTENT[intent];
-        if (!input) {
-          return;
-        }
-        void triggerNativeHaptic(input);
-        return;
-      }
-
       const input = APP_HAPTIC_INPUT_BY_INTENT[intent];
       if (!input) {
         return;
       }
+
       void triggerRawHaptic(input);
     },
-    [enabled, isNative, triggerRawHaptic],
+    [enabled, triggerRawHaptic],
   );
 
   const value = React.useMemo(
     () => ({
       enabled,
-      isNative,
       setEnabled: handleSetEnabled,
       trigger,
     }),
-    [enabled, handleSetEnabled, isNative, trigger],
+    [enabled, handleSetEnabled, trigger],
   );
 
   return <HapticsContext.Provider value={value}>{children}</HapticsContext.Provider>;

@@ -4,7 +4,6 @@ import * as React from "react";
 import ReactCanvasConfetti from "react-canvas-confetti";
 
 import { ARCADE_PLAY_RESUMED_EVENT, ARCADE_TICKET_CALLED_EVENT } from "@/arcade/lib/events";
-import { useAppHaptics } from "@/components/haptics-provider";
 import { useLanguage } from "@/contexts/language-context";
 import { readPersistedHomepageTicket } from "@/lib/home-ticket-storage";
 import { getPollingIntervalMs } from "@/lib/polling-strategy";
@@ -97,7 +96,6 @@ const getTicketWaitDetails = (
 
 export function NowServingBanner() {
   const { t, language } = useLanguage();
-  const { isNative, trigger } = useAppHaptics();
   const [currentlyServing, setCurrentlyServing] = React.useState<number | null>(null);
   const [lastPayload, setLastPayload] = React.useState<ServingPayload>({
     currentlyServing: null,
@@ -447,9 +445,6 @@ export function NowServingBanner() {
       return;
     }
     celebratedCallRef.current = celebrationKey;
-    if (isNative) {
-      trigger("queueAlert");
-    }
     window.dispatchEvent(
       new CustomEvent(ARCADE_TICKET_CALLED_EVENT, {
         detail: {
@@ -473,7 +468,7 @@ export function NowServingBanner() {
     confettiLoopTimeoutRef.current = window.setTimeout(() => {
       clearConfettiLoop();
     }, CALLED_ALERT_DURATION_MS);
-  }, [calledAt, clearConfettiLoop, fireConfetti, isNative, ticketNumber, trigger]);
+  }, [calledAt, clearConfettiLoop, fireConfetti, ticketNumber]);
 
   React.useEffect(() => {
     if (isCalledBannerState) {

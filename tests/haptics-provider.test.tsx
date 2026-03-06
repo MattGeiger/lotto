@@ -6,16 +6,6 @@ import { HapticsProvider, useAppHaptics } from "@/components/haptics-provider";
 import { APP_HAPTIC_INPUT_BY_INTENT, HAPTICS_ENABLED_STORAGE_KEY } from "@/lib/haptics";
 
 const rawTriggerMock = vi.fn();
-const capacitorMocks = vi.hoisted(() => ({
-  nativeImpactMock: vi.fn(),
-  nativeNotificationMock: vi.fn(),
-  nativeVibrateMock: vi.fn(),
-  nativeSelectionStartMock: vi.fn(),
-  nativeSelectionChangedMock: vi.fn(),
-  nativeSelectionEndMock: vi.fn(),
-  isNativePlatformMock: vi.fn(() => false),
-  isPluginAvailableMock: vi.fn(() => true),
-}));
 
 vi.mock("web-haptics/react", () => ({
   useWebHaptics: () => ({
@@ -25,41 +15,12 @@ vi.mock("web-haptics/react", () => ({
   }),
 }));
 
-vi.mock("@capacitor/core", () => ({
-  Capacitor: {
-    isNativePlatform: capacitorMocks.isNativePlatformMock,
-    isPluginAvailable: capacitorMocks.isPluginAvailableMock,
-  },
-}));
-
-vi.mock("@capacitor/haptics", () => ({
-  Haptics: {
-    impact: capacitorMocks.nativeImpactMock,
-    notification: capacitorMocks.nativeNotificationMock,
-    vibrate: capacitorMocks.nativeVibrateMock,
-    selectionStart: capacitorMocks.nativeSelectionStartMock,
-    selectionChanged: capacitorMocks.nativeSelectionChangedMock,
-    selectionEnd: capacitorMocks.nativeSelectionEndMock,
-  },
-  ImpactStyle: {
-    Light: "LIGHT",
-    Medium: "MEDIUM",
-    Heavy: "HEAVY",
-  },
-  NotificationType: {
-    Success: "SUCCESS",
-    Warning: "WARNING",
-    Error: "ERROR",
-  },
-}));
-
 function Probe() {
-  const { enabled, isNative, setEnabled, trigger } = useAppHaptics();
+  const { enabled, setEnabled, trigger } = useAppHaptics();
 
   return (
     <>
       <div data-testid="enabled">{String(enabled)}</div>
-      <div data-testid="native">{String(isNative)}</div>
       <button type="button" onClick={() => setEnabled(false)}>
         Disable
       </button>
@@ -88,14 +49,6 @@ describe("HapticsProvider", () => {
   beforeEach(() => {
     window.localStorage.clear();
     rawTriggerMock.mockReset();
-    capacitorMocks.nativeImpactMock.mockReset();
-    capacitorMocks.nativeNotificationMock.mockReset();
-    capacitorMocks.nativeVibrateMock.mockReset();
-    capacitorMocks.nativeSelectionStartMock.mockReset();
-    capacitorMocks.nativeSelectionChangedMock.mockReset();
-    capacitorMocks.nativeSelectionEndMock.mockReset();
-    capacitorMocks.isNativePlatformMock.mockReturnValue(false);
-    capacitorMocks.isPluginAvailableMock.mockReturnValue(true);
   });
 
   it("defaults to enabled and persists the preference", async () => {
@@ -139,20 +92,5 @@ describe("HapticsProvider", () => {
 
     expect(rawTriggerMock).toHaveBeenNthCalledWith(1, APP_HAPTIC_INPUT_BY_INTENT.queueAlert);
     expect(rawTriggerMock).toHaveBeenNthCalledWith(2, APP_HAPTIC_INPUT_BY_INTENT.uiDestructive);
-  });
-
-  it("routes semantic intents through the native Capacitor plugin when running in a native shell", async () => {
-    capacitorMocks.isNativePlatformMock.mockReturnValue(true);
-    const user = userEvent.setup();
-    renderProbe();
-
-    expect(screen.getByTestId("native")).toHaveTextContent("true");
-
-    await user.click(screen.getByRole("button", { name: "Alert" }));
-    await user.click(screen.getByRole("button", { name: "Destructive" }));
-
-    expect(rawTriggerMock).not.toHaveBeenCalled();
-    expect(capacitorMocks.nativeVibrateMock).toHaveBeenCalledWith({ duration: 500 });
-    expect(capacitorMocks.nativeImpactMock).toHaveBeenCalledWith({ style: "HEAVY" });
   });
 });
