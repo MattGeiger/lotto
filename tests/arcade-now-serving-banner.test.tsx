@@ -5,7 +5,6 @@ import { ARCADE_PLAY_RESUMED_EVENT, ARCADE_TICKET_CALLED_EVENT } from "@/arcade/
 import { NowServingBanner } from "@/arcade/components/now-serving-banner";
 import { HapticsProvider } from "@/components/haptics-provider";
 import { LanguageProvider } from "@/contexts/language-context";
-import { APP_HAPTIC_INPUT_BY_INTENT } from "@/lib/haptics";
 import { HOMEPAGE_TICKET_STORAGE_KEY } from "@/lib/home-ticket-storage";
 import type { OperatingHours, TicketStatus } from "@/lib/state-types";
 
@@ -98,7 +97,7 @@ describe("NowServingBanner", () => {
     expect(await screen.findByText("4 minutes")).toBeInTheDocument();
   });
 
-  it("dispatches pause event and triggers confetti when the ticket is called", async () => {
+  it("dispatches pause event and keeps called-ticket celebration visual-only on the web path", async () => {
     window.localStorage.setItem(
       HOMEPAGE_TICKET_STORAGE_KEY,
       JSON.stringify({
@@ -129,8 +128,7 @@ describe("NowServingBanner", () => {
     await waitFor(() => {
       expect(confettiFireMock).toHaveBeenCalled();
     });
-    expect(rawTriggerMock).toHaveBeenCalledTimes(1);
-    expect(rawTriggerMock).toHaveBeenCalledWith(APP_HAPTIC_INPUT_BY_INTENT.queueAlert);
+    expect(rawTriggerMock).not.toHaveBeenCalled();
 
     const initialConfettiCalls = confettiFireMock.mock.calls.length;
     await waitFor(
@@ -139,7 +137,7 @@ describe("NowServingBanner", () => {
       },
       { timeout: 3500 },
     );
-    expect(rawTriggerMock).toHaveBeenCalledTimes(1);
+    expect(rawTriggerMock).not.toHaveBeenCalled();
 
     await act(async () => {
       window.dispatchEvent(new CustomEvent(ARCADE_PLAY_RESUMED_EVENT));

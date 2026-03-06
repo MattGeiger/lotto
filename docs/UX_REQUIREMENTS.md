@@ -237,7 +237,8 @@ break trust. This operation has been removed for client safety.
 - Operational public-board surfaces (`/` and `/display`) must remain haptic-free. These views are shared monitoring surfaces, not personal-device experiences.
 - Optional client-device haptics are permitted only on personalized `/new` and Arcade, and they must remain user-toggleable on those surfaces.
 - Haptics are advisory only. No raffle/admin state or safety-critical instruction may rely on vibration for comprehension.
-- Ticket-called haptics may fire once when a tracked ticket first becomes called. They must not retrigger on polling cadence, repeated confetti bursts, or persistent overlay loops.
+- On the web path, haptics are limited to direct user interactions such as button presses, accepted gameplay turns, and confirmed discrete setting changes.
+- Async, polled, and game-loop-driven events (for example ticket-called alerts, confetti bursts, Snake pellet/collision feedback, and Brick collision feedback) must remain visual/audio-only on the web path.
 - Admin, staff, and login routes remain haptic-free.
 
 ---

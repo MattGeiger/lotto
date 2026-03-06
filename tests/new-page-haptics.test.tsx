@@ -137,7 +137,7 @@ describe("New page haptics", () => {
     expect(rawTriggerMock).toHaveBeenCalledWith("medium");
   });
 
-  it("triggers buzz haptics once when the selected ticket is called", async () => {
+  it("keeps the called-ticket celebration visual-only on the web path", async () => {
     const user = userEvent.setup();
     currentState = {
       ...currentState,
@@ -159,10 +159,10 @@ describe("New page haptics", () => {
     await user.click(screen.getByRole("button", { name: "Submit" }));
 
     await waitFor(() => {
-      expect(rawTriggerMock).toHaveBeenCalledWith(APP_HAPTIC_INPUT_BY_INTENT.queueAlert);
+      expect(screen.getByText("Ticket Called!")).toBeInTheDocument();
     });
-    expect(rawTriggerMock).toHaveBeenCalledTimes(2);
+    expect(rawTriggerMock).toHaveBeenCalledTimes(1);
     expect(rawTriggerMock).toHaveBeenNthCalledWith(1, "medium");
-    expect(rawTriggerMock).toHaveBeenNthCalledWith(2, APP_HAPTIC_INPUT_BY_INTENT.queueAlert);
+    expect(rawTriggerMock).not.toHaveBeenCalledWith(APP_HAPTIC_INPUT_BY_INTENT.queueAlert);
   });
 });

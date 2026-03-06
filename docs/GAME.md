@@ -162,7 +162,7 @@ public/
 - Completed: Brick Mayhem row-hit effects and lifecycle rules — shared 8-row palette metadata in `effects.ts`, baseline-based non-compounding speed effects (red/cyan/purple) with runtime speed clamps, orange multiball spawn, green clone paddle (64px offset, one max), pink paddle-width timed buff, gold points-multiplier timed buff, and level-clear effect resets.
 - Completed: Brick Mayhem readout accuracy — score now updates immediately on brick hits, while the game readout remains the minimal 3-metric bar (`SCORE`, `LIVES`, `LEVEL`).
 - Completed: Brick Mayhem engine coverage added in `tests/arcade-brick-mayhem-engine.test.ts` for speed-effect non-compounding, multiball life-loss behavior, timed effect cap rules, clone behavior, and level-reset semantics.
-- Completed: Snake haptics now use semantic intent mapping — `selection` for accepted turns and difficulty-step changes, `success` on pellet eaten, and `error` on wall/body collision. Arcade controls use `soft` for back/theme toggles, `medium` for primary play/start/pause, `heavy` for reset only, and a strong tracked-ticket alert pattern for called-ticket events. Short default library taps were replaced with stronger app-owned mobile patterns where needed for reliable feel.
+- Completed: Snake haptics now follow the web-safe direct-input policy — `selection` for accepted turns and confirmed difficulty changes only, with Arcade controls using `soft` for back/theme toggles, `medium` for primary play/start/pause, and `heavy` for reset only. Pellet/collision feedback and tracked-ticket celebrations remain visual-only on the web path.
 
 ## Accessibility Issue: Snake Reflex Controls (Implemented - 2026-02-16)
 - Problem statement: current Snake pace can be too demanding for players with slower reflexes, and pellet placement near walls can make early rounds punishing.
@@ -306,4 +306,4 @@ public/
 
 Document Version: 4.0
 Last Updated: 2026-03-06
-Revision: Refined Arcade haptics to semantic intent mapping, added the Arcade haptics toggle, and documented the shared `/new` haptics boundary.
+Revision: Refined Arcade haptics to a web-safe semantic mapping, added the Arcade haptics toggle, and documented the direct-input-only boundary shared with `/new`.

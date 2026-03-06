@@ -74,15 +74,18 @@ export default function BrickMayhemPage() {
   React.useEffect(() => {
     hapticTriggerRef.current = triggerHaptic;
   }, [triggerHaptic]);
-  const lastBrickHapticTimeRef = React.useRef(0);
-  const lastPaddleHapticTimeRef = React.useRef(0);
 
   /* ── Difficulty state ── */
   const [modeIndex, setModeIndex] = React.useState(DEFAULT_MODE_INDEX);
+  const [modeSelectionIndex, setModeSelectionIndex] = React.useState(DEFAULT_MODE_INDEX);
   const modePreset = BRICK_MODE_PRESETS[modeIndex]!;
+  const selectedModePreset = BRICK_MODE_PRESETS[modeSelectionIndex]!;
   const dp = React.useMemo(() => difficultyFromPreset(modePreset), [modePreset]);
   const dpRef = React.useRef(dp);
   React.useEffect(() => { dpRef.current = dp; }, [dp]);
+  React.useEffect(() => {
+    setModeSelectionIndex(modeIndex);
+  }, [modeIndex]);
 
   /* ── React-rendered state ── */
   const [status, setStatus] = React.useState<GameStatus>("READY");
@@ -169,12 +172,24 @@ export default function BrickMayhemPage() {
   const handleModeChange = React.useCallback(
     (value: number[]) => {
       const idx = value[0] ?? DEFAULT_MODE_INDEX;
+      if (idx === modeSelectionIndex) {
+        return;
+      }
+
+      setModeSelectionIndex(idx);
+    },
+    [modeSelectionIndex],
+  );
+
+  const handleModeCommit = React.useCallback(
+    (value: number[]) => {
+      const idx = value[0] ?? DEFAULT_MODE_INDEX;
       if (idx === modeIndex) {
         return;
       }
 
-      hapticTriggerRef.current("uiSelect");
       setModeIndex(idx);
+      hapticTriggerRef.current("uiSelect");
     },
     [modeIndex],
   );
@@ -308,19 +323,7 @@ export default function BrickMayhemPage() {
         // Advance existing fragments (gravity + fade).
         fragmentsRef.current = tickFragments(fragmentsRef.current);
 
-        // Haptics: brick destruction (throttled to avoid buzz fatigue on multiball).
-        if (result.destroyedBricks.length > 0 && timestamp - lastBrickHapticTimeRef.current >= 50) {
-          lastBrickHapticTimeRef.current = timestamp;
-          hapticTriggerRef.current("gameImpact");
-        }
-        // Haptics: paddle bounce (throttled).
-        if (result.paddleBounced && timestamp - lastPaddleHapticTimeRef.current >= 50) {
-          lastPaddleHapticTimeRef.current = timestamp;
-          hapticTriggerRef.current("gameContact");
-        }
-
         if (result.levelCleared) {
-          hapticTriggerRef.current("gameReward");
           // Award bonus life, advance level.
           const nextLevel = worldRef.current.level + 1;
           const nextLives = worldRef.current.lives + 1;
@@ -336,7 +339,6 @@ export default function BrickMayhemPage() {
         }
 
         if (result.ballLost) {
-          hapticTriggerRef.current("gameFailure");
           const w = worldRef.current;
           const remainingLives = w.lives - 1;
           if (remainingLives <= 0) {
@@ -534,15 +536,16 @@ export default function BrickMayhemPage() {
                   isLargeTextLocale ? "text-[22px] leading-tight sm:text-[24px]" : "text-[11px]",
                 )}
               >
-                {t("brickMayhemSettingLabel")}: {t(modePreset.labelKey)}
+                {t("brickMayhemSettingLabel")}: {t(selectedModePreset.labelKey)}
               </p>
               <Slider
                 className="arcade-brick-difficulty-slider"
                 min={0}
                 max={BRICK_MODE_PRESETS.length - 1}
                 step={1}
-                value={[modeIndex]}
+                value={[modeSelectionIndex]}
                 onValueChange={handleModeChange}
+                onValueCommit={handleModeCommit}
                 aria-label={t("brickMayhemSettingLabel")}
               />
             </div>

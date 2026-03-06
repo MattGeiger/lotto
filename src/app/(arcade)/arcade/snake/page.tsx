@@ -205,9 +205,16 @@ export default function SnakePage() {
   const queuedDirectionRef = React.useRef<Direction | null>(null);
   const [status, setStatus] = React.useState<GameStatus>("READY");
   const [modeIndex, setModeIndex] = React.useState(DEFAULT_MODE_INDEX);
+  const [modeSelectionIndex, setModeSelectionIndex] = React.useState(DEFAULT_MODE_INDEX);
   const playAreaRef = React.useRef<HTMLElement>(null);
   const boardCanvasRef = React.useRef<HTMLCanvasElement>(null);
   const modePreset = SNAKE_MODE_PRESETS[modeIndex] ?? SNAKE_MODE_PRESETS[DEFAULT_MODE_INDEX];
+  const selectedModePreset =
+    SNAKE_MODE_PRESETS[modeSelectionIndex] ?? SNAKE_MODE_PRESETS[DEFAULT_MODE_INDEX];
+
+  React.useEffect(() => {
+    setModeSelectionIndex(modeIndex);
+  }, [modeIndex]);
 
   const resetGame = React.useCallback((nextStatus: Exclude<GameStatus, "GAME_OVER">) => {
     const nextSnake = createInitialSnake();
@@ -375,12 +382,26 @@ export default function SnakePage() {
     }
 
     const nextIndex = clampPresetIndex(nextValue, SNAKE_MODE_PRESETS.length - 1);
+    if (nextIndex === modeSelectionIndex) {
+      return;
+    }
+
+    setModeSelectionIndex(nextIndex);
+  }, [modeSelectionIndex]);
+
+  const handleModeCommit = React.useCallback((values: number[]) => {
+    const nextValue = values[0];
+    if (typeof nextValue !== "number") {
+      return;
+    }
+
+    const nextIndex = clampPresetIndex(nextValue, SNAKE_MODE_PRESETS.length - 1);
     if (nextIndex === modeIndex) {
       return;
     }
 
-    hapticTriggerRef.current("uiSelect");
     setModeIndex(nextIndex);
+    hapticTriggerRef.current("uiSelect");
   }, [modeIndex]);
 
   const focusPlayArea = React.useCallback(() => {
@@ -493,7 +514,6 @@ export default function SnakePage() {
       );
 
       if (hitWall || hitBody) {
-        hapticTriggerRef.current("gameFailure");
         setStatus("GAME_OVER");
         return;
       }
@@ -505,7 +525,6 @@ export default function SnakePage() {
       setSnake(nextSnake);
 
       if (ateFood) {
-        hapticTriggerRef.current("gameReward");
         const nextFood = createFoodPellet(nextSnake, modePreset.minWallDistance);
         foodRef.current = nextFood;
         setFood(nextFood);
@@ -586,15 +605,16 @@ export default function SnakePage() {
                   isLargeSnakeTextLocale ? "text-[22px] leading-tight sm:text-[24px]" : "text-[11px]",
                 )}
               >
-                {t("snakeSettingLabel")}: {t(modePreset.labelKey)}
+                {t("snakeSettingLabel")}: {t(selectedModePreset.labelKey)}
               </p>
               <Slider
                 className="arcade-snake-slider"
                 min={0}
                 max={SNAKE_MODE_PRESETS.length - 1}
                 step={1}
-                value={[modeIndex]}
+                value={[modeSelectionIndex]}
                 onValueChange={handleModeChange}
+                onValueCommit={handleModeCommit}
                 aria-label={t("snakeSettingLabel")}
               />
             </div>
