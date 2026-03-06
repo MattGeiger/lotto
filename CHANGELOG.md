@@ -4,6 +4,7 @@
 ### Added
 - Added a shared semantic haptics layer (`src/lib/haptics.ts`, `HapticsProvider`, `useAppHaptics()`) with app-owned intent names, persisted `haptics-enabled` preference, and dedicated top-bar toggles on `/new` and Arcade.
 - Added regression coverage for the shared provider, `/new` haptic interactions, personalized ticket-called alerts, and the updated Arcade/theme integration (`tests/haptics-provider.test.tsx`, `tests/new-page-haptics.test.tsx`, plus updated personalized-display, Arcade banner, and theme tests).
+- Added a raw-library `/haptics` diagnostic page that renders one shadcn button per `web-haptics` built-in preset and triggers each preset directly, so device/browser support can be validated without the app's semantic mapping layer.
 
 ### Changed
 - Extended optional client-device haptics from Arcade-only to `/new` and kept `/`, `/display`, admin, staff, and login haptic-free.
