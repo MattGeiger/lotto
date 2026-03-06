@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.6.2] - 2026-03-05
+### Added
+- Added haptic feedback via `web-haptics` library across all arcade interactions. Scoped exclusively to arcade routes per project separation rules.
+  - **Ticket called:** `buzz` pattern fires once when a tracked ticket is called (`NowServingBanner`), timed with the confetti burst for multi-modal confirmation.
+  - **Brick Mayhem — brick destruction:** `error` pattern on brick hit, throttled to one trigger per 50ms to prevent buzz fatigue on multiball runs.
+  - **Brick Mayhem — paddle bounce:** `light` pattern on ball-paddle collision, throttled to 50ms.
+  - **Brick Mayhem — ball lost / game over:** `error` pattern on ball drop.
+  - **Snake — pellet eaten:** `success` pattern on each pellet collection.
+  - **Snake — game over:** `error` pattern on wall or self-collision.
+  - **Arcade buttons:** `heavy` pattern on all arcade button presses via the shared `Button` component (`src/arcade/ui/8bit/button.tsx`); disabled buttons suppress haptics.
+- Exposed `paddleBounced: boolean` in `TickResult` from the Brick Mayhem engine so page-level haptic hooks can detect paddle contact without modifying pure engine logic.
+- Platform support: Android Chrome/Firefox and iOS26 Safari. Graceful no-op on unsupported platforms via `WebHaptics.isSupported`.
+
 ## [1.6.1] - 2026-03-01
 ### Fixed
 - Resolved `/new` page-load animation issue (Issue 17) where morph text animated on initial render instead of appearing statically. Root cause: hydration-safe motion tiering starts as `"simple"`, then upgrades to `"full"` post-mount, causing a render-branch switch that Motion treats as new entering elements. Fixed by pinning the cycling language title to `motionMode="simple"`, which prevents the branch switch entirely. The title still animates smoothly between language cycles using whole-text transitions.

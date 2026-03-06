@@ -235,6 +235,7 @@ Brick Mayhem follows the same Arcade integration patterns established by Snake:
 - [x] Timed buff extension + cap rules implemented (`30s` add, capped at `120s`) with level-clear reset
 - [x] Readout remains minimal with score/lives/level only
 - [x] Engine tests added for effect rules and lifecycle behavior (`tests/arcade-brick-mayhem-engine.test.ts`)
+- [x] Haptic feedback via `web-haptics`: `error` pattern on brick destruction (50ms throttle prevents multiball buzz fatigue), `light` pattern on paddle bounce (50ms throttle), `error` pattern on ball lost and game over. Engine exposes `paddleBounced: boolean` in `TickResult` for page-level hooks. Arcade `Button` component triggers `heavy` on all button presses.
 
 ### Not Yet Implemented
 - [ ] Sound effects (deferred)
@@ -324,5 +325,5 @@ Build incrementally in this order, each step producing a testable result:
 
 ---
 
-Document Version: 3.1
-Last Updated: 2026-02-28
+Document Version: 3.2
+Last Updated: 2026-03-05

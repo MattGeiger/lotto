@@ -1,3 +1,28 @@
+# William Temple House Digital Raffle System v1.6.2
+
+**Release Date:** March 5, 2026
+
+## Haptic Feedback for Arcade
+
+Added tactile haptic feedback via the `web-haptics` library across all arcade interactions. Haptics are scoped exclusively to arcade routes and do not affect any raffle or admin surfaces.
+
+- **Ticket called:** A `buzz` pattern fires when a tracked ticket is called, complementing the existing confetti and visual overlay.
+- **Brick Mayhem gameplay:** `error` on brick destruction (throttled for multiball), `light` on paddle bounce, `error` on ball lost and game over.
+- **Snake gameplay:** `success` on pellet eaten, `error` on collision/game over.
+- **Arcade buttons:** `heavy` pattern on every arcade button press (suppressed when disabled).
+
+Platform support: Android Chrome/Firefox and iOS26 Safari. Graceful no-op on unsupported platforms.
+
+## Engine Enhancement
+
+Added `paddleBounced: boolean` to the Brick Mayhem `TickResult` type so page-level haptic hooks can observe paddle contact without coupling haptics into the pure-function engine.
+
+## Versioning
+
+- Bumped application version to **1.6.2**.
+
+---
+
 # William Temple House Digital Raffle System v1.5.0
 
 **Release Date:** February 18, 2026
