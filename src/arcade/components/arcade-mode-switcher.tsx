@@ -32,6 +32,7 @@ export function ArcadeModeSwitcher({ className }: ArcadeModeSwitcherProps) {
       variant="outline"
       size="icon"
       font="normal"
+      haptic="uiToggle"
       className={cn("h-9 w-9 p-0 text-[var(--arcade-dot)] hover:text-[var(--arcade-neon)]", className)}
       onClick={toggleTheme}
       aria-label="Toggle light and dark mode"

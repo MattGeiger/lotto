@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useWebHaptics } from "web-haptics/react";
 
 import { ARCADE_PLAY_RESUMED_EVENT, ARCADE_TICKET_CALLED_EVENT } from "@/arcade/lib/events";
 import {
@@ -12,6 +11,7 @@ import {
   ChevronArrowUpIcon,
 } from "@/arcade/components/icons/chevron-arrow-left-icon";
 import { Button, Card, CardContent, CardHeader, CardTitle, Slider } from "@/arcade/ui/8bit";
+import { useAppHaptics } from "@/components/haptics-provider";
 import { useLanguage } from "@/contexts/language-context";
 import { cn } from "@/lib/utils";
 
@@ -186,9 +186,11 @@ const createFoodPellet = (
 export default function SnakePage() {
   const { t, language } = useLanguage();
   const isLargeSnakeTextLocale = language === "ar" || language === "fa" || language === "zh";
-  const { trigger: triggerHaptic } = useWebHaptics();
+  const { trigger: triggerHaptic } = useAppHaptics();
   const hapticTriggerRef = React.useRef(triggerHaptic);
-  hapticTriggerRef.current = triggerHaptic;
+  React.useEffect(() => {
+    hapticTriggerRef.current = triggerHaptic;
+  }, [triggerHaptic]);
   const [snake, setSnake] = React.useState<GridPoint[]>(() => createInitialSnake());
   const snakeRef = React.useRef<GridPoint[]>(snake);
   const [food, setFood] = React.useState<GridPoint>(() =>
@@ -357,6 +359,7 @@ export default function SnakePage() {
         return;
       }
       queuedDirectionRef.current = nextDirection;
+      hapticTriggerRef.current("uiSelect");
       if (status === "READY") {
         setStatus("RUNNING");
         notifyPlayResumed();
@@ -372,8 +375,13 @@ export default function SnakePage() {
     }
 
     const nextIndex = clampPresetIndex(nextValue, SNAKE_MODE_PRESETS.length - 1);
+    if (nextIndex === modeIndex) {
+      return;
+    }
+
+    hapticTriggerRef.current("uiSelect");
     setModeIndex(nextIndex);
-  }, []);
+  }, [modeIndex]);
 
   const focusPlayArea = React.useCallback(() => {
     const playArea = playAreaRef.current;
@@ -485,7 +493,7 @@ export default function SnakePage() {
       );
 
       if (hitWall || hitBody) {
-        hapticTriggerRef.current("error");
+        hapticTriggerRef.current("gameFailure");
         setStatus("GAME_OVER");
         return;
       }
@@ -497,7 +505,7 @@ export default function SnakePage() {
       setSnake(nextSnake);
 
       if (ateFood) {
-        hapticTriggerRef.current("success");
+        hapticTriggerRef.current("gameReward");
         const nextFood = createFoodPellet(nextSnake, modePreset.minWallDistance);
         foodRef.current = nextFood;
         setFood(nextFood);
@@ -538,7 +546,7 @@ export default function SnakePage() {
   return (
     <div className="arcade-pixel-grid arcade-snake-shell mx-auto max-w-6xl px-4 pb-6 pt-8 sm:px-6 sm:pt-10">
       <div className="mb-4 flex justify-start">
-        <Button asChild size="sm" className="px-3">
+        <Button asChild size="sm" haptic="uiToggle" className="px-3">
           <Link href="/arcade" className="inline-flex items-center gap-2">
             <ChevronArrowLeftIcon className="pixelated inline-block h-3.5 w-auto shrink-0" />
             <span>{t("back")}</span>
@@ -595,11 +603,11 @@ export default function SnakePage() {
       </Card>
 
       <div className="mt-5 flex flex-wrap justify-center gap-3">
-        <Button type="button" size="lg" className="min-w-44" onClick={handlePlayNow}>
+        <Button type="button" size="lg" haptic="uiConfirm" className="min-w-44" onClick={handlePlayNow}>
           {t("playNow")}
         </Button>
         {status === "GAME_OVER" ? (
-          <Button type="button" variant="outline" className="min-w-36" onClick={resetRun}>
+          <Button type="button" variant="outline" haptic="uiDestructive" className="min-w-36" onClick={resetRun}>
             {t("reset")}
           </Button>
         ) : null}
@@ -667,6 +675,7 @@ export default function SnakePage() {
           <Button
             type="button"
             variant="outline"
+            haptic="none"
             className="arcade-snake-control-btn"
             aria-label="Move up"
             onClick={() => handleDirection("UP")}
@@ -678,6 +687,7 @@ export default function SnakePage() {
           <Button
             type="button"
             variant="outline"
+            haptic="none"
             className="arcade-snake-control-btn"
             aria-label="Move left"
             onClick={() => handleDirection("LEFT")}
@@ -687,6 +697,7 @@ export default function SnakePage() {
           <Button
             type="button"
             variant="default"
+            haptic="uiConfirm"
             className={cn(
               "arcade-snake-control-btn arcade-ui",
               isLargeSnakeTextLocale ? "text-[20px] sm:text-[22px]" : "text-[13px]",
@@ -699,6 +710,7 @@ export default function SnakePage() {
           <Button
             type="button"
             variant="outline"
+            haptic="none"
             className="arcade-snake-control-btn"
             aria-label="Move right"
             onClick={() => handleDirection("RIGHT")}
@@ -710,6 +722,7 @@ export default function SnakePage() {
           <Button
             type="button"
             variant="outline"
+            haptic="none"
             className="arcade-snake-control-btn"
             aria-label="Move down"
             onClick={() => handleDirection("DOWN")}

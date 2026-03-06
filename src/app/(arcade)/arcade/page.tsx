@@ -44,7 +44,7 @@ export default function ArcadeHomePage() {
       </section>
 
       <div className="mb-10 flex justify-start">
-        <Button asChild size="sm" className="px-3">
+        <Button asChild size="sm" haptic="uiToggle" className="px-3">
           <Link href="/" className="inline-flex items-center gap-2">
             <ChevronArrowLeftIcon className="pixelated inline-block h-3.5 w-auto shrink-0" />
             <span>{t("back")}</span>
@@ -87,6 +87,7 @@ export default function ArcadeHomePage() {
                           asChild
                           variant="default"
                           size="lg"
+                          haptic="uiConfirm"
                           className="h-auto min-h-12 w-full justify-center whitespace-normal px-4 py-3 text-center"
                         >
                           <Link

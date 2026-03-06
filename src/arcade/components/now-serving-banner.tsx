@@ -2,9 +2,9 @@
 
 import * as React from "react";
 import ReactCanvasConfetti from "react-canvas-confetti";
-import { useWebHaptics } from "web-haptics/react";
 
 import { ARCADE_PLAY_RESUMED_EVENT, ARCADE_TICKET_CALLED_EVENT } from "@/arcade/lib/events";
+import { useAppHaptics } from "@/components/haptics-provider";
 import { useLanguage } from "@/contexts/language-context";
 import { readPersistedHomepageTicket } from "@/lib/home-ticket-storage";
 import { getPollingIntervalMs } from "@/lib/polling-strategy";
@@ -97,7 +97,7 @@ const getTicketWaitDetails = (
 
 export function NowServingBanner() {
   const { t, language } = useLanguage();
-  const { trigger: triggerHaptic } = useWebHaptics();
+  const { trigger: triggerHaptic } = useAppHaptics();
   const [currentlyServing, setCurrentlyServing] = React.useState<number | null>(null);
   const [lastPayload, setLastPayload] = React.useState<ServingPayload>({
     currentlyServing: null,
@@ -455,7 +455,7 @@ export function NowServingBanner() {
         },
       }),
     );
-    triggerHaptic("buzz");
+    triggerHaptic("queueAlert");
     const scheduleConfetti =
       typeof window.requestAnimationFrame === "function"
         ? window.requestAnimationFrame.bind(window)

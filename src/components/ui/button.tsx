@@ -1,7 +1,11 @@
+"use client"
+
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { Button as AnimateUIButton } from "@/components/animate-ui/primitives/buttons/button"
 
+import { useAppHaptics } from "@/components/haptics-provider"
+import type { AppHapticIntent } from "@/lib/haptics"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
@@ -40,13 +44,30 @@ type MotionButtonProps = React.ComponentPropsWithoutRef<typeof AnimateUIButton>
 
 const Button = React.forwardRef<
   HTMLButtonElement,
-  MotionButtonProps & VariantProps<typeof buttonVariants>
->(({ className, variant, size, ...props }, ref) => {
+  MotionButtonProps &
+    VariantProps<typeof buttonVariants> & {
+      haptic?: AppHapticIntent | "none"
+    }
+>(({ className, variant, size, haptic = "none", onClick, disabled, ...props }, ref) => {
+  const { trigger } = useAppHaptics()
+
+  const handleClick = React.useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      if (!disabled && haptic !== "none") {
+        trigger(haptic)
+      }
+      onClick?.(event)
+    },
+    [disabled, haptic, onClick, trigger],
+  )
+
   return (
     <AnimateUIButton
       ref={ref}
       data-slot="button"
       className={cn(buttonVariants({ variant, size }), className)}
+      disabled={disabled}
+      onClick={handleClick}
       {...props}
     />
   )

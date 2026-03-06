@@ -1,9 +1,12 @@
+"use client";
+
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
-import { useWebHaptics } from "web-haptics/react";
 
+import { useAppHaptics } from "@/components/haptics-provider";
 import { cn } from "@/lib/utils";
 import { Button as ShadcnButton } from "@/components/ui/button";
+import type { AppHapticIntent } from "@/lib/haptics";
 
 const arcadeButtonVariants = cva("", {
   variants: {
@@ -41,6 +44,7 @@ const arcadeButtonVariants = cva("", {
 type ArcadeButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> &
   VariantProps<typeof arcadeButtonVariants> & {
     asChild?: boolean;
+    haptic?: AppHapticIntent | "none";
   };
 
 function PixelFrame({
@@ -156,18 +160,21 @@ function Button({
   className,
   onClick,
   disabled,
+  haptic = "none",
   ...props
 }: ArcadeButtonProps) {
-  const { trigger: triggerHaptic } = useWebHaptics();
+  const { trigger: triggerHaptic } = useAppHaptics();
   const hasFrame = variant !== "ghost" && variant !== "link" && size !== "icon";
   const showShadows = variant !== "outline";
 
   const handleClick = React.useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
-      if (!disabled) triggerHaptic("heavy");
+      if (!disabled && haptic !== "none") {
+        triggerHaptic(haptic);
+      }
       onClick?.(e);
     },
-    [disabled, onClick, triggerHaptic],
+    [disabled, haptic, onClick, triggerHaptic],
   );
 
   return (

@@ -167,21 +167,27 @@ describe("ReadOnlyDisplay personalized variant", () => {
     expect(screen.queryByText("YOUR TICKET NUMBER")).not.toBeInTheDocument();
   });
 
-  it("shows called-ticket overlay and triggers confetti for personalized ticket calls", async () => {
+  it("shows called-ticket overlay, triggers confetti, and reports the personalized ticket call once", async () => {
     currentState = {
       ...currentState,
       calledAt: {
         24: 1_739_898_060_000,
       },
     };
+    const onPersonalizedTicketCalled = vi.fn();
 
-    renderPersonalizedDisplay();
+    renderPersonalizedDisplay({ onPersonalizedTicketCalled });
 
     expect(await screen.findByText("Ticket Called!")).toBeInTheDocument();
     expect(screen.getByText("Please Check-in")).toBeInTheDocument();
     expect(screen.getByTestId("confetti-canvas")).toBeInTheDocument();
     await waitFor(() => {
       expect(confettiFireMock).toHaveBeenCalled();
+    });
+    expect(onPersonalizedTicketCalled).toHaveBeenCalledTimes(1);
+    expect(onPersonalizedTicketCalled).toHaveBeenCalledWith({
+      ticketNumber: 24,
+      calledAt: 1_739_898_060_000,
     });
   });
 });

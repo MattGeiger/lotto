@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useWebHaptics } from "web-haptics/react";
 
 import { ARCADE_PLAY_RESUMED_EVENT, ARCADE_TICKET_CALLED_EVENT } from "@/arcade/lib/events";
 import {
@@ -25,6 +24,7 @@ import { drawBoard } from "@/arcade/game/brick-mayhem/renderer";
 import type { DifficultyParams, World } from "@/arcade/game/brick-mayhem/types";
 import { ChevronArrowLeftIcon } from "@/arcade/components/icons/chevron-arrow-left-icon";
 import { Button, Card, CardContent, CardHeader, CardTitle, Slider } from "@/arcade/ui/8bit";
+import { useAppHaptics } from "@/components/haptics-provider";
 import { useLanguage } from "@/contexts/language-context";
 import { cn } from "@/lib/utils";
 
@@ -69,9 +69,11 @@ type GameStatus = "READY" | "RUNNING" | "PAUSED" | "GAME_OVER";
 export default function BrickMayhemPage() {
   const { t, language } = useLanguage();
   const isLargeTextLocale = language === "ar" || language === "fa" || language === "zh";
-  const { trigger: triggerHaptic } = useWebHaptics();
+  const { trigger: triggerHaptic } = useAppHaptics();
   const hapticTriggerRef = React.useRef(triggerHaptic);
-  hapticTriggerRef.current = triggerHaptic;
+  React.useEffect(() => {
+    hapticTriggerRef.current = triggerHaptic;
+  }, [triggerHaptic]);
   const lastBrickHapticTimeRef = React.useRef(0);
   const lastPaddleHapticTimeRef = React.useRef(0);
 
@@ -167,9 +169,14 @@ export default function BrickMayhemPage() {
   const handleModeChange = React.useCallback(
     (value: number[]) => {
       const idx = value[0] ?? DEFAULT_MODE_INDEX;
+      if (idx === modeIndex) {
+        return;
+      }
+
+      hapticTriggerRef.current("uiSelect");
       setModeIndex(idx);
     },
-    [],
+    [modeIndex],
   );
 
   // When difficulty changes, reset the game so the new paddle/speed take effect.
@@ -304,15 +311,16 @@ export default function BrickMayhemPage() {
         // Haptics: brick destruction (throttled to avoid buzz fatigue on multiball).
         if (result.destroyedBricks.length > 0 && timestamp - lastBrickHapticTimeRef.current >= 50) {
           lastBrickHapticTimeRef.current = timestamp;
-          hapticTriggerRef.current("error");
+          hapticTriggerRef.current("gameImpact");
         }
         // Haptics: paddle bounce (throttled).
         if (result.paddleBounced && timestamp - lastPaddleHapticTimeRef.current >= 50) {
           lastPaddleHapticTimeRef.current = timestamp;
-          hapticTriggerRef.current("light");
+          hapticTriggerRef.current("gameContact");
         }
 
         if (result.levelCleared) {
+          hapticTriggerRef.current("gameReward");
           // Award bonus life, advance level.
           const nextLevel = worldRef.current.level + 1;
           const nextLives = worldRef.current.lives + 1;
@@ -328,7 +336,7 @@ export default function BrickMayhemPage() {
         }
 
         if (result.ballLost) {
-          hapticTriggerRef.current("error");
+          hapticTriggerRef.current("gameFailure");
           const w = worldRef.current;
           const remainingLives = w.lives - 1;
           if (remainingLives <= 0) {
@@ -486,7 +494,7 @@ export default function BrickMayhemPage() {
   return (
     <div className="arcade-pixel-grid arcade-brick-shell mx-auto max-w-6xl px-4 pb-6 pt-8 sm:px-6 sm:pt-10">
       <div className="mb-4 flex justify-start">
-        <Button asChild size="sm" className="px-3">
+        <Button asChild size="sm" haptic="uiToggle" className="px-3">
           <Link href="/arcade" className="inline-flex items-center gap-2">
             <ChevronArrowLeftIcon className="pixelated inline-block h-3.5 w-auto shrink-0" />
             <span>{t("back")}</span>
@@ -543,11 +551,11 @@ export default function BrickMayhemPage() {
       </Card>
 
       <div className="mt-5 flex flex-wrap justify-center gap-3">
-        <Button type="button" size="lg" className="min-w-44" onClick={handlePlayNow}>
+        <Button type="button" size="lg" haptic="uiConfirm" className="min-w-44" onClick={handlePlayNow}>
           {t("playNow")}
         </Button>
         {status === "GAME_OVER" ? (
-          <Button type="button" variant="outline" className="min-w-36" onClick={resetGame}>
+          <Button type="button" variant="outline" haptic="uiDestructive" className="min-w-36" onClick={resetGame}>
             {t("reset")}
           </Button>
         ) : null}
@@ -627,6 +635,7 @@ export default function BrickMayhemPage() {
           <Button
             type="button"
             variant="default"
+            haptic="uiConfirm"
             className={cn(
               "arcade-brick-control-btn arcade-ui",
               isLargeTextLocale ? "text-[20px] sm:text-[22px]" : "text-[13px]",

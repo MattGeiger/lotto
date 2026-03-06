@@ -3,6 +3,7 @@
 import * as React from "react";
 
 import { Button } from "@/arcade/ui/8bit";
+import { useAppHaptics } from "@/components/haptics-provider";
 import { useLanguage, type Language } from "@/contexts/language-context";
 
 const languageNames: Record<Language, string> = {
@@ -18,6 +19,7 @@ const languageNames: Record<Language, string> = {
 
 export function ArcadeLanguageSwitcher() {
   const { language, setLanguage, t } = useLanguage();
+  const { trigger } = useAppHaptics();
   const [open, setOpen] = React.useState(false);
   const menuRef = React.useRef<HTMLDivElement>(null);
   const isRtlLanguage = language === "ar" || language === "fa";
@@ -63,7 +65,12 @@ export function ArcadeLanguageSwitcher() {
                     : "text-[var(--arcade-text)] hover:bg-[var(--arcade-wall)]/20 hover:text-[var(--arcade-dot)]"
                 } ${isRtlLanguage ? "text-right" : "text-left"}`}
                 onClick={() => {
+                  if (code === language) {
+                    setOpen(false);
+                    return;
+                  }
                   setLanguage(code);
+                  trigger("uiSelect");
                   setOpen(false);
                 }}
               >

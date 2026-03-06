@@ -232,6 +232,14 @@ break trust. This operation has been removed for client safety.
 - All text animation must respect reduced-motion settings.
 - Motion cadence for display text must remain brisk and operationally legible; if tuning is adjusted, keep settle behavior near the v1.4 baseline (~0.6-0.7s) and avoid sluggish profiles around ~0.9s+.
 
+### Haptic Scope Safety
+
+- Operational public-board surfaces (`/` and `/display`) must remain haptic-free. These views are shared monitoring surfaces, not personal-device experiences.
+- Optional client-device haptics are permitted only on personalized `/new` and Arcade, and they must remain user-toggleable on those surfaces.
+- Haptics are advisory only. No raffle/admin state or safety-critical instruction may rely on vibration for comprehension.
+- Ticket-called haptics may fire once when a tracked ticket first becomes called. They must not retrigger on polling cadence, repeated confetti bursts, or persistent overlay loops.
+- Admin, staff, and login routes remain haptic-free.
+
 ---
 
 ## Client Benefits

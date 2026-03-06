@@ -163,6 +163,9 @@ const translations: Record<Language, Record<string, string>> = {
     brickMayhemEffectWidePaddle: "PADDLE x2",
     brickMayhemEffectTriplePoints: "POINTS x3",
     language: "Language",
+    haptics: "Haptics",
+    hapticsOn: "Haptics on",
+    hapticsOff: "Haptics off",
   },
   zh: {
     nowServing: "正在叫号",
@@ -279,6 +282,9 @@ const translations: Record<Language, Record<string, string>> = {
     brickMayhemEffectWidePaddle: "挡板 x2",
     brickMayhemEffectTriplePoints: "分数 x3",
     language: "语言",
+    haptics: "触觉反馈",
+    hapticsOn: "触觉反馈已开启",
+    hapticsOff: "触觉反馈已关闭",
   },
   es: {
     nowServing: "Turno Actual",
@@ -397,6 +403,9 @@ const translations: Record<Language, Record<string, string>> = {
     brickMayhemEffectWidePaddle: "PALA x2",
     brickMayhemEffectTriplePoints: "PUNTOS x3",
     language: "Idioma",
+    haptics: "Hápticos",
+    hapticsOn: "Hápticos activados",
+    hapticsOff: "Hápticos desactivados",
   },
   ru: {
     nowServing: "Вызывается номер",
@@ -515,6 +524,9 @@ const translations: Record<Language, Record<string, string>> = {
     brickMayhemEffectWidePaddle: "ПЛАТФОРМА x2",
     brickMayhemEffectTriplePoints: "ОЧКИ x3",
     language: "Язык",
+    haptics: "Тактильный отклик",
+    hapticsOn: "Тактильный отклик включен",
+    hapticsOff: "Тактильный отклик выключен",
   },
   uk: {
     nowServing: "Викликається номер",
@@ -633,6 +645,9 @@ const translations: Record<Language, Record<string, string>> = {
     brickMayhemEffectWidePaddle: "ПЛАТФОРМА x2",
     brickMayhemEffectTriplePoints: "ОЧКИ x3",
     language: "Мова",
+    haptics: "Тактильний відгук",
+    hapticsOn: "Тактильний відгук увімкнено",
+    hapticsOff: "Тактильний відгук вимкнено",
   },
   vi: {
     nowServing: "Đang gọi số",
@@ -751,6 +766,9 @@ const translations: Record<Language, Record<string, string>> = {
     brickMayhemEffectWidePaddle: "THANH ĐỠ x2",
     brickMayhemEffectTriplePoints: "ĐIỂM x3",
     language: "Ngôn Ngữ",
+    haptics: "Phản hồi rung",
+    hapticsOn: "Đã bật phản hồi rung",
+    hapticsOff: "Đã tắt phản hồi rung",
   },
   fa: {
     nowServing: "در حال فراخوانی شماره",
@@ -869,6 +887,9 @@ const translations: Record<Language, Record<string, string>> = {
     brickMayhemEffectWidePaddle: "راکت x2",
     brickMayhemEffectTriplePoints: "امتیاز x3",
     language: "زبان",
+    haptics: "بازخورد لمسی",
+    hapticsOn: "بازخورد لمسی روشن است",
+    hapticsOff: "بازخورد لمسی خاموش است",
   },
   ar: {
     nowServing: "الرقم الحالي",
@@ -987,5 +1008,8 @@ const translations: Record<Language, Record<string, string>> = {
     brickMayhemEffectWidePaddle: "المضرب x2",
     brickMayhemEffectTriplePoints: "النقاط x3",
     language: "اللغة",
+    haptics: "الاهتزاز اللمسي",
+    hapticsOn: "الاهتزاز اللمسي قيد التشغيل",
+    hapticsOff: "الاهتزاز اللمسي متوقف",
   },
 };

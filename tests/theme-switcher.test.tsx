@@ -2,11 +2,22 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, beforeEach, vi } from "vitest";
 
+import { HapticsProvider } from "@/components/haptics-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import {
   ThemeSwitcher,
   THEME_SWITCHER_TRIGGER_ID,
 } from "@/components/theme-switcher";
+
+const rawTriggerMock = vi.fn();
+
+vi.mock("web-haptics/react", () => ({
+  useWebHaptics: () => ({
+    trigger: rawTriggerMock,
+    cancel: vi.fn(),
+    isSupported: true,
+  }),
+}));
 
 type ViewTransitionResult = {
   ready: Promise<void>;
@@ -29,10 +40,12 @@ function installMatchMedia(matches = false) {
   });
 }
 
-function renderSwitcher() {
+function renderSwitcher(enableHaptics = false) {
   render(
     <ThemeProvider>
-      <ThemeSwitcher />
+      <HapticsProvider>
+        <ThemeSwitcher enableHaptics={enableHaptics} />
+      </HapticsProvider>
     </ThemeProvider>,
   );
 }
@@ -60,6 +73,7 @@ function installViewTransition() {
 describe("ThemeSwitcher", () => {
   beforeEach(() => {
     window.localStorage.clear();
+    rawTriggerMock.mockReset();
     document.documentElement.classList.remove("dark", "light", "hi-viz");
     installMatchMedia(false);
     delete (
@@ -146,5 +160,15 @@ describe("ThemeSwitcher", () => {
     await waitFor(() => {
       expect(document.documentElement).toHaveClass("hi-viz");
     });
+  });
+
+  it("triggers soft haptics when selecting a theme with haptics enabled", async () => {
+    renderSwitcher(true);
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole("button", { name: /theme options/i }));
+    await user.click(screen.getByText("Dark"));
+
+    expect(rawTriggerMock).toHaveBeenCalledWith("soft");
   });
 });

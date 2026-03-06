@@ -187,6 +187,7 @@ Brick Mayhem follows the same Arcade integration patterns established by Snake:
 - **Layout:** Inherits `ArcadeShell` + `NowServingBanner` + language/mode switchers from the shared Arcade layout.
 - **Ticket-called event:** Listens for `ARCADE_TICKET_CALLED_EVENT` and auto-pauses to `PAUSED` if currently `RUNNING`.
 - **Play-resumed event:** Dispatches `ARCADE_PLAY_RESUMED_EVENT` on start/resume to dismiss the ticket-called overlay.
+- **Haptics:** Uses the shared semantic haptics layer and Arcade route toggle. Brick destruction = `rigid`, paddle bounce = `light`, level clear = `success`, ball lost/game over = `error`, and the continuous paddle slider remains intentionally haptic-free.
 - **Styling:** Uses Arcade-scoped CSS classes (`arcade-brick-*`) and shared Arcade CSS custom properties. No global theme changes.
 - **Data boundary:** All game state is local client state. No raffle API dependency.
 - **Translations:** Instruction and readout keys are defined for all 8 supported locales under `brickMayhem*` prefixes.
@@ -235,7 +236,7 @@ Brick Mayhem follows the same Arcade integration patterns established by Snake:
 - [x] Timed buff extension + cap rules implemented (`30s` add, capped at `120s`) with level-clear reset
 - [x] Readout remains minimal with score/lives/level only
 - [x] Engine tests added for effect rules and lifecycle behavior (`tests/arcade-brick-mayhem-engine.test.ts`)
-- [x] Haptic feedback via `web-haptics`: `error` pattern on brick destruction (50ms throttle prevents multiball buzz fatigue), `light` pattern on paddle bounce (50ms throttle), `error` pattern on ball lost and game over. Engine exposes `paddleBounced: boolean` in `TickResult` for page-level hooks. Arcade `Button` component triggers `heavy` on all button presses.
+- [x] Semantic haptic feedback via the shared app haptics layer: `rigid` on brick destruction (50ms throttle prevents multiball buzz fatigue), `light` on paddle bounce (50ms throttle), `success` on level clear, and `error` on ball lost/game over. Control buttons use explicit UI intents (`soft`/`medium`/`heavy`) and the continuous paddle slider remains silent. Engine exposes `paddleBounced: boolean` in `TickResult` for page-level hooks.
 
 ### Not Yet Implemented
 - [ ] Sound effects (deferred)

@@ -7,6 +7,7 @@ import {
   Open_Sans,
 } from "next/font/google";
 import "./globals.css";
+import { HapticsProvider } from "@/components/haptics-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { LanguageProvider } from "@/contexts/language-context";
@@ -71,8 +72,10 @@ export default function RootLayout({
       </head>
       <body className="antialiased">
         <ThemeProvider>
-          <LanguageProvider>{children}</LanguageProvider>
-          <Toaster />
+          <HapticsProvider>
+            <LanguageProvider>{children}</LanguageProvider>
+            <Toaster />
+          </HapticsProvider>
         </ThemeProvider>
         <SpeedInsights />
       </body>

@@ -12,6 +12,7 @@ import {
   type ResolvedThemeSelection,
   type ThemeSelection,
 } from "@/components/animate-ui/primitives/effects/theme-toggler";
+import { useAppHaptics } from "@/components/haptics-provider";
 import { useContrastMode } from "@/components/theme-provider";
 import { Button } from "@/components/ui/button";
 import {
@@ -43,9 +44,10 @@ function normalizeResolvedTheme(
 
 export const THEME_SWITCHER_TRIGGER_ID = "theme-switcher-trigger";
 
-export function ThemeSwitcher() {
+export function ThemeSwitcher({ enableHaptics = false }: { enableHaptics?: boolean }) {
   const { theme, resolvedTheme, setTheme } = useTheme();
   const { contrastMode, setContrastMode } = useContrastMode();
+  const { trigger } = useAppHaptics();
   const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
@@ -67,13 +69,25 @@ export function ThemeSwitcher() {
         const activeMode = mounted ? (hiVizEnabled ? "hi-viz" : effective) : "system";
 
         const setBaseTheme = (nextTheme: ThemeSelection) => {
+          if (!hiVizEnabled && effective === nextTheme) {
+            return;
+          }
           setContrastMode("default");
           void toggleTheme(nextTheme);
+          if (enableHaptics) {
+            trigger("uiToggle");
+          }
         };
 
         const setHiVizTheme = () => {
+          if (hiVizEnabled) {
+            return;
+          }
           void toggleTheme("system");
           setContrastMode("hi-viz");
+          if (enableHaptics) {
+            trigger("uiToggle");
+          }
         };
 
         return (

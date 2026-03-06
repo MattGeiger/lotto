@@ -242,6 +242,7 @@ type ReadOnlyDisplayProps = {
   displayVariant?: DisplayVariant;
   personalizedTicketNumber?: number | null;
   onRequestTicketChange?: () => void;
+  onPersonalizedTicketCalled?: (details: { ticketNumber: number; calledAt: number }) => void;
   showQrCode?: boolean;
   showHeaderLogo?: boolean;
 };
@@ -251,6 +252,7 @@ export const ReadOnlyDisplay = ({
   displayVariant = "public",
   personalizedTicketNumber = null,
   onRequestTicketChange,
+  onPersonalizedTicketCalled,
   showQrCode = true,
   showHeaderLogo = true,
 }: ReadOnlyDisplayProps) => {
@@ -597,6 +599,10 @@ export const ReadOnlyDisplay = ({
 
     setShowCalledOverlay(true);
     clearConfettiLoop();
+    onPersonalizedTicketCalled?.({
+      ticketNumber: personalizedTicketNumber,
+      calledAt: personalizedCalledAt,
+    });
 
     const scheduleConfetti =
       typeof window.requestAnimationFrame === "function"
@@ -621,6 +627,7 @@ export const ReadOnlyDisplay = ({
     isPersonalized,
     personalizedCalledAt,
     personalizedTicketNumber,
+    onPersonalizedTicketCalled,
   ]);
 
   React.useEffect(() => {
@@ -925,12 +932,13 @@ export const ReadOnlyDisplay = ({
 
                 {onRequestTicketChange ? (
                   <div className="flex flex-col items-center gap-3">
-                    <Button type="button" onClick={onRequestTicketChange}>
+                    <Button type="button" haptic="uiToggle" onClick={onRequestTicketChange}>
                       <T text={t("changeTicket")} />
                     </Button>
                     <Button
                       asChild
                       type="button"
+                      haptic="uiConfirm"
                       className="relative m-1 rounded-none border-none bg-[#ffd75c] text-black transition-transform active:translate-y-0.5 hover:bg-[#ff6de8] hover:text-black dark:bg-[#ffd75c] dark:text-black dark:hover:bg-[#ff6de8]"
                     >
                       <Link href="/arcade" className="relative inline-flex items-center justify-center gap-2">

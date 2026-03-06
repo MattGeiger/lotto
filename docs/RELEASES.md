@@ -1,3 +1,19 @@
+# Current Branch Updates (Unreleased)
+
+**Updated:** March 6, 2026
+
+## Semantic Haptics Refinement
+
+Refined the initial v1.6.2 haptics rollout with a shared semantic layer and route-scoped expansion to personalized `/new`.
+
+- Added `HapticsProvider` + `AppHapticIntent` mapping with a persisted `haptics-enabled` preference and dedicated top-bar toggles on `/new` and Arcade.
+- Extended optional client-device haptics to `/new` only: onboarding language selection (`selection`), valid ticket submit (`medium`), invalid ticket entry (`error`), back/change-ticket actions (`soft`), and one-time called-ticket `buzz`.
+- Rebalanced Arcade haptics: language and accepted Snake turns use `selection`, theme/back toggles use `soft`, primary play/start/pause actions use `medium`, reset uses `heavy`, Snake pellet uses `success`, Snake collision uses `error`, Brick destruction uses `rigid`, paddle bounce uses `light`, level clear uses `success`, and ball lost/game over uses `error`.
+- Kept `/`, `/display`, admin, staff, and login haptic-free so public-board and operational surfaces remain visual-only.
+- Added regression coverage for the shared provider, `/new` haptic behavior, personalized ticket-called alerts, Arcade ticket-called alerts, and theme/language integration.
+
+---
+
 # William Temple House Digital Raffle System v1.6.2
 
 **Release Date:** March 5, 2026

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 
 import "@/arcade/styles/arcade.css";
+import { ArcadeHapticsToggle } from "@/arcade/components/arcade-haptics-toggle";
 import { ArcadeLanguageSwitcher } from "@/arcade/components/arcade-language-switcher";
 import { ArcadeModeSwitcher } from "@/arcade/components/arcade-mode-switcher";
 import { ArcadeShell } from "@/arcade/components/arcade-shell";
@@ -30,7 +31,10 @@ export default function ArcadeLayout({
       <NowServingBanner />
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 pt-2 [direction:ltr] sm:px-6">
         <ArcadeLanguageSwitcher />
-        <ArcadeModeSwitcher />
+        <div className="flex items-center gap-2">
+          <ArcadeHapticsToggle />
+          <ArcadeModeSwitcher />
+        </div>
       </div>
       <main>{children}</main>
     </ArcadeShell>

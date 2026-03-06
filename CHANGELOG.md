@@ -1,5 +1,18 @@
 # Changelog
 
+## [Unreleased] - 2026-03-06
+### Added
+- Added a shared semantic haptics layer (`src/lib/haptics.ts`, `HapticsProvider`, `useAppHaptics()`) with app-owned intent names, persisted `haptics-enabled` preference, and dedicated top-bar toggles on `/new` and Arcade.
+- Added regression coverage for the shared provider, `/new` haptic interactions, personalized ticket-called alerts, and the updated Arcade/theme integration (`tests/haptics-provider.test.tsx`, `tests/new-page-haptics.test.tsx`, plus updated personalized-display, Arcade banner, and theme tests).
+
+### Changed
+- Extended optional client-device haptics from Arcade-only to `/new` and kept `/`, `/display`, admin, staff, and login haptic-free.
+- Replaced blanket raw preset usage with semantic route wiring: language choices and accepted Snake turns use `selection`, theme/back toggles use `soft`, primary play/start/pause actions use `medium`, reset uses `heavy`, Snake reward/failure uses `success`/`error`, Brick impact/contact/level-clear/failure uses `rigid`/`light`/`success`/`error`, and tracked ticket-called alerts use `buzz`.
+- Removed blanket “all Arcade buttons are heavy” behavior by making haptics explicit on shared button APIs (`haptic?: AppHapticIntent | "none"`), including keeping the Brick paddle slider and other continuous interactions haptic-free.
+
+### Fixed
+- Moved personalized ticket-called haptic ownership out of `ReadOnlyDisplay` so the public board stays silent while `/new` still gets a one-time `buzz` on the called-state transition.
+
 ## [1.6.2] - 2026-03-05
 ### Added
 - Added haptic feedback via `web-haptics` library across all arcade interactions. Scoped exclusively to arcade routes per project separation rules.

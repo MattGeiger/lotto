@@ -3,11 +3,21 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ARCADE_PLAY_RESUMED_EVENT, ARCADE_TICKET_CALLED_EVENT } from "@/arcade/lib/events";
 import { NowServingBanner } from "@/arcade/components/now-serving-banner";
+import { HapticsProvider } from "@/components/haptics-provider";
 import { LanguageProvider } from "@/contexts/language-context";
 import { HOMEPAGE_TICKET_STORAGE_KEY } from "@/lib/home-ticket-storage";
 import type { OperatingHours, TicketStatus } from "@/lib/state-types";
 
 const confettiFireMock = vi.fn();
+const rawTriggerMock = vi.fn();
+
+vi.mock("web-haptics/react", () => ({
+  useWebHaptics: () => ({
+    trigger: rawTriggerMock,
+    cancel: vi.fn(),
+    isSupported: true,
+  }),
+}));
 
 vi.mock("react-canvas-confetti", () => ({
   default: ({
@@ -32,9 +42,11 @@ type BannerPayload = {
 
 function renderBanner() {
   return render(
-    <LanguageProvider>
-      <NowServingBanner />
-    </LanguageProvider>,
+    <HapticsProvider>
+      <LanguageProvider>
+        <NowServingBanner />
+      </LanguageProvider>
+    </HapticsProvider>,
   );
 }
 
@@ -44,6 +56,7 @@ describe("NowServingBanner", () => {
   beforeEach(() => {
     window.localStorage.clear();
     confettiFireMock.mockReset();
+    rawTriggerMock.mockReset();
 
     payload = {
       currentlyServing: 14,
@@ -115,6 +128,8 @@ describe("NowServingBanner", () => {
     await waitFor(() => {
       expect(confettiFireMock).toHaveBeenCalled();
     });
+    expect(rawTriggerMock).toHaveBeenCalledTimes(1);
+    expect(rawTriggerMock).toHaveBeenCalledWith("buzz");
 
     const initialConfettiCalls = confettiFireMock.mock.calls.length;
     await waitFor(
@@ -123,6 +138,7 @@ describe("NowServingBanner", () => {
       },
       { timeout: 3500 },
     );
+    expect(rawTriggerMock).toHaveBeenCalledTimes(1);
 
     await act(async () => {
       window.dispatchEvent(new CustomEvent(ARCADE_PLAY_RESUMED_EVENT));

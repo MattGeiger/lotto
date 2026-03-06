@@ -11,6 +11,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAppHaptics } from "@/components/haptics-provider";
 import { useLanguage, type Language } from "@/contexts/language-context";
 
 const languageNames: Record<Language, string> = {
@@ -26,8 +27,9 @@ const languageNames: Record<Language, string> = {
 
 export const LANGUAGE_SWITCHER_TRIGGER_ID = "language-switcher-trigger";
 
-export function LanguageSwitcher() {
+export function LanguageSwitcher({ enableHaptics = false }: { enableHaptics?: boolean }) {
   const { language, setLanguage } = useLanguage();
+  const { trigger } = useAppHaptics();
 
   return (
     <DropdownMenu>
@@ -43,7 +45,18 @@ export function LanguageSwitcher() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuRadioGroup value={language} onValueChange={(val) => setLanguage(val as Language)}>
+        <DropdownMenuRadioGroup
+          value={language}
+          onValueChange={(val) => {
+            if (val === language) {
+              return;
+            }
+            setLanguage(val as Language);
+            if (enableHaptics) {
+              trigger("uiSelect");
+            }
+          }}
+        >
           {Object.entries(languageNames).map(([code, name]) => (
             <DropdownMenuRadioItem key={code} value={code}>
               {name}
