@@ -9,6 +9,7 @@
 - Extended optional client-device haptics from Arcade-only to `/new` and kept `/`, `/display`, admin, staff, and login haptic-free.
 - Replaced blanket raw preset usage with semantic route wiring: language choices and accepted Snake turns use `selection`, theme/back toggles use `soft`, primary play/start/pause actions use `medium`, reset uses `heavy`, Snake reward/failure uses `success`/`error`, Brick impact/contact/level-clear/failure uses `rigid`/`light`/`success`/`error`, and tracked ticket-called alerts use `buzz`.
 - Removed blanket “all Arcade buttons are heavy” behavior by making haptics explicit on shared button APIs (`haptic?: AppHapticIntent | "none"`), including keeping the Brick paddle slider and other continuous interactions haptic-free.
+- Tuned the underlying mobile haptic outputs for weaker/non-working device cases by replacing several short library presets with stronger app-owned patterns for selection ticks, gameplay contact/impact/reward hits, and ticket-called alerts.
 
 ### Fixed
 - Moved personalized ticket-called haptic ownership out of `ReadOnlyDisplay` so the public board stays silent while `/new` still gets a one-time `buzz` on the called-state transition.

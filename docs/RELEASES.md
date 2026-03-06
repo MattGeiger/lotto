@@ -9,6 +9,7 @@ Refined the initial v1.6.2 haptics rollout with a shared semantic layer and rout
 - Added `HapticsProvider` + `AppHapticIntent` mapping with a persisted `haptics-enabled` preference and dedicated top-bar toggles on `/new` and Arcade.
 - Extended optional client-device haptics to `/new` only: onboarding language selection (`selection`), valid ticket submit (`medium`), invalid ticket entry (`error`), back/change-ticket actions (`soft`), and one-time called-ticket `buzz`.
 - Rebalanced Arcade haptics: language and accepted Snake turns use `selection`, theme/back toggles use `soft`, primary play/start/pause actions use `medium`, reset uses `heavy`, Snake pellet uses `success`, Snake collision uses `error`, Brick destruction uses `rigid`, paddle bounce uses `light`, level clear uses `success`, and ball lost/game over uses `error`.
+- Tuned the underlying mobile outputs for the weaker non-button interactions by using stronger app-owned patterns for selection ticks, gameplay impact/contact/reward events, and the tracked ticket-called alert.
 - Kept `/`, `/display`, admin, staff, and login haptic-free so public-board and operational surfaces remain visual-only.
 - Added regression coverage for the shared provider, `/new` haptic behavior, personalized ticket-called alerts, Arcade ticket-called alerts, and theme/language integration.
 

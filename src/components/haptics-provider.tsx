@@ -4,7 +4,7 @@ import * as React from "react";
 import { useWebHaptics } from "web-haptics/react";
 
 import {
-  APP_HAPTIC_PRESET_BY_INTENT,
+  APP_HAPTIC_INPUT_BY_INTENT,
   HAPTICS_ENABLED_STORAGE_KEY,
   type AppHapticIntent,
 } from "@/lib/haptics";
@@ -57,12 +57,12 @@ export function HapticsProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      const preset = APP_HAPTIC_PRESET_BY_INTENT[intent];
-      if (!preset) {
+      const input = APP_HAPTIC_INPUT_BY_INTENT[intent];
+      if (!input) {
         return;
       }
 
-      void triggerRawHaptic(preset);
+      void triggerRawHaptic(input);
     },
     [enabled, triggerRawHaptic],
   );

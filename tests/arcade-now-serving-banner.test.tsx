@@ -5,6 +5,7 @@ import { ARCADE_PLAY_RESUMED_EVENT, ARCADE_TICKET_CALLED_EVENT } from "@/arcade/
 import { NowServingBanner } from "@/arcade/components/now-serving-banner";
 import { HapticsProvider } from "@/components/haptics-provider";
 import { LanguageProvider } from "@/contexts/language-context";
+import { APP_HAPTIC_INPUT_BY_INTENT } from "@/lib/haptics";
 import { HOMEPAGE_TICKET_STORAGE_KEY } from "@/lib/home-ticket-storage";
 import type { OperatingHours, TicketStatus } from "@/lib/state-types";
 
@@ -129,7 +130,7 @@ describe("NowServingBanner", () => {
       expect(confettiFireMock).toHaveBeenCalled();
     });
     expect(rawTriggerMock).toHaveBeenCalledTimes(1);
-    expect(rawTriggerMock).toHaveBeenCalledWith("buzz");
+    expect(rawTriggerMock).toHaveBeenCalledWith(APP_HAPTIC_INPUT_BY_INTENT.queueAlert);
 
     const initialConfettiCalls = confettiFireMock.mock.calls.length;
     await waitFor(

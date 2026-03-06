@@ -187,7 +187,7 @@ Brick Mayhem follows the same Arcade integration patterns established by Snake:
 - **Layout:** Inherits `ArcadeShell` + `NowServingBanner` + language/mode switchers from the shared Arcade layout.
 - **Ticket-called event:** Listens for `ARCADE_TICKET_CALLED_EVENT` and auto-pauses to `PAUSED` if currently `RUNNING`.
 - **Play-resumed event:** Dispatches `ARCADE_PLAY_RESUMED_EVENT` on start/resume to dismiss the ticket-called overlay.
-- **Haptics:** Uses the shared semantic haptics layer and Arcade route toggle. Brick destruction = `rigid`, paddle bounce = `light`, level clear = `success`, ball lost/game over = `error`, and the continuous paddle slider remains intentionally haptic-free.
+- **Haptics:** Uses the shared semantic haptics layer and Arcade route toggle. Brick destruction = `rigid`, paddle bounce = `light`, level clear = `success`, ball lost/game over = `error`, and the continuous paddle slider remains intentionally haptic-free. Short default library taps were strengthened with app-owned mobile patterns for more reliable feel on hardware.
 - **Styling:** Uses Arcade-scoped CSS classes (`arcade-brick-*`) and shared Arcade CSS custom properties. No global theme changes.
 - **Data boundary:** All game state is local client state. No raffle API dependency.
 - **Translations:** Instruction and readout keys are defined for all 8 supported locales under `brickMayhem*` prefixes.

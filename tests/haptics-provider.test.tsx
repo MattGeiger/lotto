@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { HapticsProvider, useAppHaptics } from "@/components/haptics-provider";
-import { HAPTICS_ENABLED_STORAGE_KEY } from "@/lib/haptics";
+import { APP_HAPTIC_INPUT_BY_INTENT, HAPTICS_ENABLED_STORAGE_KEY } from "@/lib/haptics";
 
 const rawTriggerMock = vi.fn();
 
@@ -90,7 +90,7 @@ describe("HapticsProvider", () => {
     await user.click(screen.getByRole("button", { name: "Alert" }));
     await user.click(screen.getByRole("button", { name: "Destructive" }));
 
-    expect(rawTriggerMock).toHaveBeenNthCalledWith(1, "buzz");
-    expect(rawTriggerMock).toHaveBeenNthCalledWith(2, "heavy");
+    expect(rawTriggerMock).toHaveBeenNthCalledWith(1, APP_HAPTIC_INPUT_BY_INTENT.queueAlert);
+    expect(rawTriggerMock).toHaveBeenNthCalledWith(2, APP_HAPTIC_INPUT_BY_INTENT.uiDestructive);
   });
 });

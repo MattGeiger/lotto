@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import HomePage from "@/app/new/page";
 import { HapticsProvider } from "@/components/haptics-provider";
 import { LanguageProvider } from "@/contexts/language-context";
+import { APP_HAPTIC_INPUT_BY_INTENT } from "@/lib/haptics";
 import type { RaffleState } from "@/lib/state-types";
 
 const rawTriggerMock = vi.fn();
@@ -99,7 +100,7 @@ describe("New page haptics", () => {
 
     await user.click(await screen.findByRole("button", { name: "English" }));
 
-    expect(rawTriggerMock).toHaveBeenCalledWith("selection");
+    expect(rawTriggerMock).toHaveBeenCalledWith(APP_HAPTIC_INPUT_BY_INTENT.uiSelect);
   });
 
   it("triggers error haptics for invalid ticket submit", async () => {
@@ -158,10 +159,10 @@ describe("New page haptics", () => {
     await user.click(screen.getByRole("button", { name: "Submit" }));
 
     await waitFor(() => {
-      expect(rawTriggerMock).toHaveBeenCalledWith("buzz");
+      expect(rawTriggerMock).toHaveBeenCalledWith(APP_HAPTIC_INPUT_BY_INTENT.queueAlert);
     });
     expect(rawTriggerMock).toHaveBeenCalledTimes(2);
     expect(rawTriggerMock).toHaveBeenNthCalledWith(1, "medium");
-    expect(rawTriggerMock).toHaveBeenNthCalledWith(2, "buzz");
+    expect(rawTriggerMock).toHaveBeenNthCalledWith(2, APP_HAPTIC_INPUT_BY_INTENT.queueAlert);
   });
 });
