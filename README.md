@@ -193,6 +193,7 @@ Local options:
 - ShadCN-style UI components (Radix + cva).
 - Vitest + Testing Library.
 ## Version History
+- 1.6.3 (2026-04-16) — Replaced the one-word `Unauthorized` admin toast on expired sign-in with an ASK-compliant message (`Your sign-in expired. Sign back in to keep working.`) plus an inline `Sign in` action button that preserves the admin callback URL.
 - 1.5.0 (2026-02-18) — Swapped public board to `/` with `/display` alias retained, introduced `/new` as the homepage preview candidate for future promotion, and shipped an Arcade preview with one playable game (Snake).
 - 1.2.0 (2026-01-20) — Refined the floating header search cluster so the pill shares the same palette-based gradient/hover fill as the language/theme buttons, keeps responsive text/icon scaling, and sits in its own padded grouping with a shadowed icon trigger.
 - 1.1.3 (2026-01-19) — Added the multilingual search bar on the public display so clients can quickly locate a ticket, with dedicated lookups and a “ticket not found” dialog.

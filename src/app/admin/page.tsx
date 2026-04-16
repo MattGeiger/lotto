@@ -61,6 +61,7 @@ import { ThemeSwitcher } from "@/components/theme-switcher";
 import { defaultState, type Mode, type OperatingHours, type RaffleState } from "@/lib/state-types";
 import { formatWaitTime } from "@/lib/time-format";
 import { shouldWarnTimezoneMismatch } from "@/lib/timezone-utils";
+import { SessionExpiredError, showSessionExpiredToast } from "@/lib/session-expired";
 
 type ActionPayload =
   | { action: "generate"; startNumber: number; endNumber: number; mode: Mode }
@@ -1144,6 +1145,9 @@ const AdminPage = () => {
       body: JSON.stringify(payload),
     });
     if (!response.ok) {
+      if (response.status === 401) {
+        throw new SessionExpiredError();
+      }
       const body = await response.json().catch(() => ({}));
       throw new Error(body?.error ?? "Unable to apply action.");
     }
@@ -1181,8 +1185,12 @@ const AdminPage = () => {
         );
         return data;
       } catch (err) {
-        const message = err instanceof Error ? err.message : "Unexpected error while saving.";
-        toast.error(message);
+        if (err instanceof SessionExpiredError) {
+          showSessionExpiredToast();
+        } else {
+          const message = err instanceof Error ? err.message : "Unexpected error while saving.";
+          toast.error(message);
+        }
         throw err;
       } finally {
         clearPendingForPayload(payload);
@@ -1230,9 +1238,13 @@ const AdminPage = () => {
           );
           currentItem.resolve(data);
         } catch (err) {
-          const message =
-            err instanceof Error ? err.message : "Unexpected error while saving.";
-          toast.error(message);
+          if (err instanceof SessionExpiredError) {
+            showSessionExpiredToast();
+          } else {
+            const message =
+              err instanceof Error ? err.message : "Unexpected error while saving.";
+            toast.error(message);
+          }
           setOptimisticPatches([]);
           const queued = queuedDrawActionRef.current;
           if (queued) {
@@ -1434,6 +1446,10 @@ const AdminPage = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ retentionDays: days }),
       });
+      if (response.status === 401) {
+        showSessionExpiredToast();
+        return;
+      }
       const data = await response.json();
       if (!response.ok) {
         toast.error(data?.error || "Cleanup failed. Please try again.");

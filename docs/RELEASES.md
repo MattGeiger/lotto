@@ -1,3 +1,23 @@
+# William Temple House Digital Raffle System v1.6.3
+
+**Release Date:** April 16, 2026
+
+## ASK-Compliant Session Expiry Toast
+
+Replaced the cryptic one-word `Unauthorized` toast that appeared when a staff member's admin JWT expired mid-session with an Actionable, Specific, and Kind message that matches the error-copy standard documented in `docs/SECURITY.md`.
+
+- Added `src/lib/session-expired.ts` exposing `SESSION_EXPIRED_MESSAGE`, `SessionExpiredError`, and `showSessionExpiredToast()`.
+- New toast copy: **"Your sign-in expired. Sign back in to keep working."** with an inline `Sign in` action button that navigates to `/login?callbackUrl=<current-admin-path>` so staff land back on the same admin surface after re-auth.
+- `/admin` action dispatchers (legacy + optimistic) and `/api/state/cleanup` handler now detect 401 responses and surface the new toast instead of echoing the raw HTTP status token.
+- Added `tests/admin-session-expired.test.tsx` to guard the regression path.
+- Documented the ASK violation and fix in `docs/ISSUES.md` as Issue 18; logged the change in `CHANGELOG.md`.
+
+## Versioning
+
+- Bumped application version to **1.6.3**.
+
+---
+
 # Current Branch Updates (Unreleased)
 
 **Updated:** March 6, 2026

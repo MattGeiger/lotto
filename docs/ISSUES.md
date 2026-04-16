@@ -521,6 +521,43 @@ After entering a Start Number and End Number in the admin page, only the "Genera
 
 ---
 
+## Issue 18: Expired admin sign-in surfaces a one-word "Unauthorized" toast (violates ASK)
+
+### Status
+- Fixed in v1.6.3 (2026-04-16).
+
+### Observed
+- When a staff member's NextAuth JWT expires while `/admin` is still mounted, any action button (for example Next draw, Mark returned, Reset, Cleanup) triggers a Sonner error toast that reads simply `Unauthorized`.
+- The admin page keeps rendering because `AdminLayout` only runs its server-side auth check on full RSC render, not per-action, so staff are left on a dashboard where every action silently fails with a cryptic toast.
+
+### ASK Violation (Actionable, Specific, Kind)
+- **Not Actionable:** "Unauthorized" gives the user no next step — there is no affordance to sign back in from the toast.
+- **Not Specific:** The message does not communicate that the sign-in expired, what the user was attempting, or whether the action was applied before the failure.
+- **Not Kind:** The raw HTTP status token reads as accusatory to a user whose authorization was valid a few minutes earlier.
+- Reference: `docs/SECURITY.md` L1 codifies the ASK model as the target style for all client-facing errors.
+
+### Root Cause (Code References)
+- `src/proxy.ts` gates admin writes behind `auth()` and returns `NextResponse.json({ error: "Unauthorized" }, { status: 401 })` for unauthenticated POSTs to `/api/state`.
+- `src/app/admin/page.tsx` → `postAction()` parsed `body?.error` and threw `new Error("Unauthorized")`, which `sendActionLegacy` / `sendActionOptimistic` / `handleCleanup` forwarded verbatim to `toast.error(message)`.
+
+### Fix Applied (Option 5 — refined copy + action button)
+- Added `src/lib/session-expired.ts` with:
+  - `SESSION_EXPIRED_MESSAGE = "Your sign-in expired. Sign back in to keep working."`
+  - `SessionExpiredError` class so the admin dispatcher can distinguish 401s from generic failures.
+  - `showSessionExpiredToast()` which calls `toast.error(SESSION_EXPIRED_MESSAGE, { action: { label: "Sign in", onClick } })` and routes the user to `/login?callbackUrl=<current-path>` so they return to `/admin` after re-auth.
+- `postAction` now maps `response.status === 401` to `throw new SessionExpiredError()` before attempting to parse the error body.
+- `sendActionLegacy` and the optimistic `processOptimisticChain` catch blocks call `showSessionExpiredToast()` when they see a `SessionExpiredError`; all other errors continue to use the existing generic toast path.
+- `handleCleanup` short-circuits on 401 with the same helper, so Snapshot cleanup taps get the same ASK treatment as state mutations.
+
+### Follow-ups (tracked for later iterations)
+- Option 3 — inline re-auth modal that preserves in-flight action intent without a full-page redirect — remains a candidate for v2.0.
+- Option 4 — proactive session heartbeat / pre-expiry warning — remains deferred until shift-level field data shows how often expirations hit real staff sessions.
+
+### Validation
+- Added `tests/admin-session-expired.test.tsx` covering the 401 path on `/api/state` writes, verifying the toast copy, confirming the raw `Unauthorized` token does not reach the user, and asserting the `Sign in` action button is wired.
+
+---
+
 ## Issue 17: `/new` still animates text on initial page load
 
 ### Status

@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.6.3] - 2026-04-16
+### Fixed
+- Replaced the one-word `Unauthorized` Sonner toast shown when a staff member's admin sign-in expires mid-session with an ASK-compliant message (`Your sign-in expired. Sign back in to keep working.`) and an inline `Sign in` action button that routes to `/login?callbackUrl=<current-path>` so staff return to the same admin surface after re-auth (Issue 18).
+- Mapped 401 responses from `/api/state` and `/api/state/cleanup` to the new session-expired toast inside both the legacy and optimistic admin action dispatchers, so draw, mark, reset, and cleanup taps all surface the same ASK copy on auth expiry instead of echoing the raw HTTP token.
+
+### Added
+- Added `src/lib/session-expired.ts` with `SESSION_EXPIRED_MESSAGE`, `SessionExpiredError`, and `showSessionExpiredToast()` so future callers can classify 401s without re-implementing the toast + callback URL plumbing.
+- Added `tests/admin-session-expired.test.tsx` verifying that `/admin` swallows the raw `Unauthorized` token on a 401 action response and surfaces the ASK copy + `Sign in` action instead.
+
+### Changed
+- Logged the error-message violation and fix in `docs/ISSUES.md` as Issue 18 with the ASK rubric breakdown and Option 5 implementation notes.
+
 ## [Unreleased] - 2026-03-06
 ### Added
 - Added a shared semantic haptics layer (`src/lib/haptics.ts`, `HapticsProvider`, `useAppHaptics()`) with app-owned intent names for browser-safe button-style interactions on `/new` and Arcade.
