@@ -68,7 +68,7 @@ not install `CONTROL_TOKEN` in Vercel — it is an operator-only credential.
 ### 3. Verify the Worker before any client points at it
 
 ```bash
-REALTIME_TEST_BASE_URL='https://lotto-realtime-production.<subdomain>.workers.dev' \
+REALTIME_TEST_BASE_URL='https://lotto-realtime-production.et2-geiger.workers.dev' \
 REALTIME_TEST_ALLOW_REMOTE=production \
 REALTIME_TEST_ORIGIN='https://williamtemple.app' \
 REALTIME_TEST_PUBLISH_TOKEN='<production publish token>' \
@@ -91,8 +91,8 @@ LOTTO_DEPLOYMENT_ENVIRONMENT=production
 LOTTO_REALTIME_APPLICATION_ENABLED=false
 LOTTO_REALTIME_SHADOW_PUBLISH=false
 LOTTO_REALTIME_SOURCE_CANARY=false
-LOTTO_REALTIME_HUB_URL=https://lotto-realtime-production.<subdomain>.workers.dev
-LOTTO_REALTIME_EXPECTED_HUB_HOST=lotto-realtime-production.<subdomain>.workers.dev
+LOTTO_REALTIME_HUB_URL=https://lotto-realtime-production.et2-geiger.workers.dev
+LOTTO_REALTIME_EXPECTED_HUB_HOST=lotto-realtime-production.et2-geiger.workers.dev
 LOTTO_REALTIME_AGENCY_ID=william-temple-house
 LOTTO_REALTIME_PUBLISH_TOKEN=<production publish token>
 ```
@@ -155,6 +155,29 @@ In increasing order of severity, and all reversible:
 3. **Build itself at fault:** promote the previous production deployment in the
    Vercel dashboard. The additive schema does not need reverting; the older code
    ignores the revision column and the outbox table.
+
+## Deployment record
+
+- Production Neon migrated September 7, 2026 via the Neon SQL editor:
+  `raffle_state.revision` present, `raffle_public_state_publications` present
+  with 4 indexes, 0 outbox rows, `current_revision` 0.
+- Worker `lotto-realtime-production` deployed at
+  `https://lotto-realtime-production.et2-geiger.workers.dev`, version
+  `efa9f993-9627-4466-b395-173263662db3`. Health reports
+  `environment: production`. With no secrets installed, publish and control both
+  refuse with 503, a disallowed origin is refused with 403, and the allowed
+  origin reaches an empty hub.
+- Production publish and control secrets installed September 7, 2026, generated
+  independently and never copied from beta. `CONTROL_TOKEN` is deliberately not
+  present in Vercel.
+- Remote protocol verification passed against the production hub:
+  `health, authentication, snapshot, websocket, idempotency, monotonicity, cors,
+  drain, resume` all ok at `latestRevision: 3`. This exercised the Cloudflare
+  drain/resume control — rollback lever 2 — on production infrastructure. The
+  run used the synthetic `william-temple-house-e2e` agency; the live
+  `william-temple-house` object remained empty afterwards, confirming isolation.
+- Before the secrets existed, a bogus control token was rejected with 401,
+  confirming the hub fails closed on authentication as well as configuration.
 
 ## Known caveats
 
