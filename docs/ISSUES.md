@@ -1273,6 +1273,22 @@ range locking or the FEED indicator is defective. No assertion was loosened.
 If this exact failure recurs, stabilize the disabled-state assertion with
 `waitFor` rather than changing the range-locking contract.
 
+### Related application of the flake procedure — 2026-09-01
+
+During the Phase 4 exact-revision validation, one unchanged full-suite run
+sampled `window.__LOTTO_REALTIME_CANARY__` before the mock WebSocket frame
+updated it, although the visible observer had already mounted. The observer
+file passed 4/4 in isolation, and the immediately repeated unchanged full suite
+passed 898 tests with one expected skip. The preceding full-suite run had also
+passed. This is the documented one-off worker-pressure signature, not evidence
+of a client state-machine defect, so no assertion or implementation was
+changed.
+
+The same timing signature appeared once during the September 2 kill-switch
+validation: the observer file passed 4/4 in isolation and the unchanged full
+suite then passed 908 tests with one expected skip. The assertion and
+implementation again remained unchanged.
+
 ---
 
 ## Issue 28: Operating-hours API accepts malformed or conflicting time values
@@ -2498,3 +2514,31 @@ relationship as compiled WTH. Contrast validation checks the chosen text
 against both stops. Custom dark mode already used a true ramp and is unchanged;
 both Hi-viz scopes remain deliberately flat. The protected red/gold operational
 tokens are unchanged.
+
+## Issue 60: Public service date crossed timezones during hydration
+
+**Status:** fixed and revalidated on the isolated beta in the current
+Unreleased work.
+
+During the Phase 4 realtime observation window, both the observer page and its
+polling-only control logged React production error 418. The canary was not the
+cause. At 9:32 PM Pacific, Vercel's server HTML contained **Wednesday,
+September 2nd, 2026**, while the hydrated browser correctly showed **Tuesday,
+September 1st, 2026**. `ReadOnlyDisplay` initialized its clock with `Date.now()`
+on both sides but formatted it in each runtime's local timezone, so identical
+instants produced different text after UTC midnight.
+
+The display clock now begins at a deterministic `null` value, renders an em
+dash on both sides, and resolves the real clock immediately in the existing
+mount effect. Service-date formatting then uses the authoritative pantry
+timezone (falling back to LOTTO's default until the first state poll). This
+avoids a stale build-time timestamp, removes the UTC/Pacific hydration branch,
+and also gives remote clients the pantry's service date rather than their
+device date. A date-format regression fixes the observed instant at the UTC
+boundary and asserts both Pacific and UTC results.
+
+Deployment `Da5gC8yMFixrFfJVAHTuACTmB986` reproduced the server side as a stable
+em-dash placeholder, then showed **Tuesday, September 1st, 2026** on fresh
+observer and polling-only pages with no console errors. The observer remained
+matched at `hub r70 / poll r70`, and the repaired page passed the iOS 15.4 iPad
+mini 4 simulator background/foreground cycle again.

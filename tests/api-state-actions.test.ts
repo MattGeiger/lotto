@@ -32,6 +32,7 @@ const mockSnapshots = [
 vi.mock("@/lib/state-manager", () => ({
   stateManager: {
     loadState: vi.fn().mockResolvedValue(mockState),
+    loadStateWithRevision: vi.fn().mockResolvedValue({ state: mockState, revision: 42 }),
     generateState: vi.fn().mockResolvedValue(mockState),
     generateBatch: vi.fn().mockResolvedValue(mockState),
     appendTickets: vi.fn().mockResolvedValue(mockState),
@@ -76,11 +77,12 @@ describe("API /api/state", () => {
       expect(body.startNumber).toBe(1);
       expect(body.endNumber).toBe(10);
       expect(body.currentlyServing).toBe(3);
+      expect(response.headers.get("x-lotto-state-revision")).toBe("42");
     });
 
     it("returns 500 when loadState fails", async () => {
       const { stateManager } = await import("@/lib/state-manager");
-      vi.mocked(stateManager.loadState).mockRejectedValueOnce(
+      vi.mocked(stateManager.loadStateWithRevision).mockRejectedValueOnce(
         new Error("DB connection failed"),
       );
       const { GET } = await import("@/app/api/state/route");

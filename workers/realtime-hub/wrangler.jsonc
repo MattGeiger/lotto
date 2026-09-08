@@ -1,0 +1,60 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "lotto-realtime-beta",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-31",
+  "preview_urls": false,
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "PUBLIC_STATE_HUB",
+        "class_name": "PublicStateHub",
+      },
+    ],
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["PublicStateHub"],
+    },
+  ],
+  "vars": {
+    "ALLOWED_ORIGINS": "http://localhost:3000,http://127.0.0.1:3000,https://lotto-beta-sigma.vercel.app,https://beta.williamtemple.app",
+    "ENVIRONMENT": "beta",
+  },
+  "observability": {
+    "enabled": true,
+  },
+  // A named environment deploys under its own Worker name, which gives it a
+  // separate Durable Object namespace. That separation is required: the v2.0
+  // plan forbids production reusing the beta namespace, secrets, or state.
+  // `durable_objects` and `vars` are non-inheritable in Wrangler, so both are
+  // restated here; `main`, `compatibility_date`, and `migrations` are inherited.
+  //
+  // Secrets are NOT set here. `PUBLISH_TOKEN` and `CONTROL_TOKEN` must be
+  // installed per environment with `wrangler secret put --env production`, and
+  // must be freshly generated rather than copied from beta.
+  "env": {
+    "production": {
+      "name": "lotto-realtime-production",
+      "preview_urls": false,
+      "durable_objects": {
+        "bindings": [
+          {
+            "name": "PUBLIC_STATE_HUB",
+            "class_name": "PublicStateHub",
+          },
+        ],
+      },
+      "vars": {
+        // Only the live apex may open an event connection. No localhost, no
+        // preview host, and deliberately no beta origin.
+        "ALLOWED_ORIGINS": "https://williamtemple.app",
+        "ENVIRONMENT": "production",
+      },
+      "observability": {
+        "enabled": true,
+      },
+    },
+  },
+}

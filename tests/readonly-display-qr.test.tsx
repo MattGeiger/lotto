@@ -24,6 +24,7 @@ vi.mock("qrcode", () => ({ default: { toCanvas: toCanvasMock } }));
 // test's waitFor budget (the real interval is minutes).
 vi.mock("@/lib/polling-strategy", () => ({
   getPollingIntervalMs: () => ({ delayMs: 10 }),
+  recordPollingStateObservation: ({ activity }: { activity: unknown }) => activity,
 }));
 
 vi.mock("next/font/local", () => ({

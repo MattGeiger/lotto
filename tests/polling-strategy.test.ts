@@ -7,7 +7,11 @@
 
 import { describe, expect, it } from "vitest";
 
-import { getPollingIntervalMs, getPollingWindowStatus } from "@/lib/polling-strategy";
+import {
+  getPollingIntervalMs,
+  getPollingWindowStatus,
+  recordPollingStateObservation,
+} from "@/lib/polling-strategy";
 import type { OperatingHours } from "@/lib/state-types";
 
 const buildHours = (): OperatingHours => ({
@@ -126,5 +130,46 @@ describe("polling strategy", () => {
     });
     expect(openResult.delayMs).toBe(minutes(5));
     expect(closedResult.delayMs).toBe(minutes(30));
+  });
+
+  it("keeps realtime and polling observations on one quiet-time clock", () => {
+    const firstObservedAt = Date.parse("2026-01-11T16:00:00.000Z");
+    const first = recordPollingStateObservation({
+      activity: {
+        lastSeenTimestamp: null,
+        lastChangeAt: null,
+        burstUntil: null,
+      },
+      stateTimestamp: 100,
+      observedAt: firstObservedAt,
+    });
+    const unchangedRealtimeState = recordPollingStateObservation({
+      activity: first,
+      stateTimestamp: 100,
+      observedAt: firstObservedAt + minutes(300),
+    });
+
+    expect(unchangedRealtimeState).toBe(first);
+    expect(getPollingIntervalMs({
+      now: new Date(firstObservedAt + minutes(300)),
+      lastChangeAt: unchangedRealtimeState.lastChangeAt,
+      burstUntil: unchangedRealtimeState.burstUntil,
+      operatingHours: buildHours(),
+      timeZone,
+    }).delayMs).toBe(minutes(30));
+
+    const changedRealtimeState = recordPollingStateObservation({
+      activity: unchangedRealtimeState,
+      stateTimestamp: 101,
+      observedAt: firstObservedAt + minutes(300),
+    });
+    expect(changedRealtimeState.lastChangeAt).toBe(firstObservedAt + minutes(300));
+    expect(getPollingIntervalMs({
+      now: new Date(firstObservedAt + minutes(300)),
+      lastChangeAt: changedRealtimeState.lastChangeAt,
+      burstUntil: changedRealtimeState.burstUntil,
+      operatingHours: buildHours(),
+      timeZone,
+    }).delayMs).toBe(seconds(30));
   });
 });

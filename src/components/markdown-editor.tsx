@@ -259,7 +259,7 @@ export function MarkdownEditor({
 
       <div className="flex items-center justify-between gap-3 border-t px-3 py-1.5">
         <a
-          href="/help/markdown-formatting"
+          href="/help/announcements#formatting-announcements"
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1 text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"

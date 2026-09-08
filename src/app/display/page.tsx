@@ -10,6 +10,10 @@ import type { Metadata } from "next";
 import { PublicDisplayPage } from "@/components/public-display-page";
 import { LanguageProvider } from "@/contexts/language-context";
 import { getResolvedBrand } from "@/lib/brand-config/resolve";
+import {
+  resolveRealtimeCanaryClientConfig,
+  resolveRealtimeSourceClientConfig,
+} from "@/lib/realtime/client-canary-config";
 
 export async function generateMetadata(): Promise<Metadata> {
   const brand = await getResolvedBrand();
@@ -25,7 +29,10 @@ export default function DisplayPage() {
   // bleeds into other routes (e.g. the personalized homepage at `/`).
   return (
     <LanguageProvider persist={false}>
-      <PublicDisplayPage />
+      <PublicDisplayPage
+        realtimeCanary={resolveRealtimeCanaryClientConfig()}
+        realtimeSourceCanary={resolveRealtimeSourceClientConfig()}
+      />
     </LanguageProvider>
   );
 }

@@ -13,6 +13,10 @@ import { ArcadeLanguageSwitcher } from "@/arcade/components/arcade-language-swit
 import { ArcadeModeSwitcher } from "@/arcade/components/arcade-mode-switcher";
 import { ArcadeShell } from "@/arcade/components/arcade-shell";
 import { NowServingBanner } from "@/arcade/components/now-serving-banner";
+import {
+  resolveRealtimeCanaryClientConfig,
+  resolveRealtimeSourceClientConfig,
+} from "@/lib/realtime/client-canary-config";
 
 const arcadeDisplay = localFont({
   src: "../../../arcade/fonts/SevenFifteen-V0_013/SevenFifteenMonoRounded-Regular.ttf",
@@ -34,7 +38,10 @@ export default function ArcadeLayout({
 }) {
   return (
     <ArcadeShell fontClasses={arcadeDisplay.variable}>
-      <NowServingBanner />
+      <NowServingBanner
+        realtimeCanary={resolveRealtimeCanaryClientConfig()}
+        realtimeSourceCanary={resolveRealtimeSourceClientConfig()}
+      />
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 pt-2 [direction:ltr] sm:px-6">
         <ArcadeLanguageSwitcher />
         <div className="flex items-center gap-2">

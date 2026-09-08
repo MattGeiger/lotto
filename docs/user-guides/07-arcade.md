@@ -5,6 +5,8 @@ entertained. It's optional and kept separate from the raffle.
 
 ## The Games
 
+![The Arcade game menu with Snake and Brick Mayhem](/help-screenshots/arcade.webp)
+
 - **Snake** — eat pellets, grow longer, avoid the walls and yourself.
 - **Brick Mayhem** — a paddle-and-ball brick breaker.
 
@@ -17,17 +19,19 @@ the game menu.
 
 ## Playing A Game
 
+![Snake running in a phone-sized portrait game screen](/help-screenshots/arcade-game.webp)
+
 1. Open the Arcade from the staff home page (**Play Games**) or the bottom nav.
 2. Pick a game from the arcade index.
 3. Follow the on-screen instructions; use **Back** to return to the index.
 
-The Arcade language menu uses the same organization-enabled language list as
-Home and Display. A language added through **Admin → Translation** is therefore
-available across every client-facing page once its translation pack is ready.
-Opening the Arcade language menu refreshes that ready list, so an Arcade page
-that has been open for a while can see a language staff activated later.
-When more choices continue below the visible list, the blurred lower edge is a
-scroll cue. Swipe the language list upward to reveal the remaining choices.
+In **Brick Mayhem**, the control dock at the bottom of the screen carries the
+paddle slider above the **Start**/**Pause** button, so the slider sits within
+easy thumb reach and the button is furthest from the play area.
+
+The Arcade language menu uses the same ready, organization-enabled list as Home
+and Display. Opening it refreshes the choices; a blurred lower edge means more
+are available by swiping upward.
 
 ## Installed App Mode
 

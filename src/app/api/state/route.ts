@@ -10,6 +10,7 @@ import { z } from "zod";
 
 import { stateManager, type Mode } from "@/lib/state-manager";
 import { isCatalogCode, LANGUAGE_CATALOG, LANGUAGE_OPTIONS } from "@/lib/languages";
+import { POLLED_STATE_REVISION_HEADER } from "@/lib/realtime/polled-state-revision";
 import { isUserInputError } from "@/lib/user-input-error";
 
 export const runtime = "nodejs";
@@ -204,8 +205,14 @@ const isRateLimited = () => {
 
 export async function GET() {
   try {
-    const state = await stateManager.loadState();
-    return NextResponse.json(state, { status: 200 });
+    const { state, revision } = await stateManager.loadStateWithRevision();
+    return NextResponse.json(state, {
+      status: 200,
+      headers:
+        revision === null
+          ? undefined
+          : { [POLLED_STATE_REVISION_HEADER]: String(revision) },
+    });
   } catch (error) {
     console.error("[State] GET failed:", error);
     return NextResponse.json(

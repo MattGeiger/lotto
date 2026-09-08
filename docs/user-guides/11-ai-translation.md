@@ -5,15 +5,16 @@ translation** to add many more, covering client-facing app text, the active
 custom public service label, announcements, and "What's in stock" inventory
 names. Sign-in and Admin Appearance copy is staff-facing and is not localized.
 
+![The Translation card with Language Settings, AI Configuration, and Translation Management tabs](/help-screenshots/translation.webp)
+
 ## Language Settings
 
-1. Open the [Staff Dashboard](02-staff-controls.md) (`/admin`), expand
-   **Advanced**, and open the **Translation** card's **Language Settings** tab.
+1. Open the [Staff Dashboard](02-staff-controls.md), expand **Advanced**, and
+   open **Translation → Language Settings**.
 2. Search the full language list and turn on any you need. The eight core
    languages are always on and can't be disabled.
-3. Choose **Save changes**. LOTTO immediately runs the same complete sweep as
-   **Find Missing**, queues every gap, and shows progress. Keep LOTTO open until
-   preparation finishes.
+3. Choose **Save changes** and keep LOTTO open while it finds, queues, and
+   prepares every missing translation.
 4. The new language stays hidden from Home, Display, and Arcade menus until its
    required translations complete. If anything fails, LOTTO keeps the language
    hidden and directs you to **Translation Management** to review and retry it.
@@ -21,6 +22,8 @@ names. Sign-in and Admin Appearance copy is staff-facing and is not localized.
 ## AI Configuration
 
 Before translations can run, connect at least one AI provider:
+
+![The AI Configuration tab for adding, testing, editing, and prioritizing translation providers](/help-screenshots/ai-configuration.webp)
 
 1. Open the **AI Configuration** tab and add a configuration — OpenAI,
    Anthropic, or Google.
@@ -40,6 +43,8 @@ needlessly large or expensive.
 
 Once a provider is configured, the **Translation Management** tab handles the
 actual translating:
+
+![Translation Management controls and the per-string translation status table](/help-screenshots/translation-management.webp)
 
 - **Find Missing** scans client-facing app text, the active custom public
   service label, announcements, and inventory names for anything not yet

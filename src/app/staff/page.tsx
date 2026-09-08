@@ -8,6 +8,7 @@
 import { redirect } from "next/navigation";
 
 import { version } from "../../../package.json";
+import { BetaEnvironmentBanner } from "@/components/beta-environment-banner";
 import { LoginExperience } from "@/components/login-experience";
 import { StaffLinksFooter } from "@/components/staff-links-footer";
 import { auth } from "@/lib/auth";
@@ -27,5 +28,10 @@ export default async function StaffPage() {
   }
 
   const releaseNotes = readReleaseNotes();
-  return <LoginExperience footer={<StaffLinksFooter version={version} releaseNotes={releaseNotes} />} />;
+  return (
+    <LoginExperience
+      banner={<BetaEnvironmentBanner />}
+      footer={<StaffLinksFooter version={version} releaseNotes={releaseNotes} />}
+    />
+  );
 }

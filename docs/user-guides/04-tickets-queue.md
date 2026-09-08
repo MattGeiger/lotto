@@ -3,13 +3,15 @@
 This is the client's experience: looking up a ticket and following the queue from
 a phone. The home screen is the front door of the app.
 
+![A personalized ticket showing the current number and estimated wait](/help-screenshots/client-ticket.webp)
+
 ## Looking Up A Ticket
 
 1. Open the app's home screen (or scan the QR code on the [display board](03-display-board.md)).
 2. Choose a language.
 3. Enter the ticket number from the physical ticket.
-4. The personalized view shows that ticket's position, the number being served
-   now, and an estimated wait.
+4. Follow the ticket's position, current number, and estimated wait in the
+   personalized view shown above.
 
 You can enter a ticket **before the drawing has started** — the view shows a calm
 "not in the drawing yet — check back soon" message instead of an error.

@@ -333,9 +333,16 @@ function LoginForm() {
  * `/login` and `/staff`. An optional `footer` slot carries the version /
  * About / Help links.
  */
-export function LoginExperience({ footer }: { footer?: React.ReactNode }) {
+export function LoginExperience({
+  banner,
+  footer,
+}: {
+  banner?: React.ReactNode;
+  footer?: React.ReactNode;
+}) {
   return (
     <main className="mx-auto flex min-h-dvh max-w-4xl flex-col items-center justify-start gap-6 px-6 py-8 sm:justify-center sm:py-12">
+      {banner}
       <div className="flex justify-center">
         <BrandLogo className="w-full max-w-md" priority />
       </div>

@@ -10,9 +10,17 @@
 import * as React from "react";
 import ReactCanvasConfetti from "react-canvas-confetti";
 
+import RealtimeCanaryMount from "@/components/realtime-canary-mount";
 import { useLanguage } from "@/contexts/language-context";
 import { readPersistedHomepageTicket } from "@/lib/home-ticket-storage";
-import { getPollingIntervalMs } from "@/lib/polling-strategy";
+import {
+  getPollingIntervalMs,
+  recordPollingStateObservation,
+} from "@/lib/polling-strategy";
+import type { RealtimeCanaryClientConfig } from "@/lib/realtime/client-canary-config";
+import { readPolledStateRevision } from "@/lib/realtime/polled-state-revision";
+import { toRenderableRaffleState, type PublicRaffleState } from "@/lib/realtime/public-state-protocol";
+import type { RealtimeSourceReason } from "@/hooks/use-realtime-source-canary";
 import type { RaffleState } from "@/lib/state-types";
 import {
   CALLED_ALERT_DURATION_MS,
@@ -23,7 +31,6 @@ import {
 } from "@/lib/ticket-celebration";
 
 const POLL_ERROR_RETRY_MS = 30_000;
-const BURST_DURATION_MS = 2 * 60_000;
 
 type ConfettiAnimationOptions = {
   spread?: number;
@@ -58,6 +65,10 @@ type TicketCalledCelebrationProps = {
    * homepage ticket is read from storage (used by the display board / inventory).
    */
   ticketNumber?: number | null;
+  /** Beta-only observer configuration for a route using this component's poll. */
+  realtimeCanary?: RealtimeCanaryClientConfig | null;
+  /** Beta-only realtime-source configuration for a route using this component's poll. */
+  realtimeSourceCanary?: RealtimeCanaryClientConfig | null;
 };
 
 /**
@@ -73,10 +84,22 @@ export function TicketCalledCelebration({
   state: stateProp,
   poll = false,
   ticketNumber: ticketNumberProp,
+  realtimeCanary = null,
+  realtimeSourceCanary = null,
 }: TicketCalledCelebrationProps) {
   const { t } = useLanguage();
-  const polledState = useSelfPolledState(poll);
-  const state = poll ? polledState : stateProp ?? null;
+  const polled = useSelfPolledState(poll);
+  const state = poll ? polled.state : stateProp ?? null;
+  const realtimeObserver = poll ? (
+    <RealtimeCanaryMount
+      config={realtimeCanary}
+      sourceConfig={realtimeSourceCanary}
+      polledState={polled.verificationState}
+      polledRevision={polled.verificationRevision}
+      onSourceState={polled.onSourceState}
+      onSourceAuthorityChange={polled.onSourceAuthorityChange}
+    />
+  ) : null;
 
   const [showCalledOverlay, setShowCalledOverlay] = React.useState(false);
   const confettiInstanceRef = React.useRef<ConfettiInstance | null>(null);
@@ -168,10 +191,11 @@ export function TicketCalledCelebration({
     }, CALLED_ALERT_DURATION_MS);
   }, [state, ticketNumberProp, clearConfettiLoop, fireConfetti]);
 
-  if (!showCalledOverlay) return null;
+  if (!showCalledOverlay) return realtimeObserver;
 
   return (
     <>
+      {realtimeObserver}
       <div className="pointer-events-none fixed inset-0 z-[65] bg-black/40 backdrop-blur-sm" />
       <div
         className="pointer-events-none fixed inset-0 z-[70] flex items-center justify-center px-6"
@@ -208,10 +232,21 @@ export function TicketCalledCelebration({
  * burst) so the inventory page reacts to a call about as fast as the board does.
  * Returns `null` and stays idle when `enabled` is false.
  */
-function useSelfPolledState(enabled: boolean): RaffleState | null {
+function useSelfPolledState(enabled: boolean): {
+  state: RaffleState | null;
+  verificationState: RaffleState | null;
+  verificationRevision: number | null;
+  onSourceState: (state: PublicRaffleState, revision: number) => void;
+  onSourceAuthorityChange: (authoritative: boolean, reason: RealtimeSourceReason) => void;
+} {
   const [state, setState] = React.useState<RaffleState | null>(null);
+  const [verificationState, setVerificationState] = React.useState<RaffleState | null>(null);
+  const [verificationRevision, setVerificationRevision] = React.useState<number | null>(null);
   const timeoutRef = React.useRef<number | null>(null);
   const pollRef = React.useRef<() => void>(() => {});
+  const stateRef = React.useRef<RaffleState | null>(null);
+  const sourceAuthoritativeRef = React.useRef(false);
+  const pollInFlightRef = React.useRef(false);
   const lastSeenTimestampRef = React.useRef<number | null>(null);
   const lastChangeAtRef = React.useRef<number | null>(null);
   const burstUntilRef = React.useRef<number | null>(null);
@@ -223,9 +258,25 @@ function useSelfPolledState(enabled: boolean): RaffleState | null {
     }
   }, []);
 
+  const recordStateActivity = React.useCallback((timestamp: number | null | undefined) => {
+    const activity = recordPollingStateObservation({
+      activity: {
+        lastSeenTimestamp: lastSeenTimestampRef.current,
+        lastChangeAt: lastChangeAtRef.current,
+        burstUntil: burstUntilRef.current,
+      },
+      stateTimestamp: timestamp,
+      observedAt: Date.now(),
+    });
+    lastSeenTimestampRef.current = activity.lastSeenTimestamp;
+    lastChangeAtRef.current = activity.lastChangeAt;
+    burstUntilRef.current = activity.burstUntil;
+  }, []);
+
   const scheduleNextPoll = React.useCallback(
     (delayMs: number) => {
       clearPollTimeout();
+      if (sourceAuthoritativeRef.current) return;
       timeoutRef.current = window.setTimeout(() => {
         void pollRef.current();
       }, delayMs);
@@ -238,21 +289,20 @@ function useSelfPolledState(enabled: boolean): RaffleState | null {
       clearPollTimeout();
       return;
     }
+    if (pollInFlightRef.current) return;
+    pollInFlightRef.current = true;
     try {
       const response = await fetch("/api/state", { cache: "no-store" });
       if (!response.ok) throw new Error("Unable to load state");
       const payload = (await response.json()) as RaffleState;
+      stateRef.current = payload;
       setState(payload);
+      const nextRevision = readPolledStateRevision(response.headers);
+      setVerificationState(payload);
+      setVerificationRevision(nextRevision);
 
       const nowMs = Date.now();
-      const nextTimestamp = typeof payload.timestamp === "number" ? payload.timestamp : nowMs;
-      const changeDetected =
-        lastSeenTimestampRef.current === null || lastSeenTimestampRef.current !== nextTimestamp;
-      lastSeenTimestampRef.current = nextTimestamp;
-      if (changeDetected) {
-        lastChangeAtRef.current = nowMs;
-        burstUntilRef.current = nowMs + BURST_DURATION_MS;
-      }
+      recordStateActivity(payload.timestamp);
 
       const { delayMs } = getPollingIntervalMs({
         now: new Date(nowMs),
@@ -264,8 +314,25 @@ function useSelfPolledState(enabled: boolean): RaffleState | null {
       scheduleNextPoll(delayMs);
     } catch {
       scheduleNextPoll(POLL_ERROR_RETRY_MS);
+    } finally {
+      pollInFlightRef.current = false;
     }
-  }, [clearPollTimeout, scheduleNextPoll]);
+  }, [clearPollTimeout, recordStateActivity, scheduleNextPoll]);
+
+  const onSourceState = React.useCallback((publicState: PublicRaffleState) => {
+    const payload = toRenderableRaffleState(publicState, stateRef.current);
+    recordStateActivity(payload.timestamp);
+    stateRef.current = payload;
+    setState(payload);
+  }, [recordStateActivity]);
+
+  const onSourceAuthorityChange = React.useCallback((authoritative: boolean) => {
+    sourceAuthoritativeRef.current = authoritative;
+    clearPollTimeout();
+    if (!authoritative && document.visibilityState !== "hidden") {
+      void pollRef.current();
+    }
+  }, [clearPollTimeout]);
 
   React.useEffect(() => {
     pollRef.current = pollState;
@@ -291,5 +358,19 @@ function useSelfPolledState(enabled: boolean): RaffleState | null {
     };
   }, [clearPollTimeout, enabled, pollState]);
 
-  return enabled ? state : null;
+  return enabled
+    ? {
+        state,
+        verificationState,
+        verificationRevision,
+        onSourceState,
+        onSourceAuthorityChange,
+      }
+    : {
+        state: null,
+        verificationState: null,
+        verificationRevision: null,
+        onSourceState,
+        onSourceAuthorityChange,
+      };
 }

@@ -20,6 +20,36 @@ const BASELINE_CLOSED_MS = 30 * MINUTE_MS;
 const BASELINE_PRE_OPEN_MS = 5 * MINUTE_MS;
 const BASELINE_OPEN_MS = 5 * MINUTE_MS;
 const BURST_INTERVAL_MS = 30 * SECOND_MS;
+const BURST_DURATION_MS = 2 * MINUTE_MS;
+
+export type PollingActivityState = {
+  lastSeenTimestamp: number | null;
+  lastChangeAt: number | null;
+  burstUntil: number | null;
+};
+
+/**
+ * Keep one activity clock regardless of whether state arrived by polling or
+ * realtime. This lets a later polling fallback preserve the normal quiet-time
+ * backoff instead of treating every reconciliation read as a fresh change.
+ */
+export const recordPollingStateObservation = ({
+  activity,
+  stateTimestamp,
+  observedAt,
+}: {
+  activity: PollingActivityState;
+  stateTimestamp: number | null | undefined;
+  observedAt: number;
+}): PollingActivityState => {
+  const nextTimestamp = typeof stateTimestamp === "number" ? stateTimestamp : observedAt;
+  if (activity.lastSeenTimestamp === nextTimestamp) return activity;
+  return {
+    lastSeenTimestamp: nextTimestamp,
+    lastChangeAt: observedAt,
+    burstUntil: observedAt + BURST_DURATION_MS,
+  };
+};
 
 export type PollingWindow = "closed" | "pre-open" | "open";
 

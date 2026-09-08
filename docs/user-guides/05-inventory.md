@@ -6,6 +6,8 @@ only when your organization has connected LOTTO to its own FEED inventory
 deployment. If there is no Inventory tab, your LOTTO deployment is currently
 queue-only; use the ticket, display, and games pages normally.
 
+![The public inventory with search, dietary filters, limits, and item categories](/help-screenshots/inventory.webp)
+
 ## Browsing Inventory
 
 - Items are grouped into categories with their availability and any limits
@@ -14,15 +16,14 @@ queue-only; use the ticket, display, and games pages normally.
 
 ## Searching
 
-1. Type in the **search** box at the top of the inventory page.
-2. The list narrows as you type, matching item and category names.
-3. Clear the box to see everything again.
+Type in the **search** box to match item or category names. Clear the box to
+show everything again.
 
 ## Filtering By Dietary Needs
 
-1. Open the **dietary filters** dropdown.
-2. Select one or more needs (gluten-free, vegan, halal, kosher, and more).
-3. Selections combine with the search box; use **Clear filters** to reset.
+Open **Dietary filters** and select one or more needs, such as gluten-free,
+vegan, halal, or kosher. Filters combine with search; choose **Clear filters**
+to reset them.
 
 ## What To Read Next
 

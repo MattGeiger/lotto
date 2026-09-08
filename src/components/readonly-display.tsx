@@ -17,14 +17,26 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrambleOnLanguageChange, T } from "@/components/core/scramble-text";
 import { BrandLogo } from "@/components/brand-logo";
+import RealtimeCanaryMount from "@/components/realtime-canary-mount";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { TicketDetailDialog } from "@/components/ticket-detail-dialog";
 import { useBrand } from "@/contexts/brand-context";
 import { useLanguage, type Language } from "@/contexts/language-context";
 import { formatDate } from "@/lib/date-format";
-import { getPollingIntervalMs } from "@/lib/polling-strategy";
+import {
+  getPollingIntervalMs,
+  recordPollingStateObservation,
+} from "@/lib/polling-strategy";
 import { isRTL } from "@/lib/rtl-utils";
-import type { DayOfWeek, OperatingHours, RaffleState } from "@/lib/state-types";
+import {
+  defaultState,
+  type DayOfWeek,
+  type OperatingHours,
+  type RaffleState,
+} from "@/lib/state-types";
+import type { RealtimeCanaryClientConfig } from "@/lib/realtime/client-canary-config";
+import { readPolledStateRevision } from "@/lib/realtime/polled-state-revision";
+import { toRenderableRaffleState, type PublicRaffleState } from "@/lib/realtime/public-state-protocol";
 import { formatWaitTime } from "@/lib/time-format";
 import { cn } from "@/lib/utils";
 
@@ -71,9 +83,7 @@ const formatServiceClock = (input: Date | number, language: Language): string =>
 };
 
 const POLL_ERROR_RETRY_MS = 30_000;
-const BURST_DURATION_MS = 2 * 60_000;
 const EMPTY_GENERATED_ORDER: number[] = [];
-
 const DAYS: DayOfWeek[] = [
   "sunday",
   "monday",
@@ -131,6 +141,8 @@ type ReadOnlyDisplayProps = {
   languageTextAnimation?: "scramble" | "none";
   showQrCode?: boolean;
   showHeaderLogo?: boolean;
+  realtimeCanary?: RealtimeCanaryClientConfig | null;
+  realtimeSourceCanary?: RealtimeCanaryClientConfig | null;
 };
 
 export const ReadOnlyDisplay = ({
@@ -142,10 +154,14 @@ export const ReadOnlyDisplay = ({
   languageTextAnimation = "scramble",
   showQrCode = true,
   showHeaderLogo = true,
+  realtimeCanary = null,
+  realtimeSourceCanary = null,
 }: ReadOnlyDisplayProps) => {
   const { language, t, translateBrandString } = useLanguage();
 
   const [state, setState] = React.useState<RaffleState | null>(null);
+  const [lastPolledState, setLastPolledState] = React.useState<RaffleState | null>(null);
+  const [lastPolledRevision, setLastPolledRevision] = React.useState<number | null>(null);
   const [status, setStatus] = React.useState("");
   const [hasError, setHasError] = React.useState(false);
   const [selectedTicket, setSelectedTicket] = React.useState<number | null>(null);
@@ -153,14 +169,23 @@ export const ReadOnlyDisplay = ({
   const qrCanvasRef = React.useRef<HTMLCanvasElement | null>(null);
   const pollTimeoutRef = React.useRef<number | null>(null);
   const pollStateRef = React.useRef<() => void>(() => {});
+  const stateRef = React.useRef<RaffleState | null>(null);
+  const sourceAuthoritativeRef = React.useRef(false);
+  const pollInFlightRef = React.useRef(false);
   const lastSeenTimestampRef = React.useRef<number | null>(null);
   const lastChangeAtRef = React.useRef<number | null>(null);
   const burstUntilRef = React.useRef<number | null>(null);
   const lastSearchRequestRef = React.useRef(0);
-  const [deviceNowMs, setDeviceNowMs] = React.useState(() => Date.now());
+  // The server may prerender in UTC while the pantry browser is in another
+  // timezone. Keep the hydration value deterministic, then populate the live
+  // clock immediately after mount so React never has to discard this tree.
+  const [deviceNowMs, setDeviceNowMs] = React.useState<number | null>(null);
   const { serviceLabel } = useBrand();
 
-  const formattedDate = formatDate(language, deviceNowMs);
+  const formattedDate =
+    deviceNowMs === null
+      ? "—"
+      : formatDate(language, deviceNowMs, state?.timezone ?? defaultState.timezone);
 
   const clearPollTimeout = React.useCallback(() => {
     if (pollTimeoutRef.current !== null) {
@@ -169,9 +194,25 @@ export const ReadOnlyDisplay = ({
     }
   }, []);
 
+  const recordStateActivity = React.useCallback((timestamp: number | null | undefined) => {
+    const activity = recordPollingStateObservation({
+      activity: {
+        lastSeenTimestamp: lastSeenTimestampRef.current,
+        lastChangeAt: lastChangeAtRef.current,
+        burstUntil: burstUntilRef.current,
+      },
+      stateTimestamp: timestamp,
+      observedAt: Date.now(),
+    });
+    lastSeenTimestampRef.current = activity.lastSeenTimestamp;
+    lastChangeAtRef.current = activity.lastChangeAt;
+    burstUntilRef.current = activity.burstUntil;
+  }, []);
+
   const scheduleNextPoll = React.useCallback(
     (delayMs: number) => {
       clearPollTimeout();
+      if (sourceAuthoritativeRef.current) return;
       pollTimeoutRef.current = window.setTimeout(() => {
         void pollStateRef.current();
       }, delayMs);
@@ -184,6 +225,8 @@ export const ReadOnlyDisplay = ({
       clearPollTimeout();
       return;
     }
+    if (pollInFlightRef.current) return;
+    pollInFlightRef.current = true;
     setStatus(t("refreshing"));
     setHasError(false);
     try {
@@ -192,21 +235,16 @@ export const ReadOnlyDisplay = ({
         throw new Error("Unable to load state");
       }
       const payload = (await response.json()) as RaffleState;
+      stateRef.current = payload;
       setState(payload);
+      const revision = readPolledStateRevision(response.headers);
+      setLastPolledState(payload);
+      setLastPolledRevision(revision);
       onStateChange?.(payload);
       setStatus(`${t("lastChecked")}: ${formatTime(new Date(), language)}`);
 
       const nowMs = Date.now();
-      const nextTimestamp =
-        typeof payload.timestamp === "number" ? payload.timestamp : nowMs;
-      const changeDetected =
-        lastSeenTimestampRef.current === null ||
-        lastSeenTimestampRef.current !== nextTimestamp;
-      lastSeenTimestampRef.current = nextTimestamp;
-      if (changeDetected) {
-        lastChangeAtRef.current = nowMs;
-        burstUntilRef.current = nowMs + BURST_DURATION_MS;
-      }
+      recordStateActivity(payload.timestamp);
 
       const { delayMs } = getPollingIntervalMs({
         now: new Date(nowMs),
@@ -221,8 +259,32 @@ export const ReadOnlyDisplay = ({
       setStatus(`${t("errorLoadingState")}: ${message}`);
       setHasError(true);
       scheduleNextPoll(POLL_ERROR_RETRY_MS);
+    } finally {
+      pollInFlightRef.current = false;
     }
-  }, [clearPollTimeout, language, onStateChange, scheduleNextPoll, t]);
+  }, [clearPollTimeout, language, onStateChange, recordStateActivity, scheduleNextPoll, t]);
+
+  const handleSourceState = React.useCallback((publicState: PublicRaffleState, revision: number) => {
+    const payload = toRenderableRaffleState(publicState, stateRef.current);
+    recordStateActivity(payload.timestamp);
+    stateRef.current = payload;
+    setState(payload);
+    onStateChange?.(payload);
+    setHasError(false);
+    setStatus(`Realtime source · r${revision}`);
+  }, [onStateChange, recordStateActivity]);
+
+  const handleSourceAuthorityChange = React.useCallback((authoritative: boolean) => {
+    sourceAuthoritativeRef.current = authoritative;
+    clearPollTimeout();
+    if (authoritative) {
+      setHasError(false);
+      return;
+    }
+    if (document.visibilityState !== "hidden") {
+      void pollStateRef.current();
+    }
+  }, [clearPollTimeout]);
 
   React.useEffect(() => {
     pollStateRef.current = pollState;
@@ -253,12 +315,12 @@ export const ReadOnlyDisplay = ({
 
   React.useEffect(() => {
     const updateClock = () => setDeviceNowMs(Date.now());
+    updateClock();
     const intervalId = window.setInterval(updateClock, 30_000);
     return () => {
       window.clearInterval(intervalId);
     };
   }, []);
-
 
   // The browser tab / document title is intentionally left to the static,
   // server-rendered, brand-aware `metadata.title` in src/app/layout.tsx. Do NOT
@@ -289,7 +351,8 @@ export const ReadOnlyDisplay = ({
   const currentIndex =
     generatedOrder && currentlyServing !== null ? generatedOrder.indexOf(currentlyServing) : -1;
   const hasTickets = generatedOrder.length > 0;
-  const formattedServiceTime = formatServiceClock(deviceNowMs, language);
+  const formattedServiceTime =
+    deviceNowMs === null ? "—" : formatServiceClock(deviceNowMs, language);
   const isPersonalized = displayVariant === "personalized";
   const updatedTime = formatTime(state?.timestamp ?? null, language);
   const nowServingDisplayText = currentlyServing === null ? t("waiting") : String(currentlyServing);
@@ -408,6 +471,14 @@ export const ReadOnlyDisplay = ({
 
   return (
     <ScrambleOnLanguageChange enabled={languageTextAnimation === "scramble"}>
+      <RealtimeCanaryMount
+        config={realtimeCanary}
+        sourceConfig={realtimeSourceCanary}
+        polledState={lastPolledState}
+        polledRevision={lastPolledRevision}
+        onSourceState={handleSourceState}
+        onSourceAuthorityChange={handleSourceAuthorityChange}
+      />
       <div
         dir={isRTL(language) ? "rtl" : "ltr"}
         lang={language}

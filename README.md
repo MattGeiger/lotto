@@ -18,7 +18,7 @@ ticketed distributions (food pantries, clinics, giveaways, and similar).
 
 **Production deployment:** https://williamtemple.app
 **License:** [AGPL-3.0-or-later](./LICENSE)
-**Status:** v1.26.0 — latest stable release
+**Status:** v2.0.0-rc.3 — production release candidate; v1.26.0 remains live until cutover
 
 ---
 
@@ -54,6 +54,10 @@ on their own phone, in their own language.
   Returned and Unclaimed keep their universal operational colors in every brand.
 - **In-app Help, About, and release notes** — a searchable, indexed staff help
   section (`/help`) with plain-language guides and workflows.
+- **Realtime v2.0 public state** — a Cloudflare Durable Object broadcasts each
+  committed public queue revision to connected clients. Neon remains
+  authoritative, and the existing adaptive polling schedule takes over
+  automatically if realtime is unavailable or cannot be trusted.
 
 ## Who LOTTO is for
 
@@ -81,31 +85,29 @@ future updates. See
 
 ## Screenshots
 
-**Live display board** — the lobby screen clients watch: "Now Serving," a
-color-coded drawing-order grid, ticket search, and a QR code to their phone.
+### The queue at a glance
+
+Clients follow one ticket on their phone while staff run the same queue from a
+focused dashboard:
+
+| Personalized client view | Staff dashboard |
+|---|---|
+| ![Personalized LOTTO ticket status](./docs/screenshots/client-ticket.png) | ![LOTTO staff queue controls](./docs/screenshots/admin-dashboard.png) |
+
+The lobby display gives the room a shared, large-format view with ticket search
+and a QR code back to the personalized experience:
 
 ![LOTTO public display board](./docs/screenshots/display-board.png)
 
-**Staff sign-in** — scanner-safe Magic Link and Verification Code access:
+### Administration and optional surfaces
 
-![Staff sign-in page](./docs/screenshots/login.png)
+| Appearance management | Scanner-safe staff sign-in |
+|---|---|
+| ![Appearance management and live preview](./docs/screenshots/admin-appearance.png) | ![Staff sign-in page](./docs/screenshots/login.png) |
 
-**Appearance management** — create, activate, and preview an organization-wide
-identity directly from the Admin dashboard:
-
-![Appearance management and live preview](./docs/screenshots/admin-appearance.png)
-
-**What's in stock** — live, localized public inventory with limits and dietary flags:
-
-![Public inventory page](./docs/screenshots/inventory.png)
-
-**Searchable Help** — plain-language staff guides with section-level search:
-
-![In-app help index](./docs/screenshots/help.png)
-
-**Arcade** — optional retro games for waiting guests, kept separate from the raffle:
-
-![Arcade index](./docs/screenshots/arcade.png)
+| Public inventory | Searchable in-app Help | Optional Arcade |
+|---|---|---|
+| ![Public inventory page](./docs/screenshots/inventory.png) | ![In-app help index](./docs/screenshots/help.png) | ![Arcade index](./docs/screenshots/arcade.png) |
 
 ### Dark mode
 
@@ -169,13 +171,14 @@ optional standalone read-only board, and persistence details are in
 - **UI:** Tailwind CSS v4 with CSS-variable design tokens, shadcn / Radix UI
   components, `lucide-react` + [animate-ui](https://animate-ui.com/) motion variants
 - **Content:** `react-markdown` + `remark-gfm` for in-app help and release notes
-- **Data:** Neon Postgres in production; a file-based `data/state.json` fallback
-  for local development
+- **Data:** Neon Postgres as the authoritative store; Cloudflare Durable Objects
+  distribute an allowlisted public-state projection in v2.0; a file-based
+  `data/state.json` fallback supports local development
 - **Auth & email:** scanner-safe Auth.js Magic Link + Verification Code,
   delivered through runtime-branded HTML/plain-text templates via
   [Resend](https://resend.com/)
 - **Testing:** Vitest + Testing Library
-- **Hosting:** Vercel
+- **Hosting:** Vercel, with Cloudflare Workers/Durable Objects for realtime
 
 ---
 

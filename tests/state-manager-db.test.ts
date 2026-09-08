@@ -7,25 +7,42 @@
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import {
+  hashPublicState,
+  publicStateEnvelopeSchema,
+  toPublicRaffleState,
+} from "@/lib/realtime/public-state-protocol";
 import { defaultState, type DisplayLanguageRotation } from "@/lib/state-types";
 import { UserInputError } from "@/lib/user-input-error";
 
 // --- Mock the neon SQL client ---
 
 let mockQueryResults: unknown[];
+let mockTransactionResults: unknown[];
+let mockDirectSql: string[];
+let mockTransactionSql: string[];
 
 // Tagged template function that simulates neon's sql``
-const mockSql = vi.fn(async () => {
-  return mockQueryResults.shift() ?? [];
+const mockSql = vi.fn(async (strings: TemplateStringsArray) => {
+  mockDirectSql.push(strings.join("?"));
+  const result = mockQueryResults.shift() ?? [];
+  if (result instanceof Error) throw result;
+  return result;
 }) as unknown as ReturnType<typeof import("@neondatabase/serverless").neon>;
 
 // Attach .transaction to the mock sql function
 const mockTransactionFn = vi.fn(async (callback: (tx: unknown) => unknown[]) => {
   // tx is a tagged template too — simulate it but don't execute real SQL
-  const mockTx = vi.fn(() => Promise.resolve([]));
+  const mockTx = vi.fn((strings: TemplateStringsArray) => {
+    mockTransactionSql.push(strings.join("?"));
+    const result = mockTransactionResults.shift() ?? [
+      { revision: 1, committed_at: "2026-09-01T12:00:00.000Z" },
+    ];
+    if (result instanceof Error) return Promise.reject(result);
+    return Promise.resolve(result);
+  });
   const statements = callback(mockTx);
-  await Promise.all(statements as Promise<unknown>[]);
-  return [];
+  return Promise.all(statements as Promise<unknown>[]);
 });
 (mockSql as unknown as Record<string, unknown>).transaction = mockTransactionFn;
 
@@ -50,7 +67,7 @@ const activeState = (overrides?: Partial<typeof defaultState>) => ({
 
 // Helper: queue a SELECT result that returns a state payload
 const queueStateRow = (state: typeof defaultState) => {
-  mockQueryResults.push([{ payload: state }]);
+  mockQueryResults.push([{ payload: state, revision: 11 }]);
 };
 
 // Helper: queue an empty SELECT result (no state in DB)
@@ -64,6 +81,9 @@ describe("createDbStateManager", () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     mockQueryResults = [];
+    mockTransactionResults = [];
+    mockDirectSql = [];
+    mockTransactionSql = [];
     // Reset redo state by re-creating the manager
     const { createDbStateManager } = await import("@/lib/state-manager-db");
     manager = createDbStateManager("postgresql://test:test@localhost:5432/test");
@@ -86,6 +106,17 @@ describe("createDbStateManager", () => {
       expect(result.currentlyServing).toBe(3);
     });
 
+    it("returns the state and authoritative revision from one read", async () => {
+      const state = activeState();
+      queueStateRow(state);
+      await expect(manager.loadStateWithRevision()).resolves.toMatchObject({
+        state: { currentlyServing: 3 },
+        revision: 11,
+      });
+      expect(mockDirectSql[0]).toContain("select payload, revision from raffle_state");
+      expect(mockDirectSql).toHaveLength(1);
+    });
+
     it("returns default state when DB is empty (and persists it)", async () => {
       queueEmptyState();
       // persist will call sql.transaction
@@ -106,7 +137,7 @@ describe("createDbStateManager", () => {
         currentlyServing: 1,
         timestamp: Date.now(),
       };
-      mockQueryResults.push([{ payload: partialPayload }]);
+      mockQueryResults.push([{ payload: partialPayload, revision: 12 }]);
       const result = await manager.loadState();
       expect(result.startNumber).toBe(1);
       // Should have defaults merged in
@@ -639,6 +670,518 @@ describe("createDbStateManager", () => {
       });
 
       expect(result2.timestamp!).toBeGreaterThanOrEqual(result1.timestamp!);
+    });
+  });
+
+  describe("realtime shadow publication", () => {
+    const enabledEnvironment = {
+      LOTTO_DEPLOYMENT_ENVIRONMENT: "beta",
+      LOTTO_REALTIME_SHADOW_PUBLISH: "true",
+      LOTTO_REALTIME_HUB_URL: "https://lotto-realtime-beta.et2-geiger.workers.dev",
+      LOTTO_REALTIME_AGENCY_ID: "william-temple-house",
+      LOTTO_REALTIME_PUBLISH_TOKEN: "a".repeat(32),
+      LOTTO_REALTIME_PUBLISH_TIMEOUT_MS: "1000",
+    };
+
+    type DbStateManager = ReturnType<
+      (typeof import("@/lib/state-manager-db"))["createDbStateManager"]
+    >;
+
+    type MutationCase = {
+      name: string;
+      run: (
+        candidate: DbStateManager,
+        resetObservation: () => void,
+      ) => Promise<unknown>;
+    };
+
+    const mutationCases: MutationCase[] = [
+      {
+        name: "generate",
+        run: async (candidate) => {
+          queueStateRow(defaultState);
+          return candidate.generateState({
+            startNumber: 1,
+            endNumber: 5,
+            mode: "sequential",
+          });
+        },
+      },
+      {
+        name: "append",
+        run: async (candidate) => {
+          queueStateRow(activeState());
+          return candidate.appendTickets(15);
+        },
+      },
+      {
+        name: "extend range",
+        run: async (candidate) => {
+          queueStateRow(activeState());
+          return candidate.extendRange(15);
+        },
+      },
+      {
+        name: "generate batch",
+        run: async (candidate) => {
+          queueStateRow(activeState({
+            generatedOrder: [1, 2, 3],
+            mode: "sequential",
+          }));
+          return candidate.generateBatch({
+            startNumber: 1,
+            endNumber: 10,
+            batchSize: 2,
+          });
+        },
+      },
+      {
+        name: "set mode",
+        run: async (candidate) => {
+          queueStateRow(activeState());
+          return candidate.setMode("sequential");
+        },
+      },
+      {
+        name: "set current ticket",
+        run: async (candidate) => {
+          queueStateRow(activeState({ currentlyServing: null }));
+          return candidate.updateCurrentlyServing(5);
+        },
+      },
+      {
+        name: "clear current ticket",
+        run: async (candidate) => {
+          queueStateRow(activeState());
+          return candidate.updateCurrentlyServing(null);
+        },
+      },
+      {
+        name: "advance serving next",
+        run: async (candidate) => {
+          queueStateRow(activeState({ currentlyServing: 3 }));
+          return candidate.advanceServing("next");
+        },
+      },
+      {
+        name: "advance serving previous",
+        run: async (candidate) => {
+          queueStateRow(activeState({ currentlyServing: 7 }));
+          return candidate.advanceServing("prev");
+        },
+      },
+      {
+        name: "mark returned",
+        run: async (candidate) => {
+          queueStateRow(activeState());
+          return candidate.markTicketReturned(5);
+        },
+      },
+      {
+        name: "mark unclaimed",
+        run: async (candidate) => {
+          queueStateRow(activeState({ currentlyServing: 7 }));
+          return candidate.markTicketUnclaimed(3);
+        },
+      },
+      {
+        name: "revert ticket status",
+        run: async (candidate) => {
+          queueStateRow(activeState({
+            ticketStatus: { 5: "returned" },
+          }));
+          return candidate.revertTicketStatus(5);
+        },
+      },
+      {
+        name: "reset",
+        run: async (candidate) => {
+          queueStateRow(activeState());
+          mockQueryResults.push([]);
+          return candidate.resetState();
+        },
+      },
+      {
+        name: "restore snapshot",
+        run: async (candidate) => {
+          mockQueryResults.push([{ payload: activeState({ currentlyServing: 7 }) }]);
+          return candidate.restoreSnapshot("snapshot-to-restore");
+        },
+      },
+      {
+        name: "undo",
+        run: async (candidate) => {
+          mockQueryResults.push(
+            [
+              { id: "snap-current", created_at: "2026-09-01T12:01:00.000Z" },
+              { id: "snap-previous", created_at: "2026-09-01T12:00:00.000Z" },
+            ],
+            [{ payload: activeState({ currentlyServing: 1 }) }],
+          );
+          return candidate.undo();
+        },
+      },
+      {
+        name: "redo",
+        run: async (candidate, resetObservation) => {
+          mockQueryResults.push(
+            [
+              { id: "snap-current", created_at: "2026-09-01T12:01:00.000Z" },
+              { id: "snap-previous", created_at: "2026-09-01T12:00:00.000Z" },
+            ],
+            [{ payload: activeState({ currentlyServing: 1 }) }],
+          );
+          await candidate.undo();
+          resetObservation();
+          mockQueryResults.push([{ payload: activeState({ currentlyServing: 7 }) }]);
+          return candidate.redo();
+        },
+      },
+      {
+        name: "set display URL",
+        run: async (candidate) => {
+          queueStateRow(activeState());
+          return candidate.setDisplayUrl("https://beta.williamtemple.app");
+        },
+      },
+      {
+        name: "set operating hours",
+        run: async (candidate) => {
+          queueStateRow(activeState());
+          return candidate.setOperatingHours(
+            defaultState.operatingHours!,
+            "America/Los_Angeles",
+          );
+        },
+      },
+      {
+        name: "set display-language rotation",
+        run: async (candidate) => {
+          queueStateRow(activeState());
+          return candidate.setDisplayLanguageRotation({
+            enabled: true,
+            languages: ["en", "es"],
+            intervalSeconds: 60,
+          });
+        },
+      },
+      {
+        name: "clear display-language rotation",
+        run: async (candidate) => {
+          queueStateRow(activeState({
+            displayLanguageRotation: {
+              enabled: true,
+              languages: ["en"],
+              intervalSeconds: 60,
+            },
+          }));
+          return candidate.setDisplayLanguageRotation(null);
+        },
+      },
+      {
+        name: "set announcement",
+        run: async (candidate) => {
+          queueStateRow(activeState());
+          return candidate.setAnnouncement({
+            enabled: true,
+            markdown: "Phase 3 validation",
+            startsAt: null,
+            endsAt: null,
+            updatedAt: Date.now(),
+          });
+        },
+      },
+      {
+        name: "clear announcement",
+        run: async (candidate) => {
+          queueStateRow(activeState({
+            announcement: {
+              enabled: true,
+              markdown: "Phase 3 validation",
+              startsAt: null,
+              endsAt: null,
+              updatedAt: Date.now(),
+            },
+          }));
+          return candidate.setAnnouncement(null);
+        },
+      },
+    ];
+
+    it("publishes the committed public projection and records acceptance", async () => {
+      const fetchImpl = vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ accepted: true }), { status: 202 }),
+      );
+      const { createDbStateManager } = await import("@/lib/state-manager-db");
+      const realtimeManager = createDbStateManager(
+        "postgresql://test:test@localhost:5432/test",
+        { environment: enabledEnvironment, fetchImpl },
+      );
+      queueStateRow(defaultState);
+
+      const result = await realtimeManager.generateState({
+        startNumber: 1,
+        endNumber: 5,
+        mode: "sequential",
+      });
+
+      expect(result.generatedOrder).toEqual([1, 2, 3, 4, 5]);
+      expect(fetchImpl).toHaveBeenCalledTimes(1);
+      const [url, request] = fetchImpl.mock.calls[0] as [URL, RequestInit];
+      expect(url.toString()).toBe(
+        "https://lotto-realtime-beta.et2-geiger.workers.dev/v1/agencies/william-temple-house/publish",
+      );
+      expect(request.headers).toMatchObject({
+        authorization: `Bearer ${"a".repeat(32)}`,
+      });
+      const envelope = JSON.parse(String(request.body));
+      expect(envelope.revision).toBe(1);
+      expect(envelope.state.generatedOrder).toEqual([1, 2, 3, 4, 5]);
+      expect(envelope.state).not.toHaveProperty("queueSession");
+      expect(mockSql).toHaveBeenCalledTimes(2);
+      expect(mockTransactionSql.join("\n")).toContain(
+        "insert into raffle_public_state_publications",
+      );
+      expect(mockTransactionSql.join("\n")).toContain(
+        "status = 'superseded'",
+      );
+    });
+
+    it.each(mutationCases)(
+      "publishes every persisted mutation: $name",
+      async ({ run }) => {
+        const fetchImpl = vi.fn().mockResolvedValue(
+          new Response(JSON.stringify({ accepted: true }), { status: 202 }),
+        );
+        const { createDbStateManager } = await import("@/lib/state-manager-db");
+        const realtimeManager = createDbStateManager(
+          "postgresql://test:test@localhost:5432/test",
+          { environment: enabledEnvironment, fetchImpl },
+        );
+        const resetObservation = () => {
+          fetchImpl.mockClear();
+          mockTransactionFn.mockClear();
+          mockDirectSql = [];
+          mockTransactionSql = [];
+        };
+
+        await run(realtimeManager, resetObservation);
+
+        expect(fetchImpl).toHaveBeenCalledTimes(1);
+        expect(mockTransactionFn).toHaveBeenCalledTimes(1);
+        expect(mockTransactionSql.join("\n")).toContain(
+          "insert into raffle_public_state_publications",
+        );
+        expect(mockTransactionSql.join("\n")).toContain(
+          "revision = raffle_state.revision + 1",
+        );
+        expect(mockDirectSql.join("\n")).toContain("set status = 'accepted'");
+
+        const [url, request] = fetchImpl.mock.calls[0] as [URL, RequestInit];
+        expect(url.toString()).toBe(
+          "https://lotto-realtime-beta.et2-geiger.workers.dev/v1/agencies/william-temple-house/publish",
+        );
+        expect(request).toMatchObject({ method: "POST", cache: "no-store" });
+        const envelope = publicStateEnvelopeSchema.parse(
+          JSON.parse(String(request.body)),
+        );
+        expect(envelope.revision).toBe(1);
+        expect(envelope.state).not.toHaveProperty("queueSession");
+        await expect(hashPublicState(envelope.state)).resolves.toBe(
+          envelope.checksum,
+        );
+      },
+    );
+
+    it("increments the authoritative revision without creating an outbox row when disabled", async () => {
+      queueStateRow(activeState());
+
+      await manager.setDisplayUrl("https://beta.williamtemple.app");
+
+      expect(mockTransactionSql.join("\n")).toContain(
+        "revision = raffle_state.revision + 1",
+      );
+      expect(mockTransactionSql.join("\n")).not.toContain(
+        "raffle_public_state_publications",
+      );
+    });
+
+    it("returns committed state when the hub rejects publication", async () => {
+      const fetchImpl = vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ error: "unavailable" }), { status: 503 }),
+      );
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+      const { createDbStateManager } = await import("@/lib/state-manager-db");
+      const realtimeManager = createDbStateManager(
+        "postgresql://test:test@localhost:5432/test",
+        { environment: enabledEnvironment, fetchImpl },
+      );
+      queueStateRow(activeState());
+
+      await expect(
+        realtimeManager.setDisplayUrl("https://beta.williamtemple.app"),
+      ).resolves.toMatchObject({
+        displayUrl: "https://beta.williamtemple.app",
+      });
+      expect(fetchImpl).toHaveBeenCalledTimes(1);
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining("Shadow publication delayed for revision 1"),
+      );
+    });
+
+    it("returns committed state when recording the hub outcome fails", async () => {
+      const fetchImpl = vi.fn().mockResolvedValue(new Response(null, { status: 202 }));
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+      const { createDbStateManager } = await import("@/lib/state-manager-db");
+      const realtimeManager = createDbStateManager(
+        "postgresql://test:test@localhost:5432/test",
+        { environment: enabledEnvironment, fetchImpl },
+      );
+      queueStateRow(activeState());
+      mockQueryResults.push(new Error("database unavailable"));
+
+      await expect(
+        realtimeManager.setDisplayUrl("https://beta.williamtemple.app"),
+      ).resolves.toMatchObject({
+        displayUrl: "https://beta.williamtemple.app",
+      });
+      expect(fetchImpl).toHaveBeenCalledTimes(1);
+      expect(warn).toHaveBeenCalledWith(
+        "[Realtime] Publication evidence update failed for revision 1.",
+      );
+    });
+
+    it("repairs only the newest pending or failed row with its original identity", async () => {
+      const fetchImpl = vi.fn().mockResolvedValue(new Response(null, { status: 200 }));
+      const { createDbStateManager } = await import("@/lib/state-manager-db");
+      const realtimeManager = createDbStateManager(
+        "postgresql://test:test@localhost:5432/test",
+        { environment: enabledEnvironment, fetchImpl },
+      );
+      const publicState = toPublicRaffleState(activeState());
+      const checksum = await hashPublicState(publicState);
+      mockQueryResults.push([
+        {
+          publication_id: "965104d8-44a2-41b7-b7d0-d82d9c9d3a50",
+          revision: "42",
+          checksum,
+          payload: publicState,
+          committed_at: "2026-09-01T12:00:00.000Z",
+        },
+      ]);
+
+      await expect(
+        realtimeManager.retryLatestRealtimePublication(),
+      ).resolves.toEqual({
+        enabled: true,
+        attempted: true,
+        revision: 42,
+        accepted: true,
+      });
+
+      expect(fetchImpl).toHaveBeenCalledTimes(1);
+      const envelope = JSON.parse(
+        String((fetchImpl.mock.calls[0]?.[1] as RequestInit).body),
+      );
+      expect(envelope).toMatchObject({
+        publicationId: "965104d8-44a2-41b7-b7d0-d82d9c9d3a50",
+        revision: 42,
+        checksum,
+        committedAt: "2026-09-01T12:00:00.000Z",
+      });
+      expect(mockDirectSql[0]).toContain("order by revision desc");
+      expect(mockDirectSql[0]).toContain("limit 1");
+      expect(mockDirectSql[0]).toContain("where status in ('pending', 'failed')");
+    });
+
+    it("does not query or publish when repair is disabled", async () => {
+      await expect(manager.retryLatestRealtimePublication()).resolves.toEqual({
+        enabled: false,
+        attempted: false,
+      });
+      expect(mockSql).not.toHaveBeenCalled();
+    });
+
+    it("returns bounded publication diagnostics without payload or secrets", async () => {
+      const fetchImpl = vi.fn();
+      const { createDbStateManager } = await import("@/lib/state-manager-db");
+      const realtimeManager = createDbStateManager(
+        "postgresql://test:test@localhost:5432/test",
+        { environment: enabledEnvironment, fetchImpl },
+      );
+      mockQueryResults.push([
+        {
+          publication_id: "965104d8-44a2-41b7-b7d0-d82d9c9d3a50",
+          revision: "44",
+          status: "failed",
+          attempt_count: "1",
+          committed_at: "2026-09-01T12:00:00.000Z",
+          last_attempt_at: "2026-09-01T12:00:01.000Z",
+          accepted_at: null,
+          last_error: "Realtime hub returned HTTP 503.",
+          updated_at: "2026-09-01T12:00:01.000Z",
+        },
+      ]);
+
+      const status = await realtimeManager.getRealtimePublicationStatus();
+
+      expect(status).toEqual({
+        enabled: true,
+        latest: {
+          publicationId: "965104d8-44a2-41b7-b7d0-d82d9c9d3a50",
+          revision: 44,
+          status: "failed",
+          attemptCount: 1,
+          committedAt: "2026-09-01T12:00:00.000Z",
+          lastAttemptAt: "2026-09-01T12:00:01.000Z",
+          acceptedAt: null,
+          lastError: "Realtime hub returned HTTP 503.",
+          updatedAt: "2026-09-01T12:00:01.000Z",
+        },
+      });
+      expect(status).not.toHaveProperty("payload");
+      expect(JSON.stringify(status)).not.toContain("a".repeat(32));
+      expect(fetchImpl).not.toHaveBeenCalled();
+    });
+
+    it("does not query for diagnostics when shadow publication is disabled", async () => {
+      await expect(manager.getRealtimePublicationStatus()).resolves.toEqual({
+        enabled: false,
+      });
+      expect(mockSql).not.toHaveBeenCalled();
+    });
+
+    it("refuses malformed or checksum-mismatched repair evidence before transmission", async () => {
+      const fetchImpl = vi.fn().mockResolvedValue(new Response(null, { status: 202 }));
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+      const { createDbStateManager } = await import("@/lib/state-manager-db");
+      const realtimeManager = createDbStateManager(
+        "postgresql://test:test@localhost:5432/test",
+        { environment: enabledEnvironment, fetchImpl },
+      );
+      mockQueryResults.push([
+        {
+          publication_id: "965104d8-44a2-41b7-b7d0-d82d9c9d3a50",
+          revision: 43,
+          checksum: `sha256:${"a".repeat(64)}`,
+          payload: {},
+          committed_at: "2026-09-01T12:00:00.000Z",
+        },
+      ]);
+
+      await expect(
+        realtimeManager.retryLatestRealtimePublication(),
+      ).resolves.toMatchObject({
+        enabled: true,
+        attempted: true,
+        revision: 43,
+        accepted: false,
+        error: "Stored public-state payload is invalid.",
+      });
+      expect(fetchImpl).not.toHaveBeenCalled();
+      expect(warn).toHaveBeenCalledWith(
+        "[Realtime] Repair rejected invalid publication evidence for revision 43.",
+      );
     });
   });
 

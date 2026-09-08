@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import { getBrandProfile, getInventoryIntegration } from "./src/config/brand";
+import { isBetaDeployment, isRealtimeEligibleDeployment } from "./src/lib/deployment-environment";
 
 const enableTweakcnPreview = process.env.VERCEL !== "1";
 const speedInsightsScriptHost = "https://va.vercel-scripts.com";
@@ -9,6 +10,51 @@ const inventoryIntegration = getInventoryIntegration(brandProfile);
 const feedPublicInventoryHost = inventoryIntegration.url
   ? new URL(inventoryIntegration.url).origin
   : null;
+type Environment = Readonly<Record<string, string | undefined>>;
+
+export const resolveRealtimeCanaryConnectHost = (
+  environment: Environment = process.env,
+) => {
+  const observerFlag = environment.LOTTO_REALTIME_CLIENT_CANARY?.trim().toLowerCase();
+  const sourceFlag = environment.LOTTO_REALTIME_SOURCE_CANARY?.trim().toLowerCase();
+  const applicationFlag = environment.LOTTO_REALTIME_APPLICATION_ENABLED?.trim().toLowerCase();
+  for (const flag of [observerFlag, sourceFlag, applicationFlag]) {
+    if (flag && flag !== "true" && flag !== "false") {
+      throw new Error("Realtime client CSP flags must be either true or false.");
+    }
+  }
+  if (applicationFlag === "false") return null;
+  if (observerFlag !== "true" && sourceFlag !== "true") return null;
+  if (!isRealtimeEligibleDeployment(environment)) {
+    throw new Error(
+      "The realtime client CSP requires LOTTO_DEPLOYMENT_ENVIRONMENT to be exactly \"beta\" or \"production\".",
+    );
+  }
+  const rawHubUrl = environment.LOTTO_REALTIME_HUB_URL?.trim();
+  if (!rawHubUrl) {
+    throw new Error("LOTTO_REALTIME_HUB_URL is required for the realtime client CSP.");
+  }
+  const hubUrl = new URL(rawHubUrl);
+  const expectedHost =
+    environment.LOTTO_REALTIME_EXPECTED_HUB_HOST?.trim()
+    // Defaults to the beta Worker, so a production deployment must set
+    // LOTTO_REALTIME_EXPECTED_HUB_HOST explicitly. A mismatch throws below
+    // rather than silently emitting a CSP for the wrong origin.
+    ?? "lotto-realtime-beta.et2-geiger.workers.dev";
+  if (
+    hubUrl.protocol !== "https:"
+    || hubUrl.hostname !== expectedHost
+    || hubUrl.username
+    || hubUrl.password
+    || hubUrl.search
+    || hubUrl.hash
+    || (hubUrl.pathname !== "/" && hubUrl.pathname !== "")
+  ) {
+    throw new Error("The realtime client CSP requires the exact configured HTTPS hub origin.");
+  }
+  return hubUrl.origin.replace(/^https:/, "wss:");
+};
+const realtimeCanaryConnectHost = resolveRealtimeCanaryConnectHost();
 
 // React's development build calls eval() to reconstruct callstacks across the
 // server/client boundary. Modern engines take a different path, but older
@@ -33,6 +79,7 @@ const connectSrcHosts = [
   speedInsightsConnectHost,
   speedInsightsScriptHost,
   feedPublicInventoryHost,
+  realtimeCanaryConnectHost,
   ...(enableTweakcnPreview ? ["https://tweakcn.com", "https://*.tweakcn.com"] : []),
 ].filter(Boolean);
 const connectSrc = `connect-src ${connectSrcHosts.join(" ")}`;
@@ -66,6 +113,15 @@ const nextConfig: NextConfig = {
     return config;
   },
   async headers() {
+    const indexingHeaders = isBetaDeployment()
+      ? [
+          {
+            key: "X-Robots-Tag",
+            value: "noindex, nofollow, noarchive, nosnippet",
+          },
+        ]
+      : [];
+
     return [
       {
         source: "/(.*)",
@@ -84,6 +140,7 @@ const nextConfig: NextConfig = {
               "form-action 'self'",
             ].join("; "),
           },
+          ...indexingHeaders,
         ],
       },
       {

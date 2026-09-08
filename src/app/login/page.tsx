@@ -6,6 +6,7 @@
 // is not covered by this license; see TRADEMARKS.md.
 
 import { version } from "../../../package.json";
+import { BetaEnvironmentBanner } from "@/components/beta-environment-banner";
 import { LoginExperience } from "@/components/login-experience";
 import { StaffLinksFooter } from "@/components/staff-links-footer";
 import { readReleaseNotes } from "@/lib/release-notes";
@@ -16,5 +17,10 @@ export const metadata = {
 
 export default function LoginPage() {
   const releaseNotes = readReleaseNotes();
-  return <LoginExperience footer={<StaffLinksFooter version={version} releaseNotes={releaseNotes} />} />;
+  return (
+    <LoginExperience
+      banner={<BetaEnvironmentBanner />}
+      footer={<StaffLinksFooter version={version} releaseNotes={releaseNotes} />}
+    />
+  );
 }

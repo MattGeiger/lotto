@@ -1,6 +1,67 @@
 
 ## Unreleased
 
+## Version 2.0.0-rc.2 — September 3, 2026
+
+The isolated beta now uses realtime automatically on its ordinary Home,
+Display, Inventory, and Arcade pages. Each page still begins by checking the
+authoritative database and trusts the live feed only after the revision and
+public state agree exactly. A healthy connection suppresses scheduled state
+checks; any connection or data-integrity problem causes an immediate database
+reconciliation and restores the complete adaptive refresh schedule.
+
+Testers can append `?realtime=poll` for a polling-only control,
+`?realtime=observe` for the comparison diagnostic, or `?realtime=source` as a
+compatibility alias. The Vercel application gate and authenticated Cloudflare
+drain provide separate controls for newly loaded and already-open pages.
+
+Realtime recovery now includes a server-side gate that can keep newly loaded
+pages on adaptive polling, while a
+separately authenticated Cloudflare control can drain already-connected
+realtime clients without interrupting staff changes or state publication.
+Fallback now preserves the same post-change, operating-hours, long-idle,
+off-hours, visibility, and error backoff used by the existing app.
+
+The planned William Temple House production home is a new project in the
+consulting business's existing Vercel Pro account. The preferred attended
+cutover window begins after the pantry closes on Thursday, September 3, 2026 at
+2:30 PM Pacific. The current production deployment and beta Hobby
+account/project will remain available for comparison and rollback until the
+new deployment is accepted.
+
+This release remains confined to `beta.williamtemple.app`; production, `main`,
+and the apex domain have not changed.
+
+Deployed beta validation passed on all four ordinary public routes at revision
+`91`. The polling control and observer comparison passed, a live Cloudflare
+drain forced a fresh Display load into adaptive polling fallback, resume
+restored realtime automatically, and the parameter-free Display connected on
+the iOS 15.4 simulator. The Vercel application gate is deployed and
+code/build-tested but was not live-toggled during this checkpoint.
+
+## Version 2.0.0-rc.1 — September 2, 2026
+
+This beta release candidate marks the completed realtime-source proof and the
+approved path toward a production test. Home, Display, Inventory, and Arcade
+can all receive an authenticated staff change from the Cloudflare realtime hub,
+stop their scheduled state checks while that source is healthy, and return
+automatically to the existing Neon-backed adaptive polling when the connection
+or data cannot be trusted.
+
+The live beta proof delivered the same revision to all four public areas, made
+no state requests during a healthy 40-second display observation, recovered
+from a simulated network interruption, and passed connection,
+background/foreground, and subsequent-update checks on the iOS 15.4 iPad mini
+simulator. Neon remains authoritative for staff actions, atomic state changes,
+undo, redo, snapshots, and recovery.
+
+This version label does **not** turn realtime on for every visitor yet. Ordinary
+beta URLs continue to use adaptive polling; testers must still use the exact
+`?realtime=source` option. Making realtime the default, adding a polling-only
+control, and completing the production-resource cutover checklist are the next
+implementation phase. The production app, `main` branch, and
+`williamtemple.app` domain are unchanged.
+
 ## Version 1.26.0 — August 30, 2026
 
 LOTTO now includes the complete FEED-aligned Appearance workflow developed in

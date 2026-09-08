@@ -122,6 +122,20 @@ describe("formatDate", () => {
       expect(result).toContain("5th");
     });
 
+    it("formats the pantry date consistently across a UTC day boundary", () => {
+      const instant = Date.UTC(2026, 8, 2, 4, 30);
+
+      expect(formatDate("en", instant, "America/Los_Angeles")).toBe(
+        "Tuesday, September 1st, 2026",
+      );
+      expect(formatDate("en", instant, "UTC")).toBe(
+        "Wednesday, September 2nd, 2026",
+      );
+      expect(formatDate("fa", instant, "America/Los_Angeles")).not.toContain(
+        "NaN",
+      );
+    });
+
     it("defaults to current date when no input provided", () => {
       const result = formatDate("en");
       // Should return a non-empty formatted string

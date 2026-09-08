@@ -12,6 +12,7 @@
 
 # testing
 /coverage
+/artifacts/realtime-benchmarks/
 
 # next.js
 /.next/
@@ -47,6 +48,10 @@ data/*.tmp
 !.env.production.example
 .env.vercel
 .env.development.local
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+.wrangler/
 
 # vercel
 .vercel

@@ -5,11 +5,12 @@ Open it from the staff home page with **View Public Board**.
 
 ## What's On The Board
 
-- **Now Serving** — the number currently being called, shown large at the top.
-- **The drawing order grid** — every ticket number, color-coded by status:
-  blue for now serving, green for called, gold for unclaimed, red for returned.
-- **A QR code** clients can scan to look up their own ticket on their phone.
-- **A ticket search** so anyone can type a number and see its status.
+![The public Display Board with Now Serving, ticket search, QR code, service details, and drawing order](/help-screenshots/display-board.webp)
+
+The board combines **Now Serving**, ticket search, a phone-friendly QR code,
+service details, and the drawing order. In the grid, blue is now serving, green
+is called, gold is unclaimed, and red is returned. The service date always uses
+the pantry timezone, regardless of the screen or hosting server timezone.
 
 ## Putting It On A Screen
 

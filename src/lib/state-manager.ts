@@ -170,6 +170,10 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
   };
 
   const loadState = async () => safeReadState();
+  const loadStateWithRevision = async () => ({
+    state: await safeReadState(),
+    revision: null,
+  });
 
   const generateState = async (input: {
     startNumber: number;
@@ -682,6 +686,7 @@ export const createStateManager = (baseDir = path.join(process.cwd(), "data")) =
 
   return {
     loadState,
+    loadStateWithRevision,
     generateState,
     generateBatch,
     appendTickets,

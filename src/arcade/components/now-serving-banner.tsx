@@ -11,10 +11,17 @@ import * as React from "react";
 import ReactCanvasConfetti from "react-canvas-confetti";
 
 import { ARCADE_PLAY_RESUMED_EVENT, ARCADE_TICKET_CALLED_EVENT } from "@/arcade/lib/events";
+import RealtimeCanaryMount from "@/components/realtime-canary-mount";
 import { useLanguage } from "@/contexts/language-context";
 import { readPersistedHomepageTicket } from "@/lib/home-ticket-storage";
-import { getPollingIntervalMs } from "@/lib/polling-strategy";
-import type { OperatingHours, TicketStatus } from "@/lib/state-types";
+import {
+  getPollingIntervalMs,
+  recordPollingStateObservation,
+} from "@/lib/polling-strategy";
+import type { RealtimeCanaryClientConfig } from "@/lib/realtime/client-canary-config";
+import { readPolledStateRevision } from "@/lib/realtime/polled-state-revision";
+import { toRenderableRaffleState, type PublicRaffleState } from "@/lib/realtime/public-state-protocol";
+import type { OperatingHours, RaffleState, TicketStatus } from "@/lib/state-types";
 import { formatWaitTimeAsHoursAndMinutes } from "@/lib/time-format";
 import { cn } from "@/lib/utils";
 
@@ -31,7 +38,6 @@ type ServingPayload = {
 };
 
 const POLL_ERROR_RETRY_MS = 30_000;
-const BURST_DURATION_MS = 2 * 60_000;
 const SERVING_ALERT_DURATION_MS = 5000;
 const CALLED_ALERT_DURATION_MS = 10_000;
 const CALLED_CONFETTI_INTERVAL_MS = 2_000;
@@ -103,7 +109,13 @@ const getTicketWaitDetails = (
   };
 };
 
-export function NowServingBanner() {
+export function NowServingBanner({
+  realtimeCanary = null,
+  realtimeSourceCanary = null,
+}: {
+  realtimeCanary?: RealtimeCanaryClientConfig | null;
+  realtimeSourceCanary?: RealtimeCanaryClientConfig | null;
+}) {
   const { t, language } = useLanguage();
   const [currentlyServing, setCurrentlyServing] = React.useState<number | null>(null);
   const [lastPayload, setLastPayload] = React.useState<ServingPayload>({
@@ -112,6 +124,8 @@ export function NowServingBanner() {
     ticketStatus: {},
     calledAt: {},
   });
+  const [canaryState, setCanaryState] = React.useState<RaffleState | null>(null);
+  const [canaryRevision, setCanaryRevision] = React.useState<number | null>(null);
   const [ticketNumber, setTicketNumber] = React.useState<number | null>(null);
   const [servingAlertMode, setServingAlertMode] = React.useState<"idle" | "update" | "called">("idle");
   const [servingAlertShiftX, setServingAlertShiftX] = React.useState(0);
@@ -127,6 +141,9 @@ export function NowServingBanner() {
   const confettiInstanceRef = React.useRef<ConfettiInstance | null>(null);
   const celebratedCallRef = React.useRef<string | null>(null);
   const pollStateRef = React.useRef<() => void>(() => {});
+  const stateRef = React.useRef<RaffleState | null>(null);
+  const sourceAuthoritativeRef = React.useRef(false);
+  const pollInFlightRef = React.useRef(false);
   const lastSeenTimestampRef = React.useRef<number | null>(null);
   const lastChangeAtRef = React.useRef<number | null>(null);
   const burstUntilRef = React.useRef<number | null>(null);
@@ -138,6 +155,21 @@ export function NowServingBanner() {
       window.clearTimeout(pollTimeoutRef.current);
       pollTimeoutRef.current = null;
     }
+  }, []);
+
+  const recordStateActivity = React.useCallback((timestamp: number | null | undefined) => {
+    const activity = recordPollingStateObservation({
+      activity: {
+        lastSeenTimestamp: lastSeenTimestampRef.current,
+        lastChangeAt: lastChangeAtRef.current,
+        burstUntil: burstUntilRef.current,
+      },
+      stateTimestamp: timestamp,
+      observedAt: Date.now(),
+    });
+    lastSeenTimestampRef.current = activity.lastSeenTimestamp;
+    lastChangeAtRef.current = activity.lastChangeAt;
+    burstUntilRef.current = activity.burstUntil;
   }, []);
 
   const clearServingAlertTimeout = React.useCallback(() => {
@@ -221,6 +253,7 @@ export function NowServingBanner() {
   const scheduleNextPoll = React.useCallback(
     (delayMs: number) => {
       clearPollTimeout();
+      if (sourceAuthoritativeRef.current) return;
       pollTimeoutRef.current = window.setTimeout(() => {
         void pollStateRef.current();
       }, delayMs);
@@ -233,13 +266,16 @@ export function NowServingBanner() {
       clearPollTimeout();
       return;
     }
+    if (pollInFlightRef.current) return;
+    pollInFlightRef.current = true;
 
     try {
       const response = await fetch("/api/state", { cache: "no-store" });
       if (!response.ok) {
         throw new Error("Unable to load current serving ticket.");
       }
-      const payload = (await response.json()) as ServingPayload;
+      const payload = (await response.json()) as RaffleState;
+      stateRef.current = payload;
       const nextServing = typeof payload.currentlyServing === "number" ? payload.currentlyServing : null;
       const nextTicketNumber = readPersistedHomepageTicket(Date.now(), {
         startNumber: payload.startNumber ?? null,
@@ -247,20 +283,12 @@ export function NowServingBanner() {
       });
       setCurrentlyServing(nextServing);
       setLastPayload(payload);
+      setCanaryState(payload);
+      setCanaryRevision(readPolledStateRevision(response.headers));
       setTicketNumber(nextTicketNumber);
 
       const nowMs = Date.now();
-      const nextTimestamp =
-        typeof payload.timestamp === "number" ? payload.timestamp : nowMs;
-      const changeDetected =
-        lastSeenTimestampRef.current === null ||
-        lastSeenTimestampRef.current !== nextTimestamp;
-      lastSeenTimestampRef.current = nextTimestamp;
-
-      if (changeDetected) {
-        lastChangeAtRef.current = nowMs;
-        burstUntilRef.current = nowMs + BURST_DURATION_MS;
-      }
+      recordStateActivity(payload.timestamp);
 
       const { delayMs } = getPollingIntervalMs({
         now: new Date(nowMs),
@@ -273,8 +301,32 @@ export function NowServingBanner() {
     } catch {
       // Keep last good value visible when polling fails.
       scheduleNextPoll(POLL_ERROR_RETRY_MS);
+    } finally {
+      pollInFlightRef.current = false;
     }
-  }, [clearPollTimeout, scheduleNextPoll]);
+  }, [clearPollTimeout, recordStateActivity, scheduleNextPoll]);
+
+  const applySourceState = React.useCallback((publicState: PublicRaffleState) => {
+    const payload = toRenderableRaffleState(publicState, stateRef.current);
+    recordStateActivity(payload.timestamp);
+    stateRef.current = payload;
+    const nextServing = typeof payload.currentlyServing === "number" ? payload.currentlyServing : null;
+    const nextTicketNumber = readPersistedHomepageTicket(Date.now(), {
+      startNumber: payload.startNumber ?? null,
+      endNumber: payload.endNumber ?? null,
+    });
+    setCurrentlyServing(nextServing);
+    setLastPayload(payload);
+    setTicketNumber(nextTicketNumber);
+  }, [recordStateActivity]);
+
+  const handleSourceAuthorityChange = React.useCallback((authoritative: boolean) => {
+    sourceAuthoritativeRef.current = authoritative;
+    clearPollTimeout();
+    if (!authoritative && document.visibilityState !== "hidden") {
+      void pollStateRef.current();
+    }
+  }, [clearPollTimeout]);
 
   React.useEffect(() => {
     pollStateRef.current = pollState;
@@ -491,6 +543,14 @@ export function NowServingBanner() {
 
   return (
     <>
+      <RealtimeCanaryMount
+        config={realtimeCanary}
+        sourceConfig={realtimeSourceCanary}
+        polledState={canaryState}
+        polledRevision={canaryRevision}
+        onSourceState={applySourceState}
+        onSourceAuthorityChange={handleSourceAuthorityChange}
+      />
       <header className="arcade-banner sticky top-0 z-50">
         <div className="arcade-banner-row mx-auto flex w-full max-w-6xl items-center justify-center gap-3 px-4 py-3 sm:px-6">
           <span

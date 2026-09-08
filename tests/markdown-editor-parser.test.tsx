@@ -33,6 +33,15 @@ const renderEditor = (value: string) => {
 };
 
 describe("announcement Markdown pipeline", () => {
+  it("opens the formatting section of the combined announcement guide", () => {
+    const { container } = render(
+      <MarkdownEditor value="" onChange={vi.fn()} ariaLabel="Announcement message" />,
+    );
+
+    expect(container.querySelector("a[href='/help/announcements#formatting-announcements']"))
+      .not.toBeNull();
+  });
+
   it("parses inline emphasis into rendered nodes", async () => {
     const surface = renderEditor("Pantry closes at **3 PM** today.");
     await waitFor(() => {

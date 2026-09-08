@@ -59,10 +59,12 @@ vi.mock("@/components/language-switcher", () => ({
 
 let capturedSearchRequest: unknown = undefined;
 let capturedOnStateChange: ((state: RaffleState) => void) | undefined = undefined;
+let capturedRealtimeCanary: unknown = undefined;
 vi.mock("@/components/readonly-display", () => ({
   ReadOnlyDisplay: (props: Record<string, unknown>) => {
     capturedSearchRequest = props.ticketSearchRequest;
     capturedOnStateChange = props.onStateChange as typeof capturedOnStateChange;
+    capturedRealtimeCanary = props.realtimeCanary;
     return <div data-testid="readonly-display" />;
   },
 }));
@@ -117,6 +119,7 @@ describe("PublicDisplayPage", () => {
   beforeEach(() => {
     capturedSearchRequest = undefined;
     capturedOnStateChange = undefined;
+    capturedRealtimeCanary = undefined;
     capturedBottomNavAutoHide = undefined;
     languageContextMock.hasSessionLanguageOverride = false;
     languageContextMock.isLanguageHydrated = true;
@@ -134,6 +137,16 @@ describe("PublicDisplayPage", () => {
   it("renders the ReadOnlyDisplay component", () => {
     renderPage();
     expect(screen.getByTestId("readonly-display")).toBeInTheDocument();
+  });
+
+  it("forwards the server-issued realtime canary configuration", () => {
+    const realtimeCanary = {
+      agencyId: "william-temple-house",
+      eventsUrl: "wss://lotto-realtime-beta.example/events",
+    };
+    render(<PublicDisplayPage realtimeCanary={realtimeCanary} />);
+
+    expect(capturedRealtimeCanary).toEqual(realtimeCanary);
   });
 
   it("keeps the language switcher visible when admin rotation is enabled", () => {

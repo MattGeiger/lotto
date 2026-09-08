@@ -21,6 +21,7 @@ import {
   type HomepageTicketStorageContext,
 } from "@/lib/home-ticket-storage";
 import type { RaffleState } from "@/lib/state-types";
+import type { RealtimeCanaryClientConfig } from "@/lib/realtime/client-canary-config";
 import { cn } from "@/lib/utils";
 import { hasSeenAnnouncement, isAnnouncementActive, markAnnouncementSeen } from "@/lib/announcement";
 import { Button } from "@/components/ui/button";
@@ -41,7 +42,13 @@ const normalizeTicketNumber = (rawInput: string): number | null => {
 const hasActiveTicketRange = (state: RaffleState | null): boolean =>
   !!state && state.startNumber > 0 && state.endNumber >= state.startNumber;
 
-export function PersonalizedHomePage() {
+export function PersonalizedHomePage({
+  realtimeCanary = null,
+  realtimeSourceCanary = null,
+}: {
+  realtimeCanary?: RealtimeCanaryClientConfig | null;
+  realtimeSourceCanary?: RealtimeCanaryClientConfig | null;
+}) {
   const {
     setLanguage,
     hasSessionLanguageOverride,
@@ -209,6 +216,8 @@ export function PersonalizedHomePage() {
         languageTextAnimation="scramble"
         showQrCode={false}
         showHeaderLogo={false}
+        realtimeCanary={realtimeCanary}
+        realtimeSourceCanary={realtimeSourceCanary}
       />
       <Dialog
         open={isOnboardingModalOpen}

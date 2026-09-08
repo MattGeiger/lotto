@@ -37,6 +37,27 @@ vi.mock("react-canvas-confetti", () => ({
   },
 }));
 
+vi.mock("@/components/realtime-canary-mount", () => ({
+  default: ({
+    config,
+    polledRevision,
+  }: {
+    config: unknown;
+    polledRevision: number | null;
+  }) => config ? (
+    <div
+      data-testid="arcade-realtime-canary"
+      data-polled-revision={polledRevision ?? undefined}
+    />
+  ) : null,
+}));
+
+const realtimeCanary = {
+  agencyId: "william-temple-house",
+  eventsUrl:
+    "wss://lotto-realtime-beta.et2-geiger.workers.dev/v1/agencies/william-temple-house/events",
+};
+
 type BannerPayload = {
   startNumber: number;
   endNumber: number;
@@ -49,11 +70,11 @@ type BannerPayload = {
   timezone: string;
 };
 
-function renderBanner() {
+function renderBanner(config: typeof realtimeCanary | null = null) {
   return render(
     <HapticsProvider>
       <LanguageProvider>
-        <NowServingBanner />
+        <NowServingBanner realtimeCanary={config} />
       </LanguageProvider>
     </HapticsProvider>,
   );
@@ -81,7 +102,10 @@ describe("NowServingBanner", () => {
 
     vi.stubGlobal(
       "fetch",
-      vi.fn(async () => new Response(JSON.stringify(payload), { status: 200 })),
+      vi.fn(async () => new Response(JSON.stringify(payload), {
+        status: 200,
+        headers: { "x-lotto-state-revision": "24" },
+      })),
     );
   });
 
@@ -90,6 +114,17 @@ describe("NowServingBanner", () => {
 
     expect(await screen.findByText("Now Serving")).toBeInTheDocument();
     expect(await screen.findByText("#14")).toBeInTheDocument();
+  });
+
+  it("forwards the existing poll state and exact revision to the beta observer", async () => {
+    renderBanner(realtimeCanary);
+
+    expect(await screen.findByText("#14")).toBeInTheDocument();
+    expect(screen.getByTestId("arcade-realtime-canary")).toHaveAttribute(
+      "data-polled-revision",
+      "24",
+    );
+    expect(fetch).toHaveBeenCalledTimes(1);
   });
 
   it("shows estimated wait in #h #m format when ticket is stored", async () => {

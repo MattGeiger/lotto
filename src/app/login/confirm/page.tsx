@@ -3,6 +3,7 @@
 
 import Link from "next/link";
 
+import { BetaEnvironmentBanner } from "@/components/beta-environment-banner";
 import { BrandLogo } from "@/components/brand-logo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -38,6 +39,7 @@ export default async function ConfirmSignInPage({ searchParams }: { searchParams
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-4xl flex-col items-center justify-start gap-6 px-6 py-8 sm:justify-center sm:py-12">
+      <BetaEnvironmentBanner />
       <div className="flex justify-center">
         <BrandLogo className="w-full max-w-md" priority />
       </div>

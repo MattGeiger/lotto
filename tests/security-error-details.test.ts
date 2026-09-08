@@ -10,6 +10,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 vi.mock("@/lib/state-manager", () => ({
   stateManager: {
     loadState: vi.fn(),
+    loadStateWithRevision: vi.fn(),
     generateState: vi.fn(),
   },
 }));
@@ -21,7 +22,7 @@ describe("L1: API error responses must not leak internal details", () => {
 
   it("GET /api/state does not include error details in response", async () => {
     const { stateManager } = await import("@/lib/state-manager");
-    vi.mocked(stateManager.loadState).mockRejectedValue(
+    vi.mocked(stateManager.loadStateWithRevision).mockRejectedValue(
       new Error("SENSITIVE: connection to postgresql://user:password@host/db failed"),
     );
 

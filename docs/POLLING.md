@@ -1,5 +1,14 @@
 # Polling Strategy
 
+> **v2.0 provisional direction (2026-08-31):** LOTTO will test a
+> Neon-authoritative Cloudflare Durable Object hub that pushes versioned public
+> state over hibernatable WebSockets. RC.2 enables that controller by default
+> on the isolated beta; it is not yet approved for production. The strategy
+> below remains the current production behavior, the beta `?realtime=poll`
+> control, and the required automatic fallback if a realtime connection is
+> unavailable, incompatible, stale, or unhealthy. Polling must not be deleted.
+> See `docs/V2.0_REALTIME_ARCHITECTURE_PLAN.md`.
+
 ## Current Implementation (as of today)
 - Client polling lives in `src/components/readonly-display.tsx` and uses
   `getPollingIntervalMs` from `src/lib/polling-strategy.ts`.
@@ -26,6 +35,10 @@
 - Polling pauses when the tab is hidden and resumes immediately on visibility
   return (with change tracking reset).
 - Errors retry every 30 seconds.
+- Realtime and polled revisions feed the same last-observed-state activity
+  clock. When realtime fails, the immediate reconciliation read preserves the
+  elapsed quiet period if its timestamp matches the latest pushed state; it
+  does not restart the burst merely because transport authority changed.
 
 ## Rationale for Open-Window Clamp
 During service hours, long idle gaps make the board feel unresponsive and

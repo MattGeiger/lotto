@@ -84,12 +84,14 @@ export function GuideToc({ items, variant, enableScrollSpy = false }: GuideTocPr
   return (
     <aside className="hidden lg:block">
       {enableScrollSpy ? <GuideTocScrollSpy headingIds={headingIds} /> : null}
-      <div className="sticky top-20 rounded-lg border border-border/70 bg-background/40 p-4 shadow-xl backdrop-blur-[14px] backdrop-saturate-150 supports-[backdrop-filter]:bg-background/40">
+      {/* Clears the sticky Help banner (`HelpTopBar`, ~5rem tall) with room to
+          spare, so the two glass surfaces do not butt against each other. */}
+      <div className="sticky top-24 rounded-lg border border-border/70 bg-background/40 p-4 shadow-xl backdrop-blur-[14px] backdrop-saturate-150 supports-[backdrop-filter]:bg-background/40">
         <div className="mb-3 flex items-center gap-2 text-sm font-medium">
           <List className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
           On this page
         </div>
-        <ScrollArea className="h-[calc(100vh-9rem)] pr-3">
+        <ScrollArea className="h-[calc(100vh-13rem)] pr-3">
           <nav aria-label="Guide table of contents">
             <GuideTocLinks items={items} />
           </nav>

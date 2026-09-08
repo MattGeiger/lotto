@@ -16,14 +16,22 @@ entertained.
 
 LOTTO has three main areas:
 
+![The Staff Dashboard used to prepare and run a ticket queue](/help-screenshots/staff-dashboard.webp)
+
 - **Staff Dashboard** (`/admin`) — where staff set the ticket range, call
   numbers, and manage the day. Staff sign in first at `/login` with the default
   Magic Link or a 6-digit Verification Code; an unauthenticated visit to
   `/admin` also prompts sign-in. Magic Links show a confirmation page before
   signing in so organizational email scanners cannot use them first. See
   [Staff Controls](02-staff-controls.md).
+
+![The Public Board showing Now Serving, service details, and the drawing order](/help-screenshots/display-board.webp)
+
 - **Public Board** (`/display`) — the big screen clients watch to see the number
   being served now. See [The Display Board](03-display-board.md).
+
+![The phone-sized Arcade menu showing the available games](/help-screenshots/arcade.webp)
+
 - **Arcade** (`/arcade`) — optional games for waiting guests. See
   [The Arcade](07-arcade.md).
 

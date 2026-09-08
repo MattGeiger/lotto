@@ -7,7 +7,8 @@
 
 // Idempotent schema applier. Runs `schema.sql` (the canonical core schema,
 // including the AI-translation tables) against the target Postgres database.
-// Safe to re-run: every statement uses CREATE ... IF NOT EXISTS.
+// Safe to re-run: create and alter statements use IF NOT EXISTS, while data
+// migrations are written to be idempotent.
 //
 // Usage:
 //   node --env-file=.env.local scripts/apply-schema.mjs            # core schema
@@ -20,8 +21,8 @@
 //
 // Safety: each file is applied inside a single transaction (BEGIN/COMMIT) so it
 // is all-or-nothing — a failure rolls back, never leaving a half-migrated
-// schema. Every statement is CREATE ... IF NOT EXISTS, so applying to a DB that
-// already has some tables is a no-op. Use --dry-run first against production
+// schema. Every statement is idempotent, so applying to a DB that already has
+// some or all of the schema is safe. Use --dry-run first against production
 // (Neon) to confirm the migration applies cleanly without writing anything.
 
 import { readFileSync } from "node:fs";
@@ -44,7 +45,7 @@ const applyFile = async (label, connectionString, schemaPath, dryRun) => {
   try {
     // Apply the whole idempotent file atomically: every statement commits
     // together or none do, so a failure can never leave a half-migrated schema.
-    // (All statements are CREATE ... IF NOT EXISTS — safe to wrap and re-run.)
+    // (All statements are idempotent and safe to wrap and re-run.)
     await client.query("BEGIN");
     await client.query(sql);
     if (dryRun) {

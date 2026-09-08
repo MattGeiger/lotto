@@ -4,8 +4,40 @@
 CREATE TABLE IF NOT EXISTS raffle_state (
   id TEXT PRIMARY KEY,
   payload JSONB NOT NULL,
+  revision BIGINT NOT NULL DEFAULT 0 CHECK (revision >= 0),
   updated_at TIMESTAMPTZ DEFAULT now()
 );
+
+-- Existing deployments predate authoritative public-state revisions. The
+-- default preserves their current row and the next state persist allocates the
+-- first positive revision atomically.
+ALTER TABLE raffle_state
+  ADD COLUMN IF NOT EXISTS revision BIGINT NOT NULL DEFAULT 0 CHECK (revision >= 0);
+
+-- Transactional intent for the derived realtime public-state projection.
+-- Payload is the strict public allowlist, never complete internal raffle state.
+CREATE TABLE IF NOT EXISTS raffle_public_state_publications (
+  publication_id TEXT PRIMARY KEY,
+  revision BIGINT NOT NULL UNIQUE CHECK (revision > 0),
+  protocol_version INTEGER NOT NULL CHECK (protocol_version > 0),
+  checksum TEXT NOT NULL,
+  payload JSONB NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending'
+    CHECK (status IN ('pending', 'accepted', 'failed', 'superseded')),
+  attempt_count INTEGER NOT NULL DEFAULT 0 CHECK (attempt_count >= 0),
+  committed_at TIMESTAMPTZ NOT NULL,
+  last_attempt_at TIMESTAMPTZ,
+  accepted_at TIMESTAMPTZ,
+  last_error TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS raffle_public_state_publications_revision_idx
+  ON raffle_public_state_publications(revision DESC);
+
+CREATE INDEX IF NOT EXISTS raffle_public_state_publications_status_idx
+  ON raffle_public_state_publications(status, revision DESC);
 
 -- Snapshot history
 CREATE TABLE IF NOT EXISTS raffle_snapshots (

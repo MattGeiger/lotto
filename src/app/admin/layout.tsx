@@ -11,6 +11,7 @@ import { redirect } from "next/navigation";
 
 import { auth } from "@/lib/auth";
 import { getResolvedBrand } from "@/lib/brand-config/resolve";
+import { BetaEnvironmentBanner } from "@/components/beta-environment-banner";
 
 export async function generateMetadata(): Promise<Metadata> {
   const brand = await getResolvedBrand();
@@ -29,7 +30,12 @@ export default async function AdminLayout({
   const authBypass = process.env.AUTH_BYPASS === "true" || isLocalDevelopment;
 
   if (authBypass) {
-    return <>{children}</>;
+    return (
+      <>
+        <BetaEnvironmentBanner />
+        {children}
+      </>
+    );
   }
 
   const session = await auth();
@@ -38,5 +44,10 @@ export default async function AdminLayout({
     redirect("/login");
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      <BetaEnvironmentBanner />
+      {children}
+    </>
+  );
 }

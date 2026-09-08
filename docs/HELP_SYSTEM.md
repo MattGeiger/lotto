@@ -50,12 +50,30 @@ and pass it to the release-notes modal.
 
 Routed pages, statically generated:
 
-- `src/app/help/page.tsx` — index: search box + a card grid of guides.
-- `src/app/help/[slug]/page.tsx` — detail: search box, table of contents
-  (mobile collapsible + desktop sticky with scroll-spy), the rendered guide, and
-  previous/next navigation. The desktop table of contents is aligned with the
-  guide article card on initial page load, then sticks below the top chrome while
-  scrolling. `generateStaticParams` prerenders one page per guide.
+- `src/app/help/page.tsx` — index: a card grid of guides.
+- `src/app/help/[slug]/page.tsx` — detail: table of contents (mobile
+  collapsible + desktop sticky with scroll-spy), the rendered guide, and
+  previous/next navigation. `generateStaticParams` prerenders one page per
+  guide.
+
+Both pages open with `HelpTopBar` (`src/components/help/help-top-bar.tsx`), a
+sticky banner carrying the Back control, the search box, and the theme switcher,
+with the guide's catalog position added on detail pages. It stays pinned while
+the content scrolls behind it under a translucent blur, so navigation, search,
+and appearance are reachable from anywhere in a long guide.
+
+The banner's glass treatment is LOTTO's existing one, lifted verbatim from the
+desktop table of contents in `guide-toc.tsx` — which is itself the pattern FEED
+uses for its sticky Analytics banner. Keep the two in step rather than
+introducing a second recipe. The `supports-[backdrop-filter]` guard decides what
+old WebKit gets, which is what keeps this safe on the iPadOS 15 floor.
+
+Two offsets are tied to the banner's ~5rem height and must move with it: the
+desktop table of contents sticks at `top-24` (with its `ScrollArea` sized
+`calc(100vh-13rem)`), and guide headings carry `scroll-mt-24` so a deep link
+does not land underneath the banner. The banner itself wraps to two rows on a
+phone and one row from `sm` up, using flex order rather than `display: contents`,
+which is unreliable for assistive technology on the iPadOS 15 floor.
 
 For authenticated staff, the Help index's upper-left **Back** control returns
 to `/admin`. It must not target the retired `/staff` landing route.
@@ -78,8 +96,81 @@ Intro paragraph.          (becomes the card description + first text)
 [Link to another guide](02-staff-controls.md)   (rewritten to /help/staff-controls)
 ```
 
-Optional screenshots: put images under `public/help-screenshots/`; a
-`name-dark.png` sibling is auto-swapped in dark mode.
+Screenshots belong under `public/help-screenshots/`. Prefer WebP for its smaller
+static-transfer footprint. Every light image must have a matching `-dark`
+sibling with the same extension because the renderer swaps them automatically
+with the active theme. Use descriptive alt text that explains the workflow or
+state, not generic text such as "screenshot."
+
+Use images when they replace spatial explanation: identifying controls on a
+screen, showing a multi-part card, distinguishing visual states, or orienting a
+reader before a procedure. Keep essential instructions, warnings, and control
+names in text so Help remains searchable and accessible. Do not add screenshots
+to syntax/reference sections when a live text example is clearer.
+
+### How a screenshot is sized
+
+**A Help screenshot renders at 1× its captured CSS size, capped by the guide
+column:** `renderedWidth = min(captureWidth, columnWidth)`. The column is about
+815 CSS pixels on a desktop viewport, so a 1280-wide desktop capture is scaled
+down to fit while a 375-point phone capture is shown at exactly the size a phone
+shows it. Nothing is ever scaled *up*.
+
+That rule exists because the renderer previously had no capture geometry to work
+from and simply let every image fill the column. A phone capture therefore
+appeared at more than twice life size — a single screenshot ran nearly two
+viewport-heights tall — while desktop captures appeared at about two-thirds of
+theirs, a 3.4× inconsistency between two images stacked in the same guide.
+
+Two things make the rule enforceable rather than aspirational:
+
+- **Capture at 2× device scale.** Phone surfaces use a 375 × 812 CSS-pixel,
+  2× mobile viewport matching an iPhone portrait screen, producing a repeatable
+  750 × 1624 asset without browser chrome. That is a clean retina asset for a
+  375-point slot; the earlier 3× capture was over-provisioned for a box it was
+  never going to fill. Administrative and large-format screenshots retain their
+  task-appropriate desktop proportions. (Most of the desktop back-catalogue is
+  still 1× and is a pending re-capture, which is why the manifest records the
+  scale per asset rather than assuming one.)
+- **`src/lib/help-screenshot-manifest.ts` carries the geometry.** It is a
+  generated file — `npm run screenshots` rewrites it from `HELP_SHOT_BASES` plus
+  the dimensions of the stored assets, on every run including a bounded
+  `SCREENSHOT_NAMES` one, so a partial refresh cannot leave it half-stale. Do
+  not edit it by hand. `MarkdownGuideContent` looks each image up there and
+  emits intrinsic `width`/`height` plus a max-width in CSS pixels; images with
+  no manifest entry fall back to filling the column.
+
+The intrinsic `width`/`height` also give the browser an aspect ratio to reserve
+space with, so lazily loaded screenshots no longer shift the article as they
+arrive.
+
+Two mechanical notes for anyone touching this:
+
+- The renderer pairs the max-width with `w-full`, and that is load-bearing. A
+  bare `max-width` does not let an image shrink *below* its intrinsic size, so a
+  750-pixel phone capture would overflow the column horizontally on a narrow
+  screen.
+- `SCREENSHOT_NAMES` matches README shots too. Several README captures share a
+  base name with a Help capture (`client-ticket`, `arcade`, `display-board`,
+  `inventory`), so a bounded Help refresh also rewrites those `docs/screenshots/`
+  PNGs. Check `git status` afterwards and revert what you did not mean to touch.
+
+`npm run screenshots` regenerates both README and Help assets from the running
+app. Set `SCREENSHOT_NAMES` to a comma-separated list for a bounded refresh,
+for example:
+
+```bash
+SCREENSHOT_NAMES=staff-dashboard,staff-dashboard-dark npm run screenshots
+```
+
+The asset-integrity test fails when a guide references a missing PNG/WebP Help
+image, when its dark-mode partner is absent, when a referenced image has no
+manifest entry, when the manifest's recorded dimensions no longer match the
+stored asset, or when a phone capture is not a 375-point surface at 2×.
+
+The Help catalog intentionally combines announcement workflow and Markdown
+formatting in one **Announcements & Formatting** guide so staff can move from
+writing to formatting without switching pages.
 
 ### Search
 
@@ -97,12 +188,15 @@ query terms in the article and scrolls to the section.
 | Pure parser + search index + link rewrite (tested) | `src/lib/user-guides.ts` |
 | Server-only filesystem loader | `src/lib/user-guides.server.ts` |
 | Markdown renderer (react-markdown + remark-gfm) | `src/components/help/markdown-guide.tsx` |
+| Sticky banner (Back + search + theme) | `src/components/help/help-top-bar.tsx` |
 | Search box + results | `src/components/help/help-search.tsx` |
 | TOC + scroll-spy | `src/components/help/guide-toc.tsx`, `guide-toc-scroll-spy.tsx` |
 | Arrival highlight | `src/components/help/highlight-on-arrival.tsx` |
 | Article wrapper | `src/components/help/guide-article.tsx` |
 | Routes | `src/app/help/page.tsx`, `src/app/help/[slug]/page.tsx` |
 | Release notes / About modals | `src/components/release-notes-dialog.tsx`, `src/components/about-dialog.tsx` |
+| Generated capture geometry (do not hand-edit) | `src/lib/help-screenshot-manifest.ts` |
+| Capture automation + manifest writer | `scripts/screenshots.mjs` |
 | Content | `docs/release-notes.md`, `docs/user-guides/NN-*.md` |
 
 ## Tests
@@ -111,3 +205,7 @@ query terms in the article and scrolls to the section.
   de-duplication, section search entries, markdown link rewriting.
 - `tests/help-search.test.tsx` — ranking, deep-link hrefs, highlighting, the
   2-character minimum, empty state, and clear.
+- `tests/help-screenshot-assets.test.ts` — referenced screenshot and dark-mode
+  partner integrity, manifest completeness, manifest-versus-asset dimension
+  drift, the 375-point/2× phone capture contract, production-only wording, and
+  the combined announcement / formatting guide boundary.

@@ -1,5 +1,99 @@
 # Unreleased
 
+# LOTTO v2.0.0-rc.3
+
+**Release Date:** September 7, 2026 (production release candidate)
+
+RC.3 is the first build intended to run on `williamtemple.app` itself. It
+separates two questions that RC.2 answered with one variable: whether a
+deployment may use the realtime hub, and whether it is the beta sandbox.
+
+`LOTTO_DEPLOYMENT_ENVIRONMENT` previously permitted realtime only when set to
+`beta`, and that same value drives the sandbox presentation — the "Beta test
+environment" banner, the blocking `robots.txt`, and the `X-Robots-Tag` header.
+Production therefore could not enable realtime without de-indexing the live site
+and telling every client that their actions do not affect the real app. Realtime
+eligibility now accepts `beta` or `production`, while every sandbox behavior
+still requires exactly `beta`.
+
+The gate remains fail-closed, which was the point of the original restriction:
+only those two exact values qualify. An unset, empty, or near-miss value
+(`prod`, `Production`, `staging`) refuses realtime rather than assuming it is
+welcome, so a deployment must opt in deliberately — being merely "not beta" is
+never sufficient.
+
+The Cloudflare Worker gains a named `production` environment deploying as
+`lotto-realtime-production`, which carries its own Durable Object namespace and
+allowlists only `https://williamtemple.app`. No beta namespace, secret, origin,
+or state is reused. Publish and control tokens must be freshly generated per
+environment.
+
+This release candidate targets the existing personal Hobby production account.
+The migration to the organization's Vercel Pro account remains pending approval
+and is unchanged as the eventual destination; this deployment is a validation
+step toward it, not a substitute for it. The stable v2.0 gates — Pro account,
+ten representative service days, physical iPadOS 15 device validation, and the
+measured reduction in public-origin Neon reads — are still open, which is why
+this remains a release candidate.
+
+**Deployment order matters.** `raffle_state.revision` is written on every
+mutation, so the additive schema must be applied to production Neon *before*
+this build is deployed. See `docs/PRODUCTION_RC3_CUTOVER.md`.
+
+# LOTTO v2.0.0-rc.2
+
+**Release Date:** September 3, 2026 (beta release candidate — not promoted)
+
+RC.2 makes the realtime/fallback controller the default for ordinary Home,
+Display, Inventory, and Arcade URLs on the isolated beta. The exact initial
+Neon/hub handshake remains mandatory, healthy realtime suppresses scheduled
+state polling, and every authority failure performs immediate reconciliation
+before resuming the existing adaptive poller.
+
+The release adds `?realtime=poll` as a socket-free control, retains
+`?realtime=observe` and `?realtime=source` for diagnostics and compatibility,
+and introduces the Vercel application gate plus authenticated Cloudflare
+drain/resume control. Production, `main`, and `williamtemple.app` are unchanged.
+
+Realtime operational hardening now includes two independent emergency
+controls: a server-only Vercel application gate for new page loads and a
+Cloudflare Durable Object drain/resume control for existing sockets. Draining
+does not stop publication, remove the latest public state, or affect Neon staff
+transactions. Realtime and polling also share one activity clock, preserving
+the existing quiet-time and off-hours cadence after fallback.
+
+The isolated beta deployment connected all four ordinary public routes at
+revision `91`. A live Worker drain forced a fresh Display load into adaptive
+polling fallback, resume restored realtime automatically, and the ordinary
+Display route connected on the iOS 15.4 simulator. The Vercel master gate is
+deployed and code/build-tested; unlike the Worker control, it has not been
+live-toggled because that exercise requires disable and restore deployments.
+
+The William Temple House production migration is planned for a new project in
+the consulting business's existing Vercel Pro account, with an attended change
+window no earlier than September 3, 2026 after 2:30 PM Pacific. The old
+production and Hobby beta account/project remain rollback/comparison targets
+until explicit acceptance.
+
+# LOTTO v2.0.0-rc.1
+
+**Release Date:** September 2, 2026 (beta release candidate — not promoted)
+
+LOTTO v2.0.0-rc.1 identifies the completed Phase 5 realtime-source canary and
+the documented production-test direction. The Cloudflare Durable Object hub is
+a derived public read model; Neon remains authoritative for authenticated
+commands, atomic revisions, snapshots, undo/redo, and repair evidence. Home,
+Display, Inventory, and Arcade have all passed a full-stack pushed revision on
+the isolated beta, with automatic return to adaptive polling when realtime
+authority is lost.
+
+This is a release-metadata milestone, not the default-realtime behavior change.
+Ordinary beta URLs still poll, and the source controller still requires the
+exact `?realtime=source` cohort. The next Phase 6 implementation will make that
+controller the ordinary beta default, add a polling-only control, rerun the
+release gates, and prepare production-scoped resources. Production, `main`, and
+the apex domain are unchanged.
+
 # LOTTO v1.26.0
 
 **Release Date:** August 30, 2026

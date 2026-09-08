@@ -1,17 +1,21 @@
 # Staff Controls
 
 Everything you do to run the queue happens on the **Staff Dashboard**. Go to
-`/login` and sign in with your email. **Magic Link** is the default; open the
-email, then select **Sign in** on the confirmation page. The extra confirmation
-keeps Microsoft Defender and similar email scanners from using the link first.
-Choose **Verification Code** instead to enter a 6-digit code from the email.
-Either method lands on `/admin`. Already signed in? Going straight to `/admin`
-works too. Only email addresses authorized by your agency administrator can
-receive or complete a staff sign-in.
+`/login` and sign in with an authorized staff email. **Magic Link** is the
+default; **Verification Code** sends a 6-digit alternative.
+
+![The staff sign-in page with Verification Code selected](/help-screenshots/sign-in-code.webp)
+
+For a Magic Link, open the email and select **Sign in** on the confirmation
+page. That final confirmation prevents email security scanners from consuming
+the link. Either method opens `/admin`; already signed-in staff can go there
+directly.
 
 ## Setting Today's Ticket Range
 
 Before calling anyone, tell LOTTO which ticket numbers are in play.
+
+![Ticket range, order mode, Now Serving, Returned, and Unclaimed controls on the Staff Dashboard](/help-screenshots/staff-dashboard.webp)
 
 1. Open the Staff Dashboard (`/admin`).
 2. Enter the **start** and **end** numbers for today's tickets.
@@ -20,14 +24,11 @@ Before calling anyone, tell LOTTO which ticket numbers are in play.
 A drawing can be **random** (numbers are shuffled into a fair order) or
 **sequential**, depending on how your event hands out tickets.
 
-Setup, append, reset-confirmation, and language-search fields use a solid card
-fill so their boundaries remain clear in every theme.
-
 ## Calling Numbers
 
 When you're ready for the next person:
 
-1. Use the **call next / now serving** control on the dashboard.
+1. Use the **Now Serving / Draw Position** control on the dashboard.
 2. The number you call becomes "Now Serving" on the [display board](03-display-board.md)
    and on that client's phone — with a celebration when it's their turn.
 3. Repeat as each client is served.
@@ -45,21 +46,18 @@ The **Mark ticket** action is red for Returned and gold for Unclaimed. Until a
 valid ticket number is entered, the action stays neutral to show that it is not
 yet available.
 
-The dashboard's **Live State** values and **Next up** card use your active
-appearance's Primary color, matching **Now Serving** and **Served** queue
-progress. In regular light and dark modes, **Next up** uses the same
-bottom-to-top gradient treatment as the Unclaimed and Returned cards beneath
-it, while keeping its own appearance-driven queue color. Hi-viz keeps all three
-surfaces flat for maximum contrast. The seven Live State summary cards—from
-**Range** through **People waiting**—also share the same gradient surface as
-**Draw position**. That link is part of the active appearance, so it remains
-intact for both the built-in William Temple House appearance and staff-created
-appearances. The exception is deliberate: **Returned** always stays red and
-**Unclaimed** always stays gold, regardless of agency branding.
+The dashboard's **Live State**, **Now Serving**, **Served**, and **Next up**
+surfaces follow the active appearance. Their regular light/dark gradients
+become flat in Hi-viz. **Returned** always stays red and **Unclaimed** always
+stays gold, regardless of agency branding.
 
 **Made a mistake?** In the **Returned tickets** and **Unclaimed tickets** lists,
 tap any ticket number and confirm **Revert** to clear its status — the ticket
 returns to normal without changing who's currently being served.
+
+![The Unclaimed and Returned ticket lists, where tapping a number starts a revert](/help-screenshots/ticket-status-lists.webp)
+
+![The confirmation required before LOTTO reverts a ticket's status](/help-screenshots/ticket-status-revert.webp)
 
 ## Operating Hours & the Display URL
 
@@ -82,6 +80,8 @@ it there; Reset does not add another question to the end-of-shift workflow.
 
 ## Connect Queue History To FEED
 
+![The History card with undo, snapshot restoration, and FEED synchronization controls](/help-screenshots/feed-history.webp)
+
 An authorized administrator can open the **History** card, find **Sync With
 FEED**, and select **Setup**. A status tag shows whether LOTTO has an active
 token, and the line beneath the button shows when that token was generated.
@@ -95,7 +95,11 @@ daily synchronization and review happen in FEED; LOTTO's Reset workflow does
 not change. The **Configured** tag confirms that LOTTO has a token; a successful
 FEED synchronization confirms that both applications hold the matching pair.
 
+![The FEED setup window with the LOTTO URL, pairing instructions, and token action](/help-screenshots/feed-setup.webp)
+
 ## The Advanced Section
+
+![The expanded Advanced section with configuration cards for less-frequent setup work](/help-screenshots/advanced-section.webp)
 
 Expand **Advanced** on the dashboard for less-frequent setup tasks: operating
 hours, display-language rotation, writing an

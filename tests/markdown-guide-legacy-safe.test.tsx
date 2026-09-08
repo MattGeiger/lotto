@@ -59,4 +59,15 @@ describe("MarkdownGuideContent — legacy-safe GFM subset", () => {
     render(<MarkdownGuideContent content={"Email frontdesk@williamtemple.org to reach us."} />);
     expect(screen.queryByRole("link")).toBeNull();
   });
+
+  it("renders Help screenshots as automatic light and dark pairs", () => {
+    render(<MarkdownGuideContent content={"![Queue controls](/help-screenshots/staff-dashboard.webp)"} />);
+
+    const images = screen.getAllByRole("img", { name: "Queue controls" });
+    expect(images).toHaveLength(2);
+    expect(images[0]).toHaveAttribute("src", "/help-screenshots/staff-dashboard.webp");
+    expect(images[0]).toHaveClass("dark:hidden");
+    expect(images[1]).toHaveAttribute("src", "/help-screenshots/staff-dashboard-dark.webp");
+    expect(images[1]).toHaveClass("dark:block");
+  });
 });

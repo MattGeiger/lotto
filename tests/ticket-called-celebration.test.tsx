@@ -25,6 +25,27 @@ vi.mock("react-canvas-confetti", () => ({
   },
 }));
 
+vi.mock("@/components/realtime-canary-mount", () => ({
+  default: ({
+    config,
+    polledRevision,
+  }: {
+    config: unknown;
+    polledRevision: number | null;
+  }) => config ? (
+    <div
+      data-testid="inventory-realtime-canary"
+      data-polled-revision={polledRevision ?? undefined}
+    />
+  ) : null,
+}));
+
+const realtimeCanary = {
+  agencyId: "william-temple-house",
+  eventsUrl:
+    "wss://lotto-realtime-beta.et2-geiger.workers.dev/v1/agencies/william-temple-house/events",
+};
+
 const baseState: RaffleState = {
   startNumber: 10,
   endNumber: 30,
@@ -109,12 +130,21 @@ describe("TicketCalledCelebration", () => {
     });
     vi.stubGlobal(
       "fetch",
-      vi.fn(async () => new Response(JSON.stringify(calledState), { status: 200 })),
+      vi.fn(async () => new Response(JSON.stringify(calledState), {
+        status: 200,
+        headers: { "x-lotto-state-revision": "23" },
+      })),
     );
 
-    renderCelebration(<TicketCalledCelebration poll />);
+    renderCelebration(
+      <TicketCalledCelebration poll realtimeCanary={realtimeCanary} />,
+    );
 
     expect(await screen.findByText("Ticket Called!")).toBeInTheDocument();
     expect(fetch).toHaveBeenCalledWith("/api/state", { cache: "no-store" });
+    expect(screen.getByTestId("inventory-realtime-canary")).toHaveAttribute(
+      "data-polled-revision",
+      "23",
+    );
   });
 });

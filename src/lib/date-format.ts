@@ -18,16 +18,45 @@ const localeMap: Record<Language, string> = {
   ar: "ar",
 };
 
-export function formatDate(language: Language, input?: Date | number): string {
+export function formatDate(
+  language: Language,
+  input?: Date | number,
+  timeZone?: string,
+): string {
   const now = input instanceof Date ? input : typeof input === "number" ? new Date(input) : new Date();
   // Core languages use their mapped locale; dynamic catalog languages pass their
   // BCP-47 code straight to Intl (e.g. "bs" → Bosnian month/weekday names).
   const locale = localeMap[language] ?? language;
 
-  const weekday = now.toLocaleString(locale, { weekday: "long", calendar: "gregory" });
-  const day = now.getDate();
-  const month = now.toLocaleString(locale, { month: "long", calendar: "gregory" });
-  const year = now.getFullYear();
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat(locale, {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      calendar: "gregory",
+      timeZone,
+    })
+      .formatToParts(now)
+      .map((part) => [part.type, part.value]),
+  );
+  // Preserve LOTTO's established ASCII day/year output even when the selected
+  // locale uses another numeral system; only the weekday and month are
+  // localized here.
+  const numericParts = Object.fromEntries(
+    new Intl.DateTimeFormat("en-US-u-nu-latn", {
+      day: "numeric",
+      year: "numeric",
+      calendar: "gregory",
+      timeZone,
+    })
+      .formatToParts(now)
+      .map((part) => [part.type, part.value]),
+  );
+  const weekday = parts.weekday;
+  const day = Number(numericParts.day);
+  const month = parts.month;
+  const year = numericParts.year;
 
   if (language === "en") {
     const suffix = getOrdinalSuffix(day);

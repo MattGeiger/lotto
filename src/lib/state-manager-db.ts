@@ -5,7 +5,7 @@
 // licensed under AGPL-3.0-or-later; see LICENSE. William Temple House branding
 // is not covered by this license; see TRADEMARKS.md.
 
-import { randomInt } from "node:crypto";
+import { randomInt, randomUUID } from "node:crypto";
 
 import { neon } from "@neondatabase/serverless";
 
@@ -26,6 +26,18 @@ import {
   recordModeTransition,
   type StoredQueueSessionSummary,
 } from "./queue-session";
+import {
+  hashPublicState,
+  publicRaffleStateSchema,
+  toPublicRaffleState,
+  type PublicRaffleState,
+} from "./realtime/public-state-protocol";
+import {
+  publishPublicStateShadow,
+  resolveShadowPublicationConfig,
+  type ShadowPublicationOutcome,
+  type ShadowPublicationIntent,
+} from "./realtime/shadow-publication";
 
 const buildRange = (start: number, end: number) =>
   Array.from({ length: end - start + 1 }, (_, index) => start + index);
@@ -46,14 +58,25 @@ const withTimestamp = (state: RaffleState) => ({
 
 const MAX_TICKET_NUMBER = 999_999;
 
-export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => {
+type DbStateManagerOptions = {
+  environment?: Readonly<Record<string, string | undefined>>;
+  fetchImpl?: typeof fetch;
+};
+
+export const createDbStateManager = (
+  databaseUrl = process.env.DATABASE_URL,
+  options: DbStateManagerOptions = {},
+) => {
   if (!databaseUrl) {
     throw new Error("DATABASE_URL is required to use the Postgres state manager.");
   }
 
   const sql = neon(databaseUrl);
+  const environment = options.environment ?? process.env;
+  const shadowPublication = resolveShadowPublicationConfig(environment);
+  const fetchImpl = options.fetchImpl ?? fetch;
   const withTimeout = async <T>(promise: Promise<T>) => {
-    const timeoutMs = Number(process.env.DATABASE_TIMEOUT_MS ?? "5000");
+    const timeoutMs = Number(environment.DATABASE_TIMEOUT_MS ?? "5000");
     let timer: ReturnType<typeof setTimeout> | null = null;
     const timeoutPromise = new Promise<never>((_, reject) => {
       timer = setTimeout(
@@ -70,6 +93,75 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
   };
   let lastRedoSnapshot: { id: string; timestamp: number } | null = null;
   let lastPersistTs = 0;
+
+  const recordShadowPublicationOutcome = async (
+    publicationId: string,
+    revision: number,
+    outcome: ShadowPublicationOutcome,
+  ) => {
+    try {
+      if (outcome.accepted) {
+        await withTimeout(sql`
+          update raffle_public_state_publications
+          set status = 'accepted',
+              attempt_count = attempt_count + 1,
+              last_attempt_at = now(),
+              accepted_at = now(),
+              last_error = null,
+              updated_at = now()
+          where publication_id = ${publicationId};
+        `);
+      } else {
+        await withTimeout(sql`
+          update raffle_public_state_publications
+          set status = 'failed',
+              attempt_count = attempt_count + 1,
+              last_attempt_at = now(),
+              last_error = ${outcome.error.slice(0, 500)},
+              updated_at = now()
+          where publication_id = ${publicationId};
+        `);
+      }
+    } catch {
+      console.warn(
+        `[Realtime] Publication evidence update failed for revision ${revision}.`,
+      );
+    }
+  };
+
+  const attemptShadowPublication = async (
+    intent: ShadowPublicationIntent,
+  ): Promise<ShadowPublicationOutcome> => {
+    if (!shadowPublication.enabled) {
+      return { accepted: false, error: "Realtime shadow publication is disabled." };
+    }
+
+    let outcome: ShadowPublicationOutcome;
+    try {
+      outcome = await publishPublicStateShadow(
+        shadowPublication,
+        intent,
+        fetchImpl,
+      );
+    } catch {
+      outcome = {
+        accepted: false,
+        error: "Realtime publication failed unexpectedly.",
+      };
+    }
+
+    await recordShadowPublicationOutcome(
+      intent.publicationId,
+      intent.revision,
+      outcome,
+    );
+    if (!outcome.accepted) {
+      console.warn(
+        `[Realtime] Shadow publication delayed for revision ${intent.revision}: ${outcome.error}`,
+      );
+    }
+    return outcome;
+  };
 
   const validateRange = (
     start: number,
@@ -125,14 +217,14 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
     return mode === "random" ? shuffle(range) : range;
   };
 
-  const persist = async (
+  const persistVersioned = async (
     state: RaffleState,
     options?: {
       preserveTimestamp?: boolean;
       skipBackup?: boolean;
       closeout?: StoredQueueSessionSummary | null;
     },
-  ): Promise<RaffleState> => {
+  ): Promise<{ state: RaffleState; revision: number }> => {
     const timestamped =
       options?.preserveTimestamp && state.timestamp !== null ? state : withTimestamp(state);
     let ts = timestamped.timestamp ?? Date.now();
@@ -146,7 +238,16 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
 
     const payload = JSON.stringify(timestamped);
 
-    await withTimeout(
+    const publicState = shadowPublication.enabled
+      ? toPublicRaffleState(timestamped)
+      : null;
+    const publicationId = publicState ? randomUUID() : null;
+    const publicChecksum = publicState
+      ? await hashPublicState(publicState)
+      : null;
+    const publicPayload = publicState ? JSON.stringify(publicState) : null;
+
+    const transactionResults = (await withTimeout(
       sql.transaction((tx) => {
         const statements = [];
         if (options?.closeout) {
@@ -172,34 +273,117 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
           on conflict (id) do nothing;
         `);
         }
-        statements.push(tx`
-        insert into raffle_state (id, payload, updated_at)
-        values ('singleton', ${payload}::jsonb, now())
-        on conflict (id) do update set payload = excluded.payload, updated_at = excluded.updated_at;
-      `);
+        if (
+          shadowPublication.enabled &&
+          publicationId &&
+          publicChecksum &&
+          publicPayload
+        ) {
+          statements.push(tx`
+            with committed as (
+              insert into raffle_state (id, payload, revision, updated_at)
+              values ('singleton', ${payload}::jsonb, 1, now())
+              on conflict (id) do update set
+                payload = excluded.payload,
+                revision = raffle_state.revision + 1,
+                updated_at = excluded.updated_at
+              returning revision, updated_at
+            ), superseded as (
+              update raffle_public_state_publications
+              set status = 'superseded', updated_at = now()
+              where status in ('pending', 'failed')
+                and revision < (select revision from committed)
+              returning publication_id
+            )
+            insert into raffle_public_state_publications (
+              publication_id, revision, protocol_version, checksum, payload,
+              status, committed_at, created_at, updated_at
+            )
+            select
+              ${publicationId}, committed.revision, 1, ${publicChecksum},
+              ${publicPayload}::jsonb, 'pending', committed.updated_at, now(), now()
+            from committed
+            returning revision, committed_at;
+          `);
+        } else {
+          statements.push(tx`
+            insert into raffle_state (id, payload, revision, updated_at)
+            values ('singleton', ${payload}::jsonb, 1, now())
+            on conflict (id) do update set
+              payload = excluded.payload,
+              revision = raffle_state.revision + 1,
+              updated_at = excluded.updated_at
+            returning revision, updated_at as committed_at;
+          `);
+        }
         return statements;
       }),
-    );
+    )) as Array<Array<{ revision: number | string; committed_at: string | Date }>>;
 
-    return timestamped;
+    const commitRow = transactionResults.at(-1)?.[0];
+    const revision = Number(commitRow?.revision);
+    if (!Number.isSafeInteger(revision) || revision < 1 || !commitRow?.committed_at) {
+      throw new Error("State transaction did not return a valid revision.");
+    }
+
+    if (
+      shadowPublication.enabled &&
+      publicationId &&
+      publicChecksum &&
+      publicState
+    ) {
+      const intent: ShadowPublicationIntent = {
+        publicationId,
+        revision,
+        committedAt: new Date(commitRow.committed_at).toISOString(),
+        checksum: publicChecksum,
+        state: publicState,
+      };
+
+      await attemptShadowPublication(intent);
+    }
+
+    return { state: timestamped, revision };
   };
 
-  const safeReadState = async (): Promise<RaffleState> => {
+  const persist = async (
+    state: RaffleState,
+    options?: {
+      preserveTimestamp?: boolean;
+      skipBackup?: boolean;
+      closeout?: StoredQueueSessionSummary | null;
+    },
+  ): Promise<RaffleState> => (await persistVersioned(state, options)).state;
+
+  const safeReadStateWithRevision = async (): Promise<{
+    state: RaffleState;
+    revision: number;
+  }> => {
     const rows = (await withTimeout(sql`
-      select payload from raffle_state where id = 'singleton' limit 1;
-    `)) as Array<{ payload: RaffleState }>;
+      select payload, revision from raffle_state where id = 'singleton' limit 1;
+    `)) as Array<{ payload: RaffleState; revision: number | string }>;
     if (rows.length === 0) {
-      return persist(defaultState);
+      return persistVersioned(defaultState);
     }
     const payload = rows[0]?.payload ?? defaultState;
+    const revision = Number(rows[0]?.revision);
+    if (!Number.isSafeInteger(revision) || revision < 1) {
+      throw new Error("Stored state revision is invalid.");
+    }
     return {
-      ...defaultState,
-      ...payload,
-      timestamp: payload.timestamp ?? Date.now(),
+      state: {
+        ...defaultState,
+        ...payload,
+        timestamp: payload.timestamp ?? Date.now(),
+      },
+      revision,
     };
   };
 
+  const safeReadState = async (): Promise<RaffleState> =>
+    (await safeReadStateWithRevision()).state;
   const loadState = async () => safeReadState();
+  const loadStateWithRevision = async () => safeReadStateWithRevision();
 
   const generateState = async (input: {
     startNumber: number;
@@ -664,6 +848,130 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
     return rows.length;
   };
 
+  const retryLatestRealtimePublication = async () => {
+    if (!shadowPublication.enabled) {
+      return { enabled: false as const, attempted: false as const };
+    }
+
+    const rows = (await withTimeout(sql`
+      select publication_id, revision, checksum, payload, committed_at
+      from raffle_public_state_publications
+      where status in ('pending', 'failed')
+      order by revision desc
+      limit 1;
+    `)) as Array<{
+      publication_id: string;
+      revision: number | string;
+      checksum: string;
+      payload: unknown;
+      committed_at: string | Date;
+    }>;
+    const row = rows[0];
+    if (!row) {
+      return { enabled: true as const, attempted: false as const };
+    }
+
+    const revision = Number(row.revision);
+    const parsedState = publicRaffleStateSchema.safeParse(row.payload);
+    const committedAt = new Date(row.committed_at);
+    let validationError: string | null = null;
+    let state: PublicRaffleState | null = null;
+
+    if (!Number.isSafeInteger(revision) || revision < 1) {
+      validationError = "Stored realtime revision is invalid.";
+    } else if (Number.isNaN(committedAt.getTime())) {
+      validationError = "Stored realtime commit timestamp is invalid.";
+    } else if (!parsedState.success) {
+      validationError = "Stored public-state payload is invalid.";
+    } else {
+      state = parsedState.data;
+      const calculatedChecksum = await hashPublicState(state);
+      if (calculatedChecksum !== row.checksum) {
+        validationError = "Stored public-state checksum mismatch.";
+      }
+    }
+
+    if (validationError || !state) {
+      const outcome: ShadowPublicationOutcome = {
+        accepted: false,
+        error: validationError ?? "Stored public-state publication is invalid.",
+      };
+      await recordShadowPublicationOutcome(row.publication_id, revision, outcome);
+      console.warn(
+        `[Realtime] Repair rejected invalid publication evidence for revision ${revision}.`,
+      );
+      return {
+        enabled: true as const,
+        attempted: true as const,
+        revision,
+        accepted: false as const,
+        error: outcome.error,
+      };
+    }
+
+    const outcome = await attemptShadowPublication({
+      publicationId: row.publication_id,
+      revision,
+      checksum: row.checksum,
+      committedAt: committedAt.toISOString(),
+      state,
+    });
+    return {
+      enabled: true as const,
+      attempted: true as const,
+      revision,
+      accepted: outcome.accepted,
+      ...(outcome.accepted ? {} : { error: outcome.error }),
+    };
+  };
+
+  const getRealtimePublicationStatus = async () => {
+    if (!shadowPublication.enabled) {
+      return { enabled: false as const };
+    }
+
+    const rows = (await withTimeout(sql`
+      select publication_id, revision, status, attempt_count, committed_at,
+             last_attempt_at, accepted_at, last_error, updated_at
+      from raffle_public_state_publications
+      order by revision desc
+      limit 1;
+    `)) as Array<{
+      publication_id: string;
+      revision: number | string;
+      status: "pending" | "accepted" | "failed" | "superseded";
+      attempt_count: number | string;
+      committed_at: string | Date;
+      last_attempt_at: string | Date | null;
+      accepted_at: string | Date | null;
+      last_error: string | null;
+      updated_at: string | Date;
+    }>;
+    const row = rows[0];
+    if (!row) {
+      return { enabled: true as const, latest: null };
+    }
+
+    return {
+      enabled: true as const,
+      latest: {
+        publicationId: row.publication_id,
+        revision: Number(row.revision),
+        status: row.status,
+        attemptCount: Number(row.attempt_count),
+        committedAt: new Date(row.committed_at).toISOString(),
+        lastAttemptAt: row.last_attempt_at
+          ? new Date(row.last_attempt_at).toISOString()
+          : null,
+        acceptedAt: row.accepted_at
+          ? new Date(row.accepted_at).toISOString()
+          : null,
+        lastError: row.last_error,
+        updatedAt: new Date(row.updated_at).toISOString(),
+      },
+    };
+  };
+
   const undo = async () => {
     const snapshots = await listSnapshots();
     if (snapshots.length < 2) {
@@ -708,6 +1016,7 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
 
   return {
     loadState,
+    loadStateWithRevision,
     generateState,
     generateBatch,
     appendTickets,
@@ -729,5 +1038,7 @@ export const createDbStateManager = (databaseUrl = process.env.DATABASE_URL) => 
     setDisplayLanguageRotation,
     setAnnouncement,
     cleanupOldSnapshots,
+    retryLatestRealtimePublication,
+    getRealtimePublicationStatus,
   };
 };

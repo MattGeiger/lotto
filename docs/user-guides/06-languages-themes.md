@@ -9,6 +9,8 @@ Eight core languages are built in: English, Spanish, Chinese, Russian,
 Ukrainian, Vietnamese, Persian (Farsi), and Arabic. Persian and Arabic display
 right-to-left, with numbers kept in their natural order.
 
+![The Display Board translated into Arabic with its right-to-left layout and naturally ordered ticket numbers](/help-screenshots/languages.webp)
+
 Staff can enable many more languages, auto-translated with AI — see
 [AI-Powered Translation](11-ai-translation.md).
 
@@ -19,11 +21,9 @@ Staff can enable many more languages, auto-translated with AI — see
   screen won't keep re-asking once you've chosen.
 - On the [display board](03-display-board.md) a language switcher is always
   available.
-- On the Arcade page, the language menu includes every activated language whose
-  translations are ready, not only the eight built-in choices. Opening the menu
-  refreshes its ready list, so it can discover languages enabled after the page
-  session began without polling in the background. A blurred lower edge means
-  more languages are available below; swipe the list upward to see them.
+- The Arcade menu includes every activated language whose translations are
+  ready. Opening it refreshes that list; a blurred lower edge means more choices
+  are available by swiping upward.
 
 ## Automatic Language Rotation (Display Board)
 
@@ -37,10 +37,15 @@ Staff can make the board greet everyone in turn:
 
 ## Themes
 
+![The client home screen and theme control in the currently selected visual mode](/help-screenshots/themes.webp)
+
 LOTTO offers light, dark, and a flat **high-visibility** accessibility theme
 that maximizes contrast for visually impaired guests. The theme switcher is a
 single button: each tap advances **Light → Dark → Hi-viz → Light**. Its icon and
-accessible label show what the next tap will select. Hi-viz changes colors and
+accessible label show what the next tap will select. It sits in the upper-right
+corner of every surface that offers it — the client home screen, the Display
+Board, What's in Stock, the Staff Dashboard, and the Help pages, where it stays
+pinned to the top of the screen as a guide scrolls. Hi-viz changes colors and
 flattens decorative gradients, but keeps the same font family, sizing, weight,
 spacing, and text hierarchy as the regular light and dark appearances.
 

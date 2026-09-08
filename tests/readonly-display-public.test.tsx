@@ -5,10 +5,11 @@
 // licensed under AGPL-3.0-or-later; see LICENSE. William Temple House branding
 // is not covered by this license; see TRADEMARKS.md.
 
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ComponentProps } from "react";
+import * as React from "react";
 
 import { ReadOnlyDisplay } from "@/components/readonly-display";
 import { BrandProvider } from "@/contexts/brand-context";
@@ -39,6 +40,64 @@ vi.mock("@/components/animate-ui/primitives/texts/morphing", () => ({
 vi.mock("@/components/animate-ui/primitives/texts/rolling", () => ({
   RollingText: ({ text }: { text: string }) => <span>{text}</span>,
 }));
+
+vi.mock("@/components/realtime-canary-mount", () => ({
+  default: ({
+    config,
+    sourceConfig,
+    polledRevision,
+    onSourceState,
+    onSourceAuthorityChange,
+  }: {
+    config: unknown;
+    sourceConfig?: unknown;
+    polledRevision: number | null;
+    onSourceState?: (state: RaffleState, revision: number) => void;
+    onSourceAuthorityChange?: (authoritative: boolean, reason: "handshake" | "close") => void;
+  }) => config ? (
+    <div
+      data-testid="display-realtime-canary"
+      data-polled-revision={polledRevision ?? undefined}
+    />
+  ) : sourceConfig ? (
+    <SourceCanaryTestControl
+      polledRevision={polledRevision}
+      onSourceState={onSourceState}
+      onSourceAuthorityChange={onSourceAuthorityChange}
+    />
+  ) : null,
+}));
+
+function SourceCanaryTestControl({
+  polledRevision,
+  onSourceState,
+  onSourceAuthorityChange,
+}: {
+  polledRevision: number | null;
+  onSourceState?: (state: RaffleState, revision: number) => void;
+  onSourceAuthorityChange?: (authoritative: boolean, reason: "handshake" | "close") => void;
+}) {
+  React.useEffect(() => {
+    onSourceAuthorityChange?.(true, "handshake");
+  }, [onSourceAuthorityChange]);
+  return (
+    <>
+      <output data-testid="source-verification-revision">{polledRevision ?? "none"}</output>
+      <button
+        type="button"
+        onClick={() => onSourceState?.({ ...baseState, currentlyServing: 12 }, 26)}
+      >
+        Apply source update
+      </button>
+      <button
+        type="button"
+        onClick={() => onSourceAuthorityChange?.(false, "close")}
+      >
+        Trigger source fallback
+      </button>
+    </>
+  );
+}
 
 // Animated icons used by TicketDetailDialog
 vi.mock("@/components/animate-ui/icons/clock", () => ({
@@ -85,7 +144,10 @@ const preDrawState: RaffleState = {
 function installFetch(state: RaffleState = baseState) {
   vi.stubGlobal(
     "fetch",
-    vi.fn(async () => new Response(JSON.stringify(state), { status: 200 })),
+    vi.fn(async () => new Response(JSON.stringify(state), {
+      status: 200,
+      headers: { "x-lotto-state-revision": "25" },
+    })),
   );
 }
 
@@ -116,6 +178,47 @@ describe("ReadOnlyDisplay (public variant)", () => {
     // (in the now-serving display and in the ticket grid)
     const fives = screen.getAllByText("5");
     expect(fives.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("forwards the exact revision from the existing poll to the beta observer", async () => {
+    renderPublicDisplay({
+      realtimeCanary: {
+        agencyId: "william-temple-house",
+        eventsUrl:
+          "wss://lotto-realtime-beta.et2-geiger.workers.dev/v1/agencies/william-temple-house/events",
+      },
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("display-realtime-canary")).toHaveAttribute(
+        "data-polled-revision",
+        "25",
+      );
+    });
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("suppresses scheduled polling while the source is healthy and fetches immediately on fallback", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    renderPublicDisplay({
+      realtimeSourceCanary: {
+        agencyId: "william-temple-house",
+        eventsUrl:
+          "wss://lotto-realtime-beta.et2-geiger.workers.dev/v1/agencies/william-temple-house/events",
+      },
+    });
+
+    await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
+    await act(async () => vi.advanceTimersByTimeAsync(5 * 60_000));
+    expect(fetch).toHaveBeenCalledTimes(1);
+
+    await user.click(screen.getByRole("button", { name: "Apply source update" }));
+    expect(screen.getAllByText("12").length).toBeGreaterThan(0);
+    expect(screen.getByTestId("source-verification-revision")).toHaveTextContent("25");
+    await user.click(screen.getByRole("button", { name: "Trigger source fallback" }));
+    await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
+    vi.useRealTimers();
   });
 
   it("reserves mobile clearance below the public search toolbar", async () => {
