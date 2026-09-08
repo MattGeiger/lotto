@@ -1,5 +1,45 @@
 # Unreleased
 
+# LOTTO v2.0.0-rc.3
+
+**Release Date:** September 7, 2026 (production release candidate)
+
+RC.3 is the first build intended to run on `williamtemple.app` itself. It
+separates two questions that RC.2 answered with one variable: whether a
+deployment may use the realtime hub, and whether it is the beta sandbox.
+
+`LOTTO_DEPLOYMENT_ENVIRONMENT` previously permitted realtime only when set to
+`beta`, and that same value drives the sandbox presentation — the "Beta test
+environment" banner, the blocking `robots.txt`, and the `X-Robots-Tag` header.
+Production therefore could not enable realtime without de-indexing the live site
+and telling every client that their actions do not affect the real app. Realtime
+eligibility now accepts `beta` or `production`, while every sandbox behavior
+still requires exactly `beta`.
+
+The gate remains fail-closed, which was the point of the original restriction:
+only those two exact values qualify. An unset, empty, or near-miss value
+(`prod`, `Production`, `staging`) refuses realtime rather than assuming it is
+welcome, so a deployment must opt in deliberately — being merely "not beta" is
+never sufficient.
+
+The Cloudflare Worker gains a named `production` environment deploying as
+`lotto-realtime-production`, which carries its own Durable Object namespace and
+allowlists only `https://williamtemple.app`. No beta namespace, secret, origin,
+or state is reused. Publish and control tokens must be freshly generated per
+environment.
+
+This release candidate targets the existing personal Hobby production account.
+The migration to the organization's Vercel Pro account remains pending approval
+and is unchanged as the eventual destination; this deployment is a validation
+step toward it, not a substitute for it. The stable v2.0 gates — Pro account,
+ten representative service days, physical iPadOS 15 device validation, and the
+measured reduction in public-origin Neon reads — are still open, which is why
+this remains a release candidate.
+
+**Deployment order matters.** `raffle_state.revision` is written on every
+mutation, so the additive schema must be applied to production Neon *before*
+this build is deployed. See `docs/PRODUCTION_RC3_CUTOVER.md`.
+
 # LOTTO v2.0.0-rc.2
 
 **Release Date:** September 3, 2026 (beta release candidate — not promoted)

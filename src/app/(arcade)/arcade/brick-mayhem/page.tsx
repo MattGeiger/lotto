@@ -667,7 +667,19 @@ export default function BrickMayhemPage() {
       </section>
 
       <section className="arcade-brick-control-dock" aria-label="Game controls">
+        {/* The pad is a flex column, so DOM order is visual order: paddle
+            slider above, Start/Pause button at the bottom. */}
         <div className="arcade-brick-pad">
+          <div className="arcade-brick-slider-track">
+            <Slider
+              min={0}
+              max={100}
+              step={1}
+              value={[sliderValue]}
+              onValueChange={handleSliderChange}
+              aria-label="Paddle position"
+            />
+          </div>
           <Button
             type="button"
             variant="default"
@@ -681,16 +693,6 @@ export default function BrickMayhemPage() {
           >
             {centerControlLabel}
           </Button>
-          <div className="arcade-brick-slider-track">
-            <Slider
-              min={0}
-              max={100}
-              step={1}
-              value={[sliderValue]}
-              onValueChange={handleSliderChange}
-              aria-label="Paddle position"
-            />
-          </div>
         </div>
       </section>
     </div>

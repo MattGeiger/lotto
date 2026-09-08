@@ -6,7 +6,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
-import { isBetaDeployment } from "@/lib/deployment-environment";
+import { isRealtimeEligibleDeployment } from "@/lib/deployment-environment";
 
 import RealtimeDiagnosticsClient from "./realtime-diagnostics-client";
 
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 };
 
 export default function RealtimeDiagnosticsPage() {
-  if (!isBetaDeployment()) notFound();
+  if (!isRealtimeEligibleDeployment()) notFound();
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-3xl flex-col gap-6 px-4 py-8 sm:px-6">

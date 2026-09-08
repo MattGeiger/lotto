@@ -25,6 +25,10 @@ the game menu.
 2. Pick a game from the arcade index.
 3. Follow the on-screen instructions; use **Back** to return to the index.
 
+In **Brick Mayhem**, the control dock at the bottom of the screen carries the
+paddle slider above the **Start**/**Pause** button, so the slider sits within
+easy thumb reach and the button is furthest from the play area.
+
 The Arcade language menu uses the same ready, organization-enabled list as Home
 and Display. Opening it refreshes the choices; a blurred lower edge means more
 are available by swiping upward.

@@ -42,7 +42,10 @@ Staff can make the board greet everyone in turn:
 LOTTO offers light, dark, and a flat **high-visibility** accessibility theme
 that maximizes contrast for visually impaired guests. The theme switcher is a
 single button: each tap advances **Light → Dark → Hi-viz → Light**. Its icon and
-accessible label show what the next tap will select. Hi-viz changes colors and
+accessible label show what the next tap will select. It sits in the upper-right
+corner of every surface that offers it — the client home screen, the Display
+Board, What's in Stock, the Staff Dashboard, and the Help pages, where it stays
+pinned to the top of the screen as a guide scrolls. Hi-viz changes colors and
 flattens decorative gradients, but keeps the same font family, sizing, weight,
 spacing, and text hierarchy as the regular light and dark appearances.
 

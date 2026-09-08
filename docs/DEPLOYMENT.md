@@ -221,7 +221,8 @@ page loads; change it in Vercel and redeploy the same known-good commit. The
 variable is server-only and must be set explicitly in beta and every
 production-scoped v2 deployment.
 
-Activation fails closed unless `LOTTO_DEPLOYMENT_ENVIRONMENT=beta`, the remote
+Activation fails closed unless `LOTTO_DEPLOYMENT_ENVIRONMENT` is exactly `beta`
+or `production`, the remote
 URL is HTTPS, and its hostname exactly matches the expected host. Deploy and
 verify the additive schema with the flag still false before installing a newly
 rotated token in both providers. Enabling the flag adds one outbox row in the

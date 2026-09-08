@@ -36,13 +36,29 @@ describe("beta realtime publication diagnostics API", () => {
     }
   });
 
-  it("is unavailable outside the beta deployment and performs no auth or datastore work", async () => {
-    process.env.LOTTO_DEPLOYMENT_ENVIRONMENT = "production";
+  it("is unavailable outside a realtime-eligible deployment and performs no auth or datastore work", async () => {
+    // Production is now eligible alongside beta, so the ineligible case has to
+    // be a genuinely ineligible value. The point of the assertion is unchanged:
+    // an ineligible deployment short-circuits before touching auth or the
+    // datastore.
+    process.env.LOTTO_DEPLOYMENT_ENVIRONMENT = "staging";
     const { GET, POST } = await import("@/app/api/state/realtime/route");
 
     expect((await GET()).status).toBe(404);
     expect((await POST()).status).toBe(404);
     expect(auth).not.toHaveBeenCalled();
+    expect(getRealtimePublicationStatus).not.toHaveBeenCalled();
+    expect(retryLatestRealtimePublication).not.toHaveBeenCalled();
+  });
+
+  it("is reachable in production but still demands an administrator session", async () => {
+    process.env.LOTTO_DEPLOYMENT_ENVIRONMENT = "production";
+    auth.mockResolvedValue(null);
+    const { GET, POST } = await import("@/app/api/state/realtime/route");
+
+    // 403, not 404: the route exists in production and refuses on authority.
+    expect((await GET()).status).toBe(403);
+    expect((await POST()).status).toBe(403);
     expect(getRealtimePublicationStatus).not.toHaveBeenCalled();
     expect(retryLatestRealtimePublication).not.toHaveBeenCalled();
   });

@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 
 import { isAdminEmailAllowed } from "@/lib/admin-email-policy";
 import { auth } from "@/lib/auth";
-import { isBetaDeployment } from "@/lib/deployment-environment";
+import { isRealtimeEligibleDeployment } from "@/lib/deployment-environment";
 import { stateManager } from "@/lib/state-manager";
 
 export const runtime = "nodejs";
@@ -63,7 +63,7 @@ const getRealtimeStateManager = (): RealtimeStateManager | null => {
 };
 
 export async function GET() {
-  if (!isBetaDeployment()) return unavailable();
+  if (!isRealtimeEligibleDeployment()) return unavailable();
   if (!(await hasAdministratorAuthority())) return unauthorized();
 
   const manager = getRealtimeStateManager();
@@ -86,7 +86,7 @@ export async function GET() {
 }
 
 export async function POST() {
-  if (!isBetaDeployment()) return unavailable();
+  if (!isRealtimeEligibleDeployment()) return unavailable();
   if (!(await hasAdministratorAuthority())) return unauthorized();
 
   const manager = getRealtimeStateManager();

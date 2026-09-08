@@ -2,7 +2,92 @@
 
 ## [Unreleased]
 
+## [2.0.0-rc.3] - 2026-09-07
+
+The first build intended to run on `williamtemple.app` itself, on the existing
+personal Hobby account. The organization's Vercel Pro migration remains pending
+approval and is unchanged as the eventual destination; this deployment is a
+validation step toward it.
+
 ### Changed
+
+- **Separated realtime eligibility from the beta sandbox marker.** Realtime
+  previously activated only when `LOTTO_DEPLOYMENT_ENVIRONMENT=beta`, and that
+  same value drives the "Beta test environment" banner, the blocking
+  `robots.txt`, and the `X-Robots-Tag` header. Production therefore could not
+  enable realtime without de-indexing the live site and telling every client
+  their actions do not affect the real app. `isRealtimeEligibleDeployment` now
+  accepts `beta` or `production`, while `isBetaDeployment` — and every sandbox
+  behavior it drives — still requires exactly `beta`. The gate remains
+  fail-closed: unset, empty, and near-miss values (`prod`, `Production`,
+  `staging`) refuse realtime, so being merely "not beta" is never sufficient.
+  New coverage asserts that production gets realtime and no sandbox behavior,
+  and that near-miss values stay refused.
+- **Added a production environment to the realtime Worker.** A named
+  `production` environment deploys as `lotto-realtime-production` with its own
+  Durable Object namespace, allowlisting only `https://williamtemple.app`. No
+  beta namespace, secret, origin, or state is reused, per the v2.0 plan.
+  `npm run realtime:check:production` and `npm run realtime:deploy:production`
+  drive it; publish and control tokens must be generated fresh per environment.
+- **Widened the three remaining beta-only realtime gates.** The client CSP in
+  `next.config.ts` was the consequential one: with it gated on beta alone, a
+  production build with realtime enabled threw at build time, and had it not
+  thrown the `connect-src` would have omitted the hub origin and every browser
+  would have refused the WebSocket. The Admin realtime diagnostics page and its
+  API were also beta-only; both are administrator-authenticated, and they are
+  what step 5 of the cutover uses to confirm a publication landed. The indexing
+  headers in `next.config.ts` remain beta-only, alongside the banner and
+  `robots.txt`. New coverage asserts the production CSP contains the hub origin,
+  that an ineligible environment refuses to build a realtime CSP, and that the
+  diagnostics API is reachable in production but still demands an administrator
+  session.
+- **Allowed the protocol verifier to target production explicitly.**
+  `REALTIME_TEST_ALLOW_REMOTE=production` is a second deliberate opt-in
+  alongside `beta`. Verification runs against the synthetic
+  `william-temple-house-e2e` agency, so it never writes to the live agency's
+  Durable Object.
+
+- **Gave Help a persistent banner carrying Back, search, and the theme
+  switcher.** Both Help pages now open with a sticky `HelpTopBar` that stays at
+  the top of the screen while the guide scrolls behind it under a translucent
+  blur, so navigation, search, and appearance stay reachable anywhere in a long
+  guide instead of only at the top. This adopts the pattern FEED uses for its
+  Analytics banner, and reuses the glass treatment LOTTO already ships on the
+  desktop table of contents rather than introducing a second recipe. The theme
+  switcher is new to Help; it matches the single-button Light → Dark → Hi-viz
+  control on Home, Display, What's in Stock, and the Staff Dashboard. The
+  banner wraps to two rows on a phone and one row from `sm` up. The desktop
+  table of contents now sticks at `top-24` to clear it.
+  `tests/help-page-navigation.test.tsx` covers the theme control on both page
+  types.
+- **Reordered the Brick Mayhem control dock.** The paddle slider now sits above
+  the Start/Pause button rather than below it, putting the continuously used
+  control within easy thumb reach and the occasional one furthest from the play
+  area.
+- **Gave Help screenshots a single sizing rule and the machinery to hold it.**
+  A Help screenshot now renders at 1× its captured CSS size, capped by the guide
+  column, instead of every image being stretched to fill that column. Phone
+  captures were the visible casualty: a 375-point screen was displayed at 815 CSS
+  pixels — 2.17× life size, nearly two viewport-heights of scroll per image —
+  while desktop captures in the same guide appeared at 0.64× theirs, a 3.4×
+  inconsistency between two images stacked in one article. Phone captures now
+  render at 375 × 810, 81% less area, and the Arcade guide is 35% shorter. The
+  four phone surfaces (client ticket, themes, Arcade menu, Arcade gameplay) were
+  recaptured at 2× rather than 3×, which is a clean retina asset for a 375-point
+  slot and cuts those eight files from roughly 460 KB to 300 KB.
+- **Made the capture geometry a generated contract rather than a convention.**
+  `npm run screenshots` now writes `src/lib/help-screenshot-manifest.ts` from the
+  capture configuration plus the dimensions of the stored assets, on every run
+  including a bounded `SCREENSHOT_NAMES` one, so a partial refresh cannot leave
+  it half-stale. The markdown renderer reads it to size each image and to emit
+  intrinsic `width`/`height`, which also removes the layout shift that lazily
+  loaded screenshots previously caused across all 54 Help assets. The
+  asset-integrity test now fails on an image missing from the manifest, on
+  manifest-versus-asset dimension drift, and on a phone capture that is not a
+  375-point surface at 2×. `docs/HELP_SYSTEM.md` documents the rule, the
+  `w-full` requirement that keeps a capped image from overflowing a narrow
+  column, and the fact that `SCREENSHOT_NAMES` also matches same-named README
+  shots.
 
 - **Completed the production-facing Help screenshot pass.** Getting Started now
   illustrates all three primary surfaces; Staff Controls adds ticket-status
@@ -27,6 +112,16 @@
   now produces README assets plus theme-aware Help assets, supports bounded
   `SCREENSHOT_NAMES` runs, and the test suite verifies that every referenced
   Help image and required dark-mode sibling exists.
+
+### Added
+
+- **Documented the production cutover.** `docs/PRODUCTION_RC3_CUTOVER.md`
+  records the ordering that matters — `raffle_state.revision` is written on
+  every mutation, so production Neon must be migrated *before* this build is
+  deployed — plus staged realtime enablement, three rollback levers, and the
+  known caveats: the Vercel application gate has never been live-toggled, there
+  is no generated-hostname rehearsal when deploying into the project that
+  already serves the apex, and the stable v2.0 gates remain open.
 
 ## [2.0.0-rc.2] - 2026-09-03
 

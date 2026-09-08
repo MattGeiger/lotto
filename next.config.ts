@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 import { getBrandProfile, getInventoryIntegration } from "./src/config/brand";
-import { isBetaDeployment } from "./src/lib/deployment-environment";
+import { isBetaDeployment, isRealtimeEligibleDeployment } from "./src/lib/deployment-environment";
 
 const enableTweakcnPreview = process.env.VERCEL !== "1";
 const speedInsightsScriptHost = "https://va.vercel-scripts.com";
@@ -25,8 +25,10 @@ export const resolveRealtimeCanaryConnectHost = (
   }
   if (applicationFlag === "false") return null;
   if (observerFlag !== "true" && sourceFlag !== "true") return null;
-  if (!isBetaDeployment(environment)) {
-    throw new Error("The realtime client CSP may be enabled only in the beta deployment.");
+  if (!isRealtimeEligibleDeployment(environment)) {
+    throw new Error(
+      "The realtime client CSP requires LOTTO_DEPLOYMENT_ENVIRONMENT to be exactly \"beta\" or \"production\".",
+    );
   }
   const rawHubUrl = environment.LOTTO_REALTIME_HUB_URL?.trim();
   if (!rawHubUrl) {
@@ -35,6 +37,9 @@ export const resolveRealtimeCanaryConnectHost = (
   const hubUrl = new URL(rawHubUrl);
   const expectedHost =
     environment.LOTTO_REALTIME_EXPECTED_HUB_HOST?.trim()
+    // Defaults to the beta Worker, so a production deployment must set
+    // LOTTO_REALTIME_EXPECTED_HUB_HOST explicitly. A mismatch throws below
+    // rather than silently emitting a CSP for the wrong origin.
     ?? "lotto-realtime-beta.et2-geiger.workers.dev";
   if (
     hubUrl.protocol !== "https:"
@@ -45,7 +50,7 @@ export const resolveRealtimeCanaryConnectHost = (
     || hubUrl.hash
     || (hubUrl.pathname !== "/" && hubUrl.pathname !== "")
   ) {
-    throw new Error("The realtime client CSP requires the exact configured beta HTTPS hub origin.");
+    throw new Error("The realtime client CSP requires the exact configured HTTPS hub origin.");
   }
   return hubUrl.origin.replace(/^https:/, "wss:");
 };

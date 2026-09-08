@@ -42,13 +42,30 @@ describe("realtime client canary configuration", () => {
     );
   });
 
-  it("rejects production, non-HTTPS, unexpected hosts, and non-origin URLs", () => {
-    expect(() =>
+  it("accepts the production deployment environment", () => {
+    // Realtime is no longer sandbox-only: production is an explicit second
+    // eligible environment. The sandbox-only presentation (banner, robots
+    // blocking) still keys off "beta" alone; see beta-deployment-safety.
+    expect(
       resolveRealtimeCanaryClientConfig({
         ...betaEnvironment,
         LOTTO_DEPLOYMENT_ENVIRONMENT: "production",
       }),
-    ).toThrow("restricted to LOTTO_DEPLOYMENT_ENVIRONMENT=beta");
+    ).not.toBeNull();
+  });
+
+  it("stays fail-closed for unset, empty, and unrecognized environments", () => {
+    for (const value of [undefined, "", "prod", "Production", "staging", "beta "]) {
+      expect(() =>
+        resolveRealtimeCanaryClientConfig({
+          ...betaEnvironment,
+          LOTTO_DEPLOYMENT_ENVIRONMENT: value,
+        }),
+      ).toThrow(/LOTTO_DEPLOYMENT_ENVIRONMENT to be exactly/);
+    }
+  });
+
+  it("rejects non-HTTPS, unexpected hosts, and non-origin URLs", () => {
     expect(() =>
       resolveRealtimeCanaryClientConfig({
         ...betaEnvironment,

@@ -22,13 +22,19 @@ if (!publishToken) {
 if (!controlToken) {
   throw new Error("REALTIME_TEST_CONTROL_TOKEN is required.");
 }
+// The opt-in stays explicit so a stray REALTIME_TEST_BASE_URL cannot drive this
+// at a Worker nobody meant to touch; "production" is simply a second value the
+// operator has to type on purpose. Verification runs against the synthetic
+// `william-temple-house-e2e` agency, so it never writes to the live agency's
+// Durable Object even when pointed at the production hub.
 if (
   baseUrl.hostname !== "127.0.0.1" &&
   baseUrl.hostname !== "localhost" &&
-  process.env.REALTIME_TEST_ALLOW_REMOTE !== "beta"
+  process.env.REALTIME_TEST_ALLOW_REMOTE !== "beta" &&
+  process.env.REALTIME_TEST_ALLOW_REMOTE !== "production"
 ) {
   throw new Error(
-    "Remote verification requires REALTIME_TEST_ALLOW_REMOTE=beta to protect non-beta Workers.",
+    "Remote verification requires REALTIME_TEST_ALLOW_REMOTE=beta or REALTIME_TEST_ALLOW_REMOTE=production.",
   );
 }
 

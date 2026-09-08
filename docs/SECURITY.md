@@ -248,7 +248,13 @@ All 12 findings have been fixed, tested (82 unit tests passing), and verified in
 
 ## Provisional v2.0 Realtime Shadow-Publication Boundary
 
-The Phase 3 proof is beta-only and is not a production security approval.
+The Phase 3 proof originated as beta-only and is not a production security
+approval. As of v2.0.0-rc.3 realtime may also activate when
+`LOTTO_DEPLOYMENT_ENVIRONMENT=production`; the gate remains fail-closed for any
+other value, and every sandbox behavior (banner, crawler blocking) still
+requires exactly `beta`. Production activation requires its own Worker,
+Durable Object namespace, and freshly generated publish/control tokens — no beta
+credential or origin may be reused. See `docs/PRODUCTION_RC3_CUTOVER.md`.
 Neon remains authoritative; Cloudflare receives only the strict
 `PublicRaffleState` allowlist. Internal queue-session evidence, authentication
 data, staff identity, ticket searches, translation credentials, snapshots, and

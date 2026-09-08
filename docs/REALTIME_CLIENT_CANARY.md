@@ -252,3 +252,22 @@ origin from `connect-src`; every public surface continues on its unchanged
 adaptive polling path. Shadow publication may remain enabled for server-side
 comparison or be disabled independently. No schema, database state, or public
 client migration must be reversed.
+
+### Deployment environments eligible for realtime
+
+`LOTTO_DEPLOYMENT_ENVIRONMENT` answers two independent questions, and they were
+deliberately separated in v2.0.0-rc.3:
+
+- **May this deployment use the realtime hub?** `beta` or `production`.
+- **Is this the beta sandbox?** `beta` only. This alone drives the "Beta test
+  environment" banner, the blocking `robots.txt`, and the `X-Robots-Tag` header.
+
+Before rc.3 a single value answered both, so production could not enable
+realtime without also de-indexing the live site and telling every client their
+actions did not affect the real app.
+
+The gate is still fail-closed, which was the point of the original beta-only
+restriction. Only those two exact values qualify: unset, empty, or near-miss
+values such as `prod`, `Production`, or `staging` refuse realtime rather than
+assuming it is welcome. Being merely "not beta" is never sufficient. See
+`src/lib/deployment-environment.ts` and `tests/beta-deployment-safety.test.tsx`.

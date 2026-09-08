@@ -7,7 +7,7 @@
 
 import "server-only";
 
-import { isBetaDeployment } from "@/lib/deployment-environment";
+import { isRealtimeEligibleDeployment } from "@/lib/deployment-environment";
 
 import {
   agencyIdSchema,
@@ -62,9 +62,9 @@ export const resolveShadowPublicationConfig = (
   if (rawFlag !== "true") {
     throw new Error("LOTTO_REALTIME_SHADOW_PUBLISH must be either true or false.");
   }
-  if (!isBetaDeployment(environment)) {
+  if (!isRealtimeEligibleDeployment(environment)) {
     throw new Error(
-      "Realtime shadow publication is restricted to LOTTO_DEPLOYMENT_ENVIRONMENT=beta during the proof.",
+      "Realtime shadow publication requires LOTTO_DEPLOYMENT_ENVIRONMENT to be exactly \"beta\" or \"production\".",
     );
   }
 

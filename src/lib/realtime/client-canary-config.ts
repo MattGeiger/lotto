@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2026 Matt Geiger, Temple Consulting, LLC.
 
-import { isBetaDeployment } from "@/lib/deployment-environment";
+import { isRealtimeEligibleDeployment } from "@/lib/deployment-environment";
 
 import { agencyIdSchema } from "./public-state-protocol";
 
@@ -49,9 +49,9 @@ export const resolveRealtimeCanaryClientConfig = (
   if (flag !== "true") {
     throw new Error("LOTTO_REALTIME_CLIENT_CANARY must be either true or false.");
   }
-  if (!isBetaDeployment(environment)) {
+  if (!isRealtimeEligibleDeployment(environment)) {
     throw new Error(
-      "The realtime client canary is restricted to LOTTO_DEPLOYMENT_ENVIRONMENT=beta during the proof.",
+      "Realtime requires LOTTO_DEPLOYMENT_ENVIRONMENT to be exactly \"beta\" or \"production\".",
     );
   }
   const hubUrl = new URL(required(environment, "LOTTO_REALTIME_HUB_URL"));

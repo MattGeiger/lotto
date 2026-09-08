@@ -29,12 +29,25 @@ describe("realtime shadow-publication configuration", () => {
     expect(() =>
       resolveShadowPublicationConfig({ LOTTO_REALTIME_SHADOW_PUBLISH: "yes" }),
     ).toThrow(/must be either true or false/);
-    expect(() =>
+    // Fail-closed is preserved: only the two recognized values qualify, so an
+    // unset or near-miss environment still refuses to publish.
+    for (const value of [undefined, "", "prod", "Production", "staging"]) {
+      expect(() =>
+        resolveShadowPublicationConfig({
+          ...enabledEnvironment,
+          LOTTO_DEPLOYMENT_ENVIRONMENT: value,
+        }),
+      ).toThrow(/LOTTO_DEPLOYMENT_ENVIRONMENT to be exactly/);
+    }
+  });
+
+  it("publishes from the production deployment environment", () => {
+    expect(
       resolveShadowPublicationConfig({
         ...enabledEnvironment,
         LOTTO_DEPLOYMENT_ENVIRONMENT: "production",
       }),
-    ).toThrow(/restricted to LOTTO_DEPLOYMENT_ENVIRONMENT=beta/);
+    ).toMatchObject({ enabled: true });
   });
 
   it("requires an exact HTTPS beta host and bounded settings", () => {

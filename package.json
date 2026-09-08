@@ -1,6 +1,6 @@
 {
   "name": "app",
-  "version": "2.0.0-rc.2",
+  "version": "2.0.0-rc.3",
   "private": true,
   "license": "AGPL-3.0-or-later",
   "scripts": {
@@ -12,12 +12,14 @@
     "generate:brand-palette": "node scripts/generate-brand-palette.mjs",
     "realtime:dev": "wrangler dev --config workers/realtime-hub/wrangler.jsonc",
     "realtime:check": "wrangler deploy --dry-run --config workers/realtime-hub/wrangler.jsonc",
+    "realtime:check:production": "wrangler deploy --dry-run --config workers/realtime-hub/wrangler.jsonc --env production",
     "realtime:verify": "node scripts/verify-realtime-hub.mjs",
     "realtime:load": "node scripts/load-test-realtime-hub.mjs",
     "realtime:benchmark": "node scripts/benchmark-realtime-delivery.mjs",
     "realtime:control": "node scripts/control-realtime-hub.mjs",
     "realtime:shadow:check": "vitest run tests/realtime-public-state-protocol.test.ts tests/realtime-shadow-publication.test.ts tests/state-manager-db.test.ts tests/api-realtime-publication.test.ts tests/realtime-diagnostics-client.test.tsx",
     "realtime:deploy:beta": "wrangler deploy --config workers/realtime-hub/wrangler.jsonc",
+    "realtime:deploy:production": "wrangler deploy --config workers/realtime-hub/wrangler.jsonc --env production",
     "check:legacy-bundles": "node scripts/check-legacy-safe-bundles.mjs",
     "smoke:legacy": "node scripts/smoke-legacy-compat.mjs",
     "db:migrate": "node --env-file=.env.local scripts/apply-schema.mjs",
@@ -107,7 +109,7 @@
     "vitest": "^3.2.4",
     "wrangler": "^4.127.1"
   },
-  "//browserslist": "Declared legacy support floor (see docs/BROWSER_SUPPORT.md). iOS/Safari 15 covers the iPadOS 15.8 staff devices (all iOS browsers use WebKit); Chrome/Android 80 covers aging public-facing visitor devices. SWC downlevels syntax and core-js polyfills runtime APIs to this baseline. NOTE: regex *literal* syntax (e.g. lookbehind) cannot be downleveled — keep such syntax out of the bundle; enforced by `npm run check:legacy-bundles`.",
+  "//browserslist": "Declared legacy support floor (see docs/BROWSER_SUPPORT.md). iOS/Safari 15 covers the iPadOS 15.8 staff devices (all iOS browsers use WebKit); Chrome/Android 80 covers aging public-facing visitor devices. SWC downlevels syntax and core-js polyfills runtime APIs to this baseline. NOTE: regex *literal* syntax (e.g. lookbehind) cannot be downleveled \u2014 keep such syntax out of the bundle; enforced by `npm run check:legacy-bundles`.",
   "browserslist": [
     "iOS >= 15",
     "Safari >= 15",

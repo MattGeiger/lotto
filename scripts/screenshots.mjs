@@ -16,10 +16,11 @@
 // language-context `display-language` / `display-language-session`) so the
 // screenshots match what a real user with those settings would see.
 
-import { mkdirSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import puppeteer from "puppeteer-core";
+import sharp from "sharp";
 
 const BASE_URL = process.env.SCREENSHOT_BASE_URL ?? "http://localhost:3000";
 const CHROME_PATH =
@@ -28,6 +29,27 @@ const CHROME_PATH =
 const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT_DIR = join(REPO_ROOT, "docs", "screenshots");
 const HELP_OUT_DIR = join(REPO_ROOT, "public", "help-screenshots");
+const MANIFEST_PATH = join(REPO_ROOT, "src", "lib", "help-screenshot-manifest.ts");
+const MANIFEST_HEADER = `// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Matt Geiger, Temple Consulting, LLC.
+//
+// GENERATED FILE — do not edit by hand. Regenerate with \`npm run screenshots\`
+// (scripts/screenshots.mjs), which writes this from the capture geometry in
+// HELP_SHOT_BASES plus the dimensions of the stored assets.
+//
+// Help screenshots render at 1x their captured CSS size, capped by the guide
+// column. Dividing pixelWidth by deviceScaleFactor recovers that CSS size; see
+// docs/HELP_SYSTEM.md. Dark-mode siblings share their light entry.
+
+export type HelpScreenshotSize = {
+  /** Intrinsic width of the stored asset, in image pixels. */
+  pixelWidth: number;
+  /** Intrinsic height of the stored asset, in image pixels. */
+  pixelHeight: number;
+  /** Device-pixel ratio the capture ran at. */
+  deviceScaleFactor: number;
+};
+`;
 const REQUESTED_NAMES = new Set(
   (process.env.SCREENSHOT_NAMES ?? "")
     .split(",")
@@ -62,12 +84,12 @@ const SHOTS = [
 const HELP_SHOT_BASES = [
   { name: "staff-dashboard", route: "/admin", width: 1280, height: 800 },
   { name: "display-board", route: "/display", width: 1280, height: 720 },
-  { name: "client-ticket", route: "/", width: 375, height: 812, deviceScaleFactor: 3, isMobile: true, hasTouch: true, prepare: "home-ticket" },
+  { name: "client-ticket", route: "/", width: 375, height: 812, deviceScaleFactor: 2, isMobile: true, hasTouch: true, prepare: "home-ticket" },
   { name: "inventory", route: "/inventory", width: 1280, height: 820 },
   { name: "languages", route: "/display", width: 1280, height: 720, lang: "ar" },
-  { name: "themes", route: "/", width: 375, height: 812, deviceScaleFactor: 3, isMobile: true, hasTouch: true, prepare: "themes" },
-  { name: "arcade", route: "/arcade", width: 375, height: 812, deviceScaleFactor: 3, isMobile: true, hasTouch: true },
-  { name: "arcade-game", route: "/arcade/snake", width: 375, height: 812, deviceScaleFactor: 3, isMobile: true, hasTouch: true, prepare: "arcade-game" },
+  { name: "themes", route: "/", width: 375, height: 812, deviceScaleFactor: 2, isMobile: true, hasTouch: true, prepare: "themes" },
+  { name: "arcade", route: "/arcade", width: 375, height: 812, deviceScaleFactor: 2, isMobile: true, hasTouch: true },
+  { name: "arcade-game", route: "/arcade/snake", width: 375, height: 812, deviceScaleFactor: 2, isMobile: true, hasTouch: true, prepare: "arcade-game" },
   { name: "sign-in-code", route: "/login", width: 1100, height: 760, prepare: "login-code" },
   {
     name: "ticket-status-lists",
@@ -174,6 +196,46 @@ for (const base of HELP_SHOT_BASES) {
 }
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// A Help screenshot renders at 1x its captured CSS size, capped by the guide
+// column (docs/HELP_SYSTEM.md). The markdown renderer cannot infer a capture's
+// CSS size from the stored file — a 750px-wide asset is a 375pt phone at 2x,
+// not a 750pt window — so the capture geometry is written out here as the
+// single source of truth the renderer and its tests both read.
+async function writeHelpScreenshotManifest() {
+  const entries = [];
+
+  for (const base of [...HELP_SHOT_BASES].sort((left, right) => left.name.localeCompare(right.name))) {
+    const file = join(HELP_OUT_DIR, `${base.name}.webp`);
+
+    if (!existsSync(file)) {
+      console.warn(`… no ${base.name}.webp on disk; leaving it out of the manifest`);
+      continue;
+    }
+
+    const { width, height } = await sharp(file).metadata();
+    entries.push({
+      name: base.name,
+      pixelWidth: width,
+      pixelHeight: height,
+      deviceScaleFactor: base.deviceScaleFactor ?? 1,
+    });
+  }
+
+  const rows = entries
+    .map(
+      (entry) =>
+        `  "${entry.name}": { pixelWidth: ${entry.pixelWidth}, pixelHeight: ${entry.pixelHeight}, deviceScaleFactor: ${entry.deviceScaleFactor} },`,
+    )
+    .join("\n");
+
+  writeFileSync(
+    MANIFEST_PATH,
+    `${MANIFEST_HEADER}\nexport const HELP_SCREENSHOT_SIZES: Record<string, HelpScreenshotSize> = {\n${rows}\n};\n`,
+    "utf8",
+  );
+  console.log(`✓ help-screenshot-manifest.ts (${entries.length} captures)`);
+}
 
 const APPEARANCE_STEP_INDEX = {
   "appearance-wizard": 0,
@@ -353,6 +415,9 @@ async function run() {
           const panel = label?.parentElement?.parentElement?.parentElement;
           if (panel instanceof HTMLElement) {
             panel.dataset.screenshotTarget = "client-ticket";
+            // The page bottoms out before this reaches the top of the viewport,
+            // so the capture keeps a sliver of the Now Serving card above it.
+            // That is what a phone actually shows at the end of the scroll.
             panel.scrollIntoView({ block: "start", inline: "nearest" });
           }
         });
@@ -504,6 +569,10 @@ async function run() {
   } finally {
     await browser.close();
   }
+
+  // Always rebuild the manifest from what is on disk, even for a bounded
+  // SCREENSHOT_NAMES run, so a partial refresh cannot leave it half-stale.
+  await writeHelpScreenshotManifest();
 }
 
 run().catch((error) => {

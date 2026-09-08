@@ -28,6 +28,12 @@ vi.mock("@/components/help/guide-toc", () => ({
   GuideToc: () => <nav aria-label="Guide table of contents" />,
 }));
 
+// The real control reads ThemeProvider/HapticsProvider context, which the root
+// layout supplies in the app but this render does not.
+vi.mock("@/components/theme-switcher", () => ({
+  ThemeSwitcher: () => <div data-testid="theme-switcher" />,
+}));
+
 vi.mock("@/lib/user-guides.server", () => ({
   getAllUserGuides: () => guides,
   getHelpSearchIndex: () => [],
@@ -46,6 +52,12 @@ describe("Help index navigation", () => {
     expect(screen.queryByRole("link", { name: /staff home/i })).not.toBeInTheDocument();
   });
 
+  it("offers the theme control in the index page's top chrome", () => {
+    render(<HelpIndexPage />);
+
+    expect(screen.getByTestId("theme-switcher")).toBeInTheDocument();
+  });
+
   it("shows a guide's catalog position when source order numbers have gaps", async () => {
     render(
       await HelpGuideDetailPage({
@@ -54,5 +66,15 @@ describe("Help index navigation", () => {
     );
 
     expect(screen.getByText("Guide 2 of 2")).toBeInTheDocument();
+  });
+
+  it("offers the theme control in a guide page's top chrome", async () => {
+    render(
+      await HelpGuideDetailPage({
+        params: Promise.resolve({ slug: "second" }),
+      }),
+    );
+
+    expect(screen.getByTestId("theme-switcher")).toBeInTheDocument();
   });
 });

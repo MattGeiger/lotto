@@ -17,6 +17,7 @@ import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfmSafe from "@/lib/remark-gfm-safe";
 
 import { cn } from "@/lib/utils";
+import { HELP_SCREENSHOT_SIZES } from "@/lib/help-screenshot-manifest";
 import { getGuideHeadingIdsByLine, rewriteGuideLink } from "@/lib/user-guides";
 
 type MarkdownGuideProps = {
@@ -29,6 +30,29 @@ function getDarkScreenshotSrc(src?: string) {
   }
 
   return src.replace(/(\.(?:png|webp))$/, "-dark$1");
+}
+
+// Help screenshots render at 1x their captured CSS size, capped by the guide
+// column. Without this the browser only knows the file's pixel width, so a
+// phone capture — 750px of image describing a 375pt screen — stretched to the
+// full ~815px column and read at more than twice life size, while desktop
+// captures shrank below theirs. See docs/HELP_SYSTEM.md.
+function getScreenshotLayout(src?: string) {
+  const name = src?.startsWith("/help-screenshots/")
+    ? src.slice("/help-screenshots/".length).replace(/\.(?:png|webp)$/, "")
+    : undefined;
+  const size = name ? HELP_SCREENSHOT_SIZES[name] : undefined;
+
+  if (!size) return undefined;
+
+  return {
+    width: size.pixelWidth,
+    height: size.pixelHeight,
+    // `w-full` alongside this is load-bearing: a bare max-width does not let an
+    // image shrink below its intrinsic size, so a phone capture would overflow
+    // the column horizontally on a narrow screen.
+    style: { maxWidth: `${Math.round(size.pixelWidth / size.deviceScaleFactor)}px` },
+  };
 }
 
 export function MarkdownGuideContent({ content }: MarkdownGuideProps) {
@@ -130,19 +154,29 @@ export function MarkdownGuideContent({ content }: MarkdownGuideProps) {
     img: ({ alt, className, node: _node, src, ...props }) => {
       const normalizedSrc = typeof src === "string" ? src : undefined;
       const darkSrc = getDarkScreenshotSrc(normalizedSrc);
-      const imageClassName = cn("rounded-lg border shadow-sm", className);
+      const layout = getScreenshotLayout(normalizedSrc);
+      // The intrinsic width/height also give the browser an aspect ratio to
+      // reserve space with, so lazily loaded screenshots stop shifting layout.
+      const sizing = layout
+        ? { width: layout.width, height: layout.height, style: layout.style }
+        : {};
+      const imageClassName = cn(
+        "rounded-lg border shadow-sm",
+        layout && "mx-auto block w-full",
+        className,
+      );
 
       if (!darkSrc) {
         // eslint-disable-next-line @next/next/no-img-element
-        return <img alt={alt} className={cn("my-4", imageClassName)} loading="lazy" src={normalizedSrc} {...props} />;
+        return <img alt={alt} className={cn("my-4", imageClassName)} loading="lazy" src={normalizedSrc} {...sizing} {...props} />;
       }
 
       return (
         <span className="my-4 block">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img alt={alt} className={cn(imageClassName, "dark:hidden")} loading="lazy" src={normalizedSrc} {...props} />
+          <img alt={alt} className={cn(imageClassName, "dark:hidden")} loading="lazy" src={normalizedSrc} {...sizing} {...props} />
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img alt={alt} className={cn(imageClassName, "hidden dark:block")} loading="lazy" src={darkSrc} {...props} />
+          <img alt={alt} className={cn(imageClassName, "hidden dark:block")} loading="lazy" src={darkSrc} {...sizing} {...props} />
         </span>
       );
     },
