@@ -179,6 +179,25 @@ In increasing order of severity, and all reversible:
 - Before the secrets existed, a bogus control token was rejected with 401,
   confirming the hub fails closed on authentication as well as configuration.
 
+## Incident: revision 0 broke public reads on cutover
+
+Immediately after the stage-A deploy, every `/api/state` request returned 500
+while all page routes still rendered. Cause: the migration defaults
+`raffle_state.revision` to 0 and only a write allocates a positive revision, but
+`safeReadStateWithRevision` rejected anything below 1. A migrated database is
+therefore unreadable between the migration and its first staff write.
+
+Recovered in seconds with a single statement, no redeploy:
+
+```sql
+update raffle_state set revision = 1 where id = 'singleton' and revision = 0;
+```
+
+The code now accepts revision 0 as the legitimate pre-write state, so no future
+migrating deployment hits this. **Any other environment migrated from an
+existing database needs either that statement or the fix deployed before its
+first public read.**
+
 ## Known caveats
 
 - **The Vercel application gate has never been live-toggled.** It passes

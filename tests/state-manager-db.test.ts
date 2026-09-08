@@ -117,6 +117,32 @@ describe("createDbStateManager", () => {
       expect(mockDirectSql).toHaveLength(1);
     });
 
+    it("reads a freshly migrated database still sitting at revision 0", async () => {
+      // The additive migration defaults existing rows to 0, and only a write
+      // allocates a positive revision. Rejecting 0 here took every public state
+      // read down between the migration and the first staff action during the
+      // v2.0.0-rc.3 production cutover.
+      const state = activeState();
+      mockQueryResults.push([{ payload: state, revision: 0 }]);
+      await expect(manager.loadStateWithRevision()).resolves.toMatchObject({
+        state: { currentlyServing: 3 },
+        revision: 0,
+      });
+    });
+
+    it("still rejects a negative or unparseable stored revision", async () => {
+      const state = activeState();
+      mockQueryResults.push([{ payload: state, revision: -1 }]);
+      await expect(manager.loadStateWithRevision()).rejects.toThrow(
+        "Stored state revision is invalid.",
+      );
+
+      mockQueryResults.push([{ payload: state, revision: "not-a-number" }]);
+      await expect(manager.loadStateWithRevision()).rejects.toThrow(
+        "Stored state revision is invalid.",
+      );
+    });
+
     it("returns default state when DB is empty (and persists it)", async () => {
       queueEmptyState();
       // persist will call sql.transaction

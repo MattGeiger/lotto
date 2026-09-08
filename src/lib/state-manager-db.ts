@@ -367,7 +367,14 @@ export const createDbStateManager = (
     }
     const payload = rows[0]?.payload ?? defaultState;
     const revision = Number(rows[0]?.revision);
-    if (!Number.isSafeInteger(revision) || revision < 1) {
+    // Revision 0 is the legitimate state of a just-migrated deployment: the
+    // additive column defaults to 0 and only `persist` allocates a positive
+    // revision, so an existing database sits at 0 from the moment the schema is
+    // applied until the first staff write. Rejecting it here took every public
+    // state read down in exactly that window on the v2.0.0-rc.3 cutover.
+    // `readPolledStateRevision` already ignores 0, so realtime stays inert and
+    // clients keep polling until a write establishes revision authority.
+    if (!Number.isSafeInteger(revision) || revision < 0) {
       throw new Error("Stored state revision is invalid.");
     }
     return {

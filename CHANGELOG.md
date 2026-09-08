@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- **Let a freshly migrated database serve public state reads.** The additive
+  realtime migration defaults `raffle_state.revision` to 0 on existing rows, and
+  only a write allocates a positive revision, so a migrated deployment sits at 0
+  from the moment the schema is applied until the first staff action. The read
+  path rejected anything below 1, so every `/api/state` request returned 500 in
+  exactly that window — which is what happened on the production v2.0.0-rc.3
+  cutover, until the row was advanced to 1 by hand. Revision 0 is now accepted as
+  the legitimate pre-write state; negative and unparseable values still throw.
+  `readPolledStateRevision` already ignored 0, so realtime stays inert and
+  clients keep polling until a write establishes revision authority. Beta never
+  exposed this because its database was created fresh and written to immediately.
+
 ## [2.0.0-rc.3] - 2026-09-07
 
 The first build intended to run on `williamtemple.app` itself, on the existing
