@@ -316,4 +316,77 @@ describe("RealtimeSourceCanary", () => {
     });
     expect(screen.getByTestId("realtime-source-status")).toBeInTheDocument();
   });
+
+  it("retries the socket on the next poll after the backoff ladder is exhausted", async () => {
+    // A wall-mounted kiosk stays visible and online all day, so it never fires
+    // visibilitychange or online. Before this, five failures downgraded that
+    // screen to polling permanently. Now each poll re-attempts the socket.
+    vi.useFakeTimers();
+    try {
+      const state1 = stateAt(1, Date.parse("2026-09-01T18:00:00.000Z"));
+      const onAuthorityChange = vi.fn();
+      const { rerender } = render(
+        <RealtimeSourceCanary
+          config={config}
+          polledState={state1}
+          polledRevision={1}
+          onState={vi.fn()}
+          onAuthorityChange={onAuthorityChange}
+        />,
+      );
+
+      // Burn the whole ladder: every attempt fails to open.
+      for (let attempt = 0; attempt <= 5; attempt += 1) {
+        const socket = FakeWebSocket.instances.at(-1)!;
+        act(() => socket.emitClose());
+        act(() => {
+          vi.advanceTimersByTime(40_000);
+        });
+      }
+
+      const socketsAfterLadder = FakeWebSocket.instances.length;
+      expect(onAuthorityChange).toHaveBeenLastCalledWith(false, "exhausted");
+
+      // No timer revives it — the ladder is genuinely finished.
+      act(() => {
+        vi.advanceTimersByTime(300_000);
+      });
+      expect(FakeWebSocket.instances.length).toBe(socketsAfterLadder);
+
+      // A poll arrives: exactly one fresh attempt.
+      const state2 = stateAt(2, Date.parse("2026-09-01T18:05:00.000Z"));
+      rerender(
+        <RealtimeSourceCanary
+          config={config}
+          polledState={state2}
+          polledRevision={2}
+          onState={vi.fn()}
+          onAuthorityChange={onAuthorityChange}
+        />,
+      );
+      expect(FakeWebSocket.instances.length).toBe(socketsAfterLadder + 1);
+
+      // That attempt fails too; still no self-driven retry.
+      act(() => FakeWebSocket.instances.at(-1)!.emitClose());
+      act(() => {
+        vi.advanceTimersByTime(300_000);
+      });
+      expect(FakeWebSocket.instances.length).toBe(socketsAfterLadder + 1);
+
+      // The following poll tries again — recovery is unbounded in time.
+      const state3 = stateAt(3, Date.parse("2026-09-01T18:10:00.000Z"));
+      rerender(
+        <RealtimeSourceCanary
+          config={config}
+          polledState={state3}
+          polledRevision={3}
+          onState={vi.fn()}
+          onAuthorityChange={onAuthorityChange}
+        />,
+      );
+      expect(FakeWebSocket.instances.length).toBe(socketsAfterLadder + 2);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });

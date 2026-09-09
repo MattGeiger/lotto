@@ -18,6 +18,20 @@
 
 ### Fixed
 
+- **Made realtime recover from an exhausted reconnect ladder.** After five
+  failed attempts (~31 seconds) the client gave up permanently: it scheduled no
+  further retry, and the only things that revived it were a visibility change,
+  an `online` event, or a reload. A wall-mounted kiosk sitting visible and
+  online all day produces none of those, so a brief blip silently downgraded
+  that screen to adaptive polling for the rest of the day — correct, but no
+  longer realtime, and invisible without inspecting the badge. Each arriving
+  poll now makes one further connection attempt, so the socket stays the
+  preferred transport and polling is only ever the fallback. The attempt
+  counter is deliberately not reset, so a failure re-exhausts immediately and
+  waits for the next poll; recovery therefore inherits the adaptive poller's
+  own cadence — frequent during service, sparse when idle or off-hours —
+  without adding a timer or any request of its own.
+
 - **Let a freshly migrated database serve public state reads.** The additive
   realtime migration defaults `raffle_state.revision` to 0 on existing rows, and
   only a write allocates a positive revision, so a migrated deployment sits at 0

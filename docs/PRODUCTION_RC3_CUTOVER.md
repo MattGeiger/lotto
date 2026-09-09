@@ -212,6 +212,11 @@ baseline recorded during stage B on the same deployment.
 
 ## Known caveats
 
+- **Kiosk badge visibility is now opt-in.** The realtime status badge renders
+  only for `?realtime=source` or `?realtime=observe`. Kiosk browsers should load
+  the Display with that parameter so staff can read connection state at a
+  glance; ordinary client devices load the plain URL and see nothing.
+
 - **The Vercel application gate has never been live-toggled.** It passes
   configuration, mount, suite, and production-build tests, but the operational
   exercise (disable deployment followed by restore deployment) has not been run

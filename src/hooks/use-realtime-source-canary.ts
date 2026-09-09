@@ -91,6 +91,15 @@ export const useRealtimeSourceCanary = ({
   const hubEnvelopeRef = React.useRef<PublicStateEnvelope | null>(null);
   const onStateRef = React.useRef(onState);
   const onAuthorityChangeRef = React.useRef(onAuthorityChange);
+  // Set once the bounded backoff ladder gives up, and cleared by any successful
+  // handshake. While set, each arriving poll makes one more connection attempt
+  // (see the polled-state effect below), so the socket is always preferred and
+  // adaptive polling is only ever the fallback.
+  const exhaustedRef = React.useRef(false);
+  // Lets the polled-state effect re-enter the connection effect's `connect`
+  // without giving that effect a dependency on the poll, which would tear the
+  // socket down and rebuild it on every poll.
+  const connectRef = React.useRef<(() => void) | null>(null);
 
   React.useEffect(() => {
     onStateRef.current = onState;
@@ -132,6 +141,24 @@ export const useRealtimeSourceCanary = ({
   React.useEffect(() => {
     let cancelled = false;
     polledRevisionRef.current = polledRevision;
+
+    // The socket is the preferred transport and polling is the fallback, so a
+    // poll is also the cue to try the socket again. The backoff ladder alone
+    // gave up permanently: after five failures it scheduled nothing, and the
+    // only things that revived it were a visibility change, an `online` event,
+    // or a reload -- none of which a wall-mounted kiosk produces while it sits
+    // visible and online all day. A ~31 second blip therefore downgraded that
+    // screen to polling until someone noticed.
+    //
+    // Deliberately does not reset the attempt counter: this is one attempt per
+    // poll, not a fresh ladder, so a failure re-exhausts immediately and waits
+    // for the next poll. That inherits the adaptive poller's own cadence --
+    // frequent during service, sparse when idle or off-hours -- without adding
+    // a timer or any request of its own.
+    if (exhaustedRef.current) {
+      connectRef.current?.();
+    }
+
     if (!polledState) {
       polledChecksumRef.current = null;
       return () => {
@@ -205,6 +232,8 @@ export const useRealtimeSourceCanary = ({
           || offlineRef.current
         ) return;
         if (reconnectAttemptRef.current >= MAX_RECONNECT_ATTEMPTS) {
+          // Stop the ladder, but stay recoverable: the next poll retries.
+          exhaustedRef.current = true;
           revokeAuthority("exhausted");
           setTelemetry((current) => updated({ ...current, connection: "exhausted" }));
           return;
@@ -260,6 +289,7 @@ export const useRealtimeSourceCanary = ({
 
           clearHandshakeTimer();
           reconnectAttemptRef.current = 0;
+          exhaustedRef.current = false;
           const envelope = parsed.data;
           hubEnvelopeRef.current = envelope;
           setTelemetry((current) => updated({
@@ -334,6 +364,7 @@ export const useRealtimeSourceCanary = ({
         return;
       }
       reconnectAttemptRef.current = 0;
+      exhaustedRef.current = false;
       revokeAuthority("foreground");
       connect();
     };
@@ -349,10 +380,12 @@ export const useRealtimeSourceCanary = ({
     const handleOnline = () => {
       offlineRef.current = false;
       reconnectAttemptRef.current = 0;
+      exhaustedRef.current = false;
       revokeAuthority("offline");
       connect();
     };
 
+    connectRef.current = connect;
     document.addEventListener("visibilitychange", handleVisibilityChange);
     window.addEventListener("offline", handleOffline);
     window.addEventListener("online", handleOnline);
@@ -360,6 +393,9 @@ export const useRealtimeSourceCanary = ({
 
     return () => {
       disposed = true;
+      // Drop the escape hatch with the effect that owns it, so a poll arriving
+      // mid-teardown cannot call into a disposed closure.
+      connectRef.current = null;
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("offline", handleOffline);
       window.removeEventListener("online", handleOnline);
