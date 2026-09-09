@@ -86,6 +86,13 @@ describe("RealtimeSourceCanary", () => {
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
     delete window.__LOTTO_REALTIME_SOURCE_CANARY__;
+    window.history.replaceState({}, "", "/");
+  });
+
+  beforeEach(() => {
+    // The badge is a diagnostic and only renders for an explicit realtime mode.
+    // These assertions are about the badge, so put the suite in that cohort.
+    window.history.replaceState({}, "", "/display?realtime=source");
   });
 
   it("requires an exact polled handshake, applies the next revision, and falls back on close", async () => {
@@ -240,5 +247,73 @@ describe("RealtimeSourceCanary", () => {
 
     await act(async () => vi.advanceTimersByTimeAsync(1_000));
     expect(FakeWebSocket.instances).toHaveLength(2);
+  });
+
+  it("keeps realtime running with no badge on an ordinary visitor load", async () => {
+    // The whole point of the split: a client on a plain URL still gets realtime
+    // state, they just do not see developer chrome on a public screen.
+    window.history.replaceState({}, "", "/display");
+    const state1 = stateAt(1, Date.parse("2026-09-01T18:00:00.000Z"));
+    const state2 = stateAt(2, Date.parse("2026-09-01T18:00:01.000Z"));
+    const onState = vi.fn();
+    const onAuthorityChange = vi.fn();
+
+    await act(async () => {
+      render(
+        <RealtimeSourceCanary
+          config={config}
+          polledState={state1}
+          polledRevision={1}
+          onState={onState}
+          onAuthorityChange={onAuthorityChange}
+        />,
+      );
+      await flush();
+    });
+
+    // A socket is opened even though nothing is rendered.
+    const socket = FakeWebSocket.instances[0];
+    expect(socket).toBeDefined();
+    act(() => socket.open());
+
+    const initial = await envelopeFor(state1, 1);
+    await act(async () => {
+      socket.message(JSON.stringify(initial));
+      await flush();
+    });
+    expect(onAuthorityChange).toHaveBeenLastCalledWith(true, "handshake");
+
+    const update = await envelopeFor(state2, 2);
+    await act(async () => {
+      socket.message(JSON.stringify(update));
+      await flush();
+    });
+    expect(onState).toHaveBeenCalledWith(expect.objectContaining({ currentlyServing: 2 }), 2);
+
+    // Realtime is fully live, and the badge is still absent.
+    expect(screen.queryByTestId("realtime-source-status")).toBeNull();
+    // Telemetry remains available for console diagnosis without the badge.
+    expect(window.__LOTTO_REALTIME_SOURCE_CANARY__).toMatchObject({
+      authority: "live",
+      revision: 2,
+    });
+  });
+
+  it("shows the badge for the observe cohort as well as source", async () => {
+    window.history.replaceState({}, "", "/display?realtime=observe");
+    const state1 = stateAt(1, Date.parse("2026-09-01T18:00:00.000Z"));
+    await act(async () => {
+      render(
+        <RealtimeSourceCanary
+          config={config}
+          polledState={state1}
+          polledRevision={1}
+          onState={vi.fn()}
+          onAuthorityChange={vi.fn()}
+        />,
+      );
+      await flush();
+    });
+    expect(screen.getByTestId("realtime-source-status")).toBeInTheDocument();
   });
 });

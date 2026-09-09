@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+### Changed
+
+- **Hid the realtime status badge from ordinary visitors.** The
+  `Realtime source · live · rN` indicator rendered in the corner of every public
+  surface — Home, Display, Inventory, and Arcade — where guests could read
+  developer chrome as an error on a pantry screen. It now renders only when a
+  realtime mode is explicitly requested in the URL (`?realtime=source` or
+  `?realtime=observe`), so staff keep the diagnostic on demand. The connection
+  is untouched: the controller runs headless, and
+  `window.__LOTTO_REALTIME_SOURCE_CANARY__` still carries full telemetry for
+  console diagnosis. New coverage proves an ordinary load still opens the
+  socket, completes the handshake, and applies pushed state with no badge
+  rendered.
+
 ### Fixed
 
 - **Let a freshly migrated database serve public state reads.** The additive

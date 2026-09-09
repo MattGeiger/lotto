@@ -6,7 +6,11 @@
 import * as React from "react";
 
 import { useRealtimeSourceCanary, type RealtimeSourceReason } from "@/hooks/use-realtime-source-canary";
-import type { RealtimeCanaryClientConfig } from "@/lib/realtime/client-canary-config";
+import {
+  isRealtimeCanaryCohort,
+  isRealtimeSourceCanaryCohort,
+  type RealtimeCanaryClientConfig,
+} from "@/lib/realtime/client-canary-config";
 import type { PublicRaffleState } from "@/lib/realtime/public-state-protocol";
 import type { RaffleState } from "@/lib/state-types";
 
@@ -44,6 +48,25 @@ export default function RealtimeSourceCanary({
     onAuthorityChange,
   });
   const live = telemetry.authority === "live";
+
+  // The connection above is the product; this badge is a diagnostic. Ordinary
+  // visitors on Home, Display, Inventory, and Arcade should not read
+  // "Realtime source · live · r47" in the corner of a public pantry screen, so
+  // it renders only when someone explicitly asked for a realtime mode in the
+  // URL (`?realtime=source` or `?realtime=observe`).
+  //
+  // Read after mount rather than during render: the server has no query string,
+  // and deciding this during render would produce a hydration mismatch. Hiding
+  // the badge never touches the socket, the handshake, or state delivery —
+  // every hook above has already run. `window.__LOTTO_REALTIME_SOURCE_CANARY__`
+  // still carries full telemetry for console diagnosis without the badge.
+  const [showBadge, setShowBadge] = React.useState(false);
+  React.useEffect(() => {
+    const search = window.location.search;
+    setShowBadge(isRealtimeSourceCanaryCohort(search) || isRealtimeCanaryCohort(search));
+  }, []);
+
+  if (!showBadge) return null;
 
   return (
     <output

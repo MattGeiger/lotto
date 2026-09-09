@@ -1,6 +1,11 @@
 # v2.0.0-rc.3 production cutover (Hobby account)
 
-**Status:** Prepared, not executed.
+**Status:** Executed September 7, 2026. First service day completed
+September 8, 2026 with realtime as the client state source and no operational
+issues reported.
+
+The steps below are kept as the executed record and as the procedure for the
+eventual Pro-account migration, which will repeat them against new resources.
 
 This deploys RC.3 to the **existing personal Hobby Vercel project serving
 `williamtemple.app`**, with realtime active. It is deliberately not the Pro-account
@@ -143,8 +148,8 @@ restores realtime, and the Display connects on the iOS 15.4 simulator.
 In increasing order of severity, and all reversible:
 
 1. **Realtime misbehaving:** set `LOTTO_REALTIME_APPLICATION_ENABLED=false` and
-   redeploy the same commit. Clients return to adaptive polling. This is the
-   lever that has never been exercised live — see the caveat below.
+   redeploy the same commit. Clients return to adaptive polling. **Still never
+   exercised on any hosted environment** — see the caveat below.
 2. **Hub misbehaving with sockets open:** drain it, which closes sockets and
    refuses new ones while still accepting publication.
    ```bash
@@ -197,6 +202,13 @@ The code now accepts revision 0 as the legitimate pre-write state, so no future
 migrating deployment hits this. **Any other environment migrated from an
 existing database needs either that statement or the fix deployed before its
 first public read.**
+
+## First service day
+
+September 8, 2026. Realtime served as the client state source for the full
+service day with no operational issues. Staff reported admin-to-display
+propagation as immediate, against a measured ~30 second adaptive-polling
+baseline recorded during stage B on the same deployment.
 
 ## Known caveats
 
